@@ -1,0 +1,466 @@
+<?php
+
+namespace App\Http\Controllers\Ujian;
+
+use App\Http\Controllers\Controller;
+use App\Models\PengaturanTagihan;
+use App\Models\Ruangan;
+use App\Models\TagihanMurid;
+use App\Models\TahunPelajaran;
+use App\Models\Ujian\DispensasiUjian;
+use App\Models\Ujian\JadwalUjian;
+use App\Models\Ujian\NilaiUjian;
+use App\Models\Ujian\Ujian;
+use App\Services\NilaiUjianService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+class NilaiUjianController extends Controller
+{
+    protected $nilaiUjianService;
+
+    public function __construct(NilaiUjianService $nilaiUjianService)
+    {
+        $this->nilaiUjianService = $nilaiUjianService;
+    }
+
+    public function index(Request $request)
+    {
+        $daftarTahun = TahunPelajaran::orderBy('id', 'asc')->get();
+        $tahunPelajaranId = $request->tahun_id ?? TahunPelajaran::where('is_active', true)->value('id') ?? $daftarTahun->first()->id;
+
+        // Ambil daftar ruangan beserta jumlah muridnya (Optimasi Query)
+        $daftarRuangan = Ruangan::where('tahun_pelajaran_id', $tahunPelajaranId)
+            ->withCount('murids')
+            ->orderBy('level_id', 'asc')
+            ->get();
+
+        $daftarUjian = Ujian::where('tahun_pelajaran_id', $tahunPelajaranId)->get();
+        $ujianTerpilih = null;
+        $dataProgres = collect();
+
+        if ($request->ujian_id) {
+            $ujianTerpilih = Ujian::find($request->ujian_id);
+            $dataProgres = $this->nilaiUjianService->hitungProgresRuangan($ujianTerpilih->id, $daftarRuangan);
+        }
+
+        return view('nilai-ujian.index', compact(
+            'daftarTahun',
+            'tahunPelajaranId',
+            'daftarRuangan',
+            'daftarUjian',
+            'ujianTerpilih',
+            'dataProgres'
+        ));
+    }
+    public function inputNilai(Request $request)
+    {
+        $daftarTahun = TahunPelajaran::orderBy('id', 'asc')->get();
+        $tahunPelajaranId = $request->tahun_id ?? TahunPelajaran::where('is_active', true)->value('id') ?? $daftarTahun->first()->id;
+
+        $daftarRuangan = Ruangan::where('tahun_pelajaran_id', $tahunPelajaranId)->berdasarkanHakAkses()->orderBy('id', 'asc')->get();
+
+        $ruanganTerpilih = null;
+        $daftarUjian = collect();
+        $muridsWithStatus = collect();
+        $nilaiExisting = collect();
+
+        // WAJIB dideklarasikan di awal agar tidak error saat view di-load pertama kali
+        $jadwals = collect();
+
+        if ($request->ruangan_id) {
+            $ruanganTerpilih = Ruangan::with(['level', 'murids.waliMurid'])->find($request->ruangan_id);
+            $levelNama = $ruanganTerpilih->level->nama_level ?? '';
+
+            // (Blok pencarian "MATA PELAJARAN" yang lama DIBUANG karena membuang-buang query DB)
+
+            // FILTER UJIAN
+            $isKelasAkhir = in_array($levelNama, ['3 TPQ', '6 IBT', '3 TSA']);
+            $queryUjian = Ujian::where('tahun_pelajaran_id', $tahunPelajaranId);
+
+            if ($isKelasAkhir) {
+                $queryUjian->whereIn('tipe_ujian', ['IMDA 1', 'IMNI']);
+            } else {
+                $queryUjian->whereIn('tipe_ujian', ['IMDA 1', 'IMDA 2']);
+            }
+            $daftarUjian = $queryUjian->get();
+
+            // JIKA AGENDA UJIAN DIKLIK
+            if ($request->ujian_id) {
+                $ujian = Ujian::find($request->ujian_id);
+
+                // Mengambil jadwal (sebagai pengganti filter mapel lama)
+                $jadwals = JadwalUjian::with('mataPelajaran')
+                    ->where('ujian_id', $ujian->id)
+                    ->where('level_id', $ruanganTerpilih->level_id)
+                    ->orderBy('tanggal_ujian', 'asc')
+                    ->get();
+
+
+                // Pembagian Bulan Tagihan per Semester Berjalan
+                $namaSemester = $ujian->semester_relasi->nama_semester ?? '';
+                $bulanSemester = (str_contains($namaSemester, '1') || str_contains(strtolower($namaSemester), 'ganjil'))
+                    ? ['Syawal', 'Dzul Qadah', 'Dzul Hijjah', 'Muharram', 'Shafar']
+                    : ['Rabiul Awal', 'Rabiul Tsani', 'Jumadal Ula', 'Jumadal Akhir', 'Rajab'];
+
+                // Ambil Nilai yang Sebelumnya Pernah Diinput (Sesuai Jadwal_id)
+                if ($request->jadwal_ujian_id) {
+                    $nilaiExisting = NilaiUjian::where('ujian_id', $ujian->id)
+                        ->where('jadwal_ujian_id', $request->jadwal_ujian_id)
+                        ->where('ruangan_id', $ruanganTerpilih->id)
+                        ->get()
+                        ->keyBy('murid_id');
+                }
+
+                // =========================================================================
+                // OPTIMASI: BULK QUERY (TARIK DATA MASSAL SEBELUM FOREACH)
+                // =========================================================================
+                $muridIds = $ruanganTerpilih->murids->pluck('id')->toArray();
+
+                // 1. Tarik Massal ID Siswa yang punya Dispensasi
+                $dispensasiMuridIds = DispensasiUjian::where('ujian_id', $ujian->id)
+                    ->whereIn('murid_id', $muridIds)
+                    ->pluck('murid_id')
+                    ->toArray();
+
+                // 2. Tarik Massal ID Jenis Tagihan IMDA 1
+                $jenis_tagihan_id = PengaturanTagihan::where('tahun_pelajaran_id', $ujian->tahun_pelajaran_id)
+                    ->where('level_id', $ruanganTerpilih->level_id)
+                    // Gunakan tipe_ujian agar dinamis, misal mencari kata "%IMDA 1%" atau "%IMNI%"
+                    ->where('nama_tagihan', 'LIKE', '%' . $ujian->tipe_ujian . '%')
+                    ->value('id');
+
+                // 3. Tarik Massal ID Siswa yang SUDAH LUNAS IMDA 1
+                $imdaLunasMuridIds = TagihanMurid::whereIn('murid_id', $muridIds)
+                    ->whereIn('status_bayar', ['Lunas', 'Bebas/Gratis', 'Ditanggung Donatur'])
+                    ->where(function ($q) use ($ruanganTerpilih, $jenis_tagihan_id) {
+                        $q->where('ruangan_id', $ruanganTerpilih->id)
+                            ->where('pengaturan_tagihan_id', $jenis_tagihan_id); // Gunakan where() BUKAN orWhere() agar akurat
+                    })
+                    ->pluck('murid_id')
+                    ->toArray();
+
+                // 4. Tarik Massal ID Siswa yang MENUNGGAK SPP di semester terkait
+                $sppMenunggakMuridIds = TagihanMurid::whereIn('murid_id', $muridIds)
+                    ->where('ruangan_id', $ruanganTerpilih->id)
+                    ->where('status_bayar', 'Belum Lunas')
+                    ->where(function ($q) use ($bulanSemester) {
+                        foreach ($bulanSemester as $bulan) {
+                            $q->orWhere('nama_tagihan_spesifik', 'like', "%SPP $bulan%")
+                                ->orWhere('nama_tagihan_spesifik', 'like', "%Syahriyah $bulan%");
+                        }
+                    })
+                    ->pluck('murid_id')
+                    ->toArray();
+                // =========================================================================
+
+                foreach ($ruanganTerpilih->murids as $murid) {
+                    // Cek data dari array Bulk Query (Tanpa menyentuh database lagi)
+                    $hasDispensasi = in_array($murid->id, $dispensasiMuridIds);
+                    $imdaLunas     = in_array($murid->id, $imdaLunasMuridIds);
+                    $sppMenunggak  = in_array($murid->id, $sppMenunggakMuridIds);
+
+                    if ($hasDispensasi) {
+                        $murid->is_locked = false;
+                        $murid->lock_reason = 'Mendapat Dispensasi / Izin';
+                    } else {
+                        // Jika belum lunas IMDA ATAU menunggak SPP
+                        if (!$imdaLunas || $sppMenunggak) {
+                            $murid->is_locked = true;
+
+                            // Kumpulkan alasan tunggakan
+                            $alasan = [];
+                            if (!$imdaLunas) {
+                                $alasan[] = 'Iuran Ujian (IMDA/IMNI)';
+                            }
+                            if ($sppMenunggak) {
+                                $alasan[] = 'SPP Semester';
+                            }
+
+                            // Gabungkan alasan dengan simbol "&"
+                            $murid->lock_reason = 'Tunggakan: ' . implode(' & ', $alasan);
+                        } else {
+                            $murid->is_locked = false;
+                            $murid->lock_reason = 'Lunas Administrasi';
+                        }
+                    }
+                }
+
+                $muridsWithStatus = $ruanganTerpilih->murids;
+            }
+        }
+
+        return view('nilai-ujian.input-nilai', compact(
+            'daftarTahun',
+            'tahunPelajaranId',
+            'daftarRuangan',
+            'ruanganTerpilih',
+            'daftarUjian',
+            'jadwals',
+            'muridsWithStatus',
+            'nilaiExisting'
+        ));
+    }
+
+
+    public function simpanNilai(Request $request)
+    {
+        // 1. Validasi cukup menggunakan jadwal_ujian_id
+        $request->validate([
+            'ujian_id' => 'required',
+            'ruangan_id' => 'required',
+            'jadwal_ujian_id' => 'required',
+            'nilai' => 'required|array',
+        ]);
+
+        $isPublished = $request->action === 'publish';
+        $jumlahDisimpan = 0;
+
+        DB::beginTransaction();
+        try {
+            foreach ($request->nilai as $muridId => $angka) {
+                // Hanya simpan jika nilai diisi (tidak kosong)
+                if ($angka !== null && $angka !== '') {
+                    NilaiUjian::updateOrCreate(
+                        [
+                            // Kunci Pencarian (Primary Identifiers)
+                            'ujian_id' => $request->ujian_id,
+                            'jadwal_ujian_id' => $request->jadwal_ujian_id,
+                            'ruangan_id' => $request->ruangan_id,
+                            'murid_id' => $muridId,
+                        ],
+                        [
+                            // Data yang diperbarui
+                            'nilai' => $angka,
+                            'is_published' => $isPublished,
+                            'diinput_oleh' => Auth::id() // <-- Wajib diisi sesuai skema Anda
+                        ]
+                    );
+                    $jumlahDisimpan++;
+                }
+            }
+            DB::commit();
+
+            $pesan = $isPublished
+                ? "Berhasil mempublikasikan $jumlahDisimpan nilai santri ke lembar rapor resmi!"
+                : "Berhasil menyimpan $jumlahDisimpan data nilai ke dalam lembaran Draft sementara.";
+
+            return redirect()->back()->with('success', $pesan);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memproses nilai: ' . $e->getMessage());
+        }
+    }
+
+
+    public function inputLeger(Request $request)
+    {
+        $daftarTahun = TahunPelajaran::orderBy('id', 'asc')->get();
+        $tahunPelajaranId = $request->tahun_id ?? TahunPelajaran::where('is_active', true)->value('id') ?? $daftarTahun->first()->id;
+
+        $daftarRuangan = Ruangan::where('tahun_pelajaran_id', $tahunPelajaranId)->berdasarkanHakAkses()->orderBy('id', 'asc')->get();
+
+        $ruanganTerpilih = null;
+        $ujianTerpilih = null;
+        $daftarUjian = collect();
+
+        $jadwals = collect();
+        $murids = collect();
+        $nilaiMatrix = [];
+
+        if ($request->ruangan_id) {
+            $ruanganTerpilih = Ruangan::with('murids')->find($request->ruangan_id);
+            $levelNama = $ruanganTerpilih->level->nama_level ?? '';
+            $isKelasAkhir = in_array($levelNama, ['3 TPQ', '6 IBT', '3 TSA']);
+
+            // Filter Ujian
+            $queryUjian = Ujian::where('tahun_pelajaran_id', $tahunPelajaranId);
+            if ($isKelasAkhir) {
+                $queryUjian->whereIn('tipe_ujian', ['IMDA 1', 'IMNI']);
+            } else {
+                $queryUjian->whereIn('tipe_ujian', ['IMDA 1', 'IMDA 2']);
+            }
+            $daftarUjian = $queryUjian->get();
+
+            // JIKA UJIAN DIPILIH, SUSUN MATRIKS FORM & CEK SYARAT ADMIN
+            if ($request->ujian_id) {
+                $ujianTerpilih = Ujian::find($request->ujian_id);
+                $murids = $ruanganTerpilih->murids;
+
+                $jadwals = JadwalUjian::with('mataPelajaran')
+                    ->where('ujian_id', $ujianTerpilih->id)
+                    ->where('level_id', $ruanganTerpilih->level_id)
+                    ->orderBy('tanggal_ujian', 'asc')
+                    ->get();
+
+                $semuaNilai = NilaiUjian::where('ujian_id', $ujianTerpilih->id)
+                    ->where('ruangan_id', $ruanganTerpilih->id)
+                    ->get();
+
+                foreach ($semuaNilai as $n) {
+                    $nilaiMatrix[$n->murid_id][$n->jadwal_ujian_id] = $n->nilai;
+                }
+
+                // Delegate Evaluasi Syarat Admin ke Service
+                $murids = $this->nilaiUjianService->evaluasiSyaratAdmin($ujianTerpilih, $ruanganTerpilih, $murids);
+            }
+        }
+
+        return view('nilai-ujian.input-leger', compact(
+            'daftarTahun',
+            'tahunPelajaranId',
+            'daftarRuangan',
+            'daftarUjian',
+            'ruanganTerpilih',
+            'ujianTerpilih',
+            'jadwals',
+            'murids',
+            'nilaiMatrix'
+        ));
+    }
+
+    public function storeLeger(Request $request)
+    {
+        $request->validate([
+            'ruangan_id' => 'required|exists:ruangans,id',
+            'ujian_id'   => 'required|exists:ujians,id',
+            'nilai'      => 'required|array',
+            'action'     => 'nullable|in:draft,publish'
+        ]);
+
+        $aksi = $request->action ?? 'draft';
+
+        try {
+            $isPublished = $this->nilaiUjianService->simpanNilaiLeger(
+                $request->ruangan_id,
+                $request->ujian_id,
+                $request->nilai,
+                $aksi,
+                Auth::id()
+            );
+
+            $pesan = $isPublished
+                ? 'Semua nilai berhasil disimpan dan dipublikasikan ke Leger/Rapor!'
+                : 'Draf nilai berhasil disimpan sementara.';
+
+            return back()->with('success', $pesan);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menyimpan nilai: ' . $e->getMessage());
+        }
+    }
+
+
+    public function laporanLeger(Request $request)
+    {
+        $daftarTahun = TahunPelajaran::orderBy('id', 'asc')->get();
+        $tahunPelajaranId = $request->tahun_id ?? TahunPelajaran::where('is_active', true)->value('id') ?? $daftarTahun->first()->id;
+
+        $daftarRuangan = Ruangan::where('tahun_pelajaran_id', $tahunPelajaranId)->berdasarkanHakAkses()->orderBy('id', 'asc')->get();
+
+        $ruanganTerpilih = null;
+        $ujianTerpilih = null;
+        $daftarUjian = collect();
+
+        // Variabel penampung hasil leger
+        $kolomMapel = []; // Akan berisi ['id_jadwal' => 'Nama Mapel']
+        $dataLeger = collect();
+
+        if ($request->ruangan_id) {
+            $ruanganTerpilih = Ruangan::with('murids')->find($request->ruangan_id);
+            $levelNama = $ruanganTerpilih->level->nama_level ?? '';
+
+            // Filter Ujian Berdasarkan Kelas
+            $isKelasAkhir = in_array($levelNama, ['3 TPQ', '6 IBT', '3 TSA']);
+            $queryUjian = Ujian::where('tahun_pelajaran_id', $tahunPelajaranId);
+
+            if ($isKelasAkhir) {
+                $queryUjian->whereIn('tipe_ujian', ['IMDA 1', 'IMNI']);
+            } else {
+                $queryUjian->whereIn('tipe_ujian', ['IMDA 1', 'IMDA 2']);
+            }
+            $daftarUjian = $queryUjian->get();
+
+            // JIKA UJIAN DIPILIH, MULAI KALKULASI LEGER RANKING
+            if ($request->ujian_id) {
+                $ujianTerpilih = Ujian::find($request->ujian_id);
+                $murids = $ruanganTerpilih->murids;
+
+                // 1. Ekstrak Daftar Mata Pelajaran dari Jadwal Ujian
+                $jadwals = JadwalUjian::with('mataPelajaran')
+                    ->where('ujian_id', $ujianTerpilih->id)
+                    ->where('level_id', $ruanganTerpilih->level_id)
+                    ->orderBy('tanggal_ujian', 'asc')
+                    ->get();
+
+                foreach ($jadwals as $jadwal) {
+                    $namaMapel = $jadwal->mata_pelajaran_id ? ($jadwal->mataPelajaran->nama_mapel ?? '-') : $jadwal->nama_mata_pelajaran_custom;
+                    $kolomMapel[$jadwal->id] = $namaMapel;
+                }
+
+                // 2. Ambil SEMUA nilai di kelas dan ujian ini
+                $semuaNilai = NilaiUjian::where('ujian_id', $ujianTerpilih->id)
+                    ->where('ruangan_id', $ruanganTerpilih->id)
+                    ->get();
+
+                // 3. Susun Data Per Murid & Kalkulasi Total
+                foreach ($murids as $murid) {
+                    $nilaiMurid = $semuaNilai->where('murid_id', $murid->id);
+                    $total = 0;
+                    $jumlahMapelBerisiNilai = 0;
+                    $mapelNilai = [];
+
+                    foreach ($kolomMapel as $jadwalId => $namaMapel) {
+
+                        $n = $nilaiMurid->firstWhere('jadwal_ujian_id', $jadwalId);
+
+                        $angka = $n ? $n->nilai : null;
+                        $isPub = $n ? $n->is_published : false;
+
+                        // 🔴 PERBAIKAN: Gunakan $jadwalId sebagai Key agar tidak tumpang tindih
+                        $mapelNilai[$jadwalId] = [
+                            'nama_mapel'   => $namaMapel,
+                            'nilai'        => $angka,
+                            'is_published' => $isPub
+                        ];
+
+                        if ($angka !== null) {
+                            $total += (float) $angka;
+                            $jumlahMapelBerisiNilai++;
+                        }
+                    }
+
+                    $dataLeger->push((object)[
+                        'murid'           => $murid,
+                        'nilai_per_mapel' => $mapelNilai,
+                        'total'           => $total,
+                        'rata_rata'       => $jumlahMapelBerisiNilai > 0 ? round($total / $jumlahMapelBerisiNilai, 2) : 0,
+                    ]);
+                }
+
+                // 4. Urutkan berdasarkan Ranking (Total Tertinggi ke Terendah)
+                $dataLeger = $dataLeger->sortByDesc('total')->values();
+            }
+        }
+
+        if ($request->has('print')) {
+            return view('cetak-baru.cetak_leger_ujian', compact(
+                'ruanganTerpilih',
+                'ujianTerpilih',
+                'kolomMapel',
+                'dataLeger'
+            ));
+        }
+
+        return view('nilai-ujian.laporan-leger', compact(
+            'daftarTahun',
+            'tahunPelajaranId',
+            'daftarRuangan',
+            'daftarUjian',
+            'ruanganTerpilih',
+            'ujianTerpilih',
+            'kolomMapel',
+            'dataLeger'
+        ));
+    }
+}

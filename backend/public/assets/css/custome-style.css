@@ -1,0 +1,490 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+/* --- 1. M3 EXPRESSIVE & OLED COLOR VARIABLES --- */
+:root {
+    /* M3 Green Brand Colors */
+    --brand-color: #146c2e;
+    --brand-hover: #0e4e21;
+    --brand-container: #a6fbaa;
+    --brand-on-container: #002106;
+
+    /* Light Theme Surfaces */
+    --m3-surface: #fafafa;
+    --m3-surface-variant: #fafafa; /* zinc-100 */
+    --m3-on-surface: #18181b; /* zinc-900 */
+    --m3-border: #e4e4e7; /* zinc-200 */
+
+    /* Scrollbars */
+    --scrollbar-bg: transparent;
+    --scrollbar-thumb: rgba(113, 113, 122, 0.3); /* zinc-500/30 */
+    --scrollbar-thumb-hover: rgba(82, 82, 91, 0.6); /* zinc-600/60 */
+}
+
+/* OLED Dark Mode (Dikendalikan oleh class .dark di <html>) */
+html.dark {
+    --brand-color: #3bc05b; /* <--- UBAH DI SINI (Sebelumnya #8add90) */
+    --brand-hover: #4de673; /* (Opsional) sedikit lebih terang untuk efek hover */
+    --brand-container: #00531e;
+    --brand-on-container: #a6fbaa;
+
+    /* True Black OLED Support */
+    --m3-surface: #000000; /* Hitam Pekat */
+    --m3-surface-variant: #18181b; /* zinc-900 untuk Elevasi/Cards */
+    --m3-on-surface: #fafafa; /* zinc-100 */
+    --m3-border: #27272a; /* zinc-800 */
+
+    --scrollbar-thumb: rgba(255, 255, 255, 0.15);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+}
+
+/* --- 2. BASE STYLES --- */
+body {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    background-color: var(--m3-surface);
+    color: var(--m3-on-surface);
+    -webkit-tap-highlight-color: transparent;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+}
+
+/* --- 3. CUSTOM M3 COMPONENT CLASSES --- */
+
+/* M3 Card (Compact & OLED Elevated) */
+.m3-card {
+    background-color: var(--m3-surface);
+    border: 1px solid var(--m3-border);
+    border-radius: 1.5rem; /* 24px - Rounded M3 */
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+html.dark .m3-card {
+    background-color: var(
+        --m3-surface-variant
+    ); /* Zinc-900 mematikan shadow, menggunakan brightness untuk elevasi */
+    box-shadow: none;
+}
+
+/* M3 Input (Dense / Mobile-First 40px) */
+.m3-input {
+    background-color: var(--m3-surface); /* Light: Putih, Dark: Hitam Pekat */
+    color: var(--m3-on-surface);
+    border: 1px solid var(--m3-border); /* Kunci agar border selalu terlihat */
+    /* border-radius: 9999px; Pill Shape */
+    border-radius: 0.75rem;
+    padding: 0.5rem 1.25rem;
+    min-height: 40px; /* Minimal target area sentuh */
+    font-size: 13px; /* Compact font */
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    outline: none;
+}
+
+/* Penyesuaian khusus OLED Dark Mode */
+html.dark .m3-input {
+    background-color: #000000; /* Memberikan efek kedalaman (sunken/terbenam) di atas card */
+    border: 1px solid #3f3f46; /* zinc-700: Garis border lebih terang agar kontras dengan card */
+}
+
+/* Saat Input di-klik / Fokus */
+.m3-input:focus {
+    border-color: var(--brand-color);
+    /* Tambahan outline tipis 1px + glow 4px agar fokus lebih tajam */
+    box-shadow:
+        0 0 0 1px var(--brand-color),
+        0 0 0 4px rgba(20, 108, 46, 0.15);
+}
+
+html.dark .m3-input:focus {
+    border-color: var(--brand-color);
+    box-shadow:
+        0 0 0 1px var(--brand-color),
+        0 0 0 4px rgba(138, 221, 144, 0.15);
+}
+
+/* M3 Button Primary (Dense 40px) */
+.m3-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--brand-color);
+    color: #ffffff;
+    border-radius: 0.75rem;
+    /* border-radius: 9999px; */
+    padding: 0.5rem 1.5rem;
+    min-height: 40px;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    outline: none;
+    gap: 0.5rem;
+}
+.m3-btn-primary:hover {
+    background-color: var(--brand-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.m3-btn-primary:active {
+    transform: scale(0.96);
+    box-shadow: none;
+}
+html.dark .m3-btn-primary {
+    color: #002106; /* Text gelap di atas tombol hijau terang untuk M3 Dark Mode */
+}
+
+/* --- 4. SCROLLBAR M3 --- */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+}
+
+::-webkit-scrollbar {
+    width: 8px; /* Lebih slim/compact */
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-bg);
+    border-radius: 9999px;
+    margin-block: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* --- 5. ANIMATIONS & LOADER --- */
+
+/* Loader diperkecil menjadi 40px (Compact) */
+.loader {
+    border: 3px solid var(--brand-container);
+    border-top: 3px solid var(--brand-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 0.8s cubic-bezier(0.2, 0, 0, 1) infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.modal-enter {
+    animation: modalFadeIn 0.4s cubic-bezier(0.2, 0, 0, 1) forwards; /* M3 Emphasized Decelerate */
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* --- 6. UTILITIES & JS TARGET CLASSES (DIPERTAHANKAN) --- */
+.vert-text {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+}
+
+#sidebarAside {
+    transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.sidebar-open {
+    transform: translateX(0) !important;
+}
+
+.submenu-content {
+    transition:
+        max-height 0.4s cubic-bezier(0.2, 0, 0, 1),
+        opacity 0.3s ease-in-out;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.submenu-open {
+    max-height: 600px;
+    opacity: 1;
+}
+
+.chevron-icon {
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.rotate-90 {
+    transform: rotate(90deg);
+}
+
+@media (min-width: 768px) {
+    .sidebar-collapsed {
+        margin-left: -16.25rem !important; /* Menyesuaikan dengan lebar 260px pada Sidebar Dense yang baru */
+    }
+}
+
+/* =========================================
+   4. DATA TABLES (M3 Table)
+   ========================================= */
+.m3-table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+    white-space: nowrap;
+}
+
+/* Head */
+.m3-table thead {
+    background-color: #fafafa; /* zinc-50 */
+    border-bottom: 1px solid #e4e4e7; /* zinc-200 */
+    transition:
+        background-color 0.3s,
+        border-color 0.3s;
+}
+
+.dark .m3-table thead {
+    background-color: rgba(24, 24, 27, 0.5); /* zinc-900/50 */
+    border-bottom-color: #27272a; /* zinc-800 */
+}
+
+/* TH Cells */
+.m3-table th {
+    padding: 0.75rem 1.25rem;
+    font-size: 11px;
+    font-weight: 700;
+    color: #71717a; /* zinc-500 */
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    vertical-align: middle;
+}
+
+.dark .m3-table th {
+    color: #a1a1aa; /* zinc-400 */
+}
+
+/* Body Rows */
+.m3-table tbody tr {
+    border-bottom: 1px solid #f4f4f5; /* divide-zinc-100 */
+    transition: background-color 0.2s;
+}
+
+.m3-table tbody tr:last-child {
+    border-bottom: none; /* Hilangkan garis di baris paling akhir */
+}
+
+.m3-table tbody tr:hover {
+    background-color: rgba(250, 250, 250, 0.5); /* hover:bg-zinc-50/50 */
+}
+
+.dark .m3-table tbody tr {
+    border-bottom-color: rgba(39, 39, 42, 0.6); /* dark:divide-zinc-800/60 */
+}
+
+.dark .m3-table tbody tr:hover {
+    background-color: rgba(24, 24, 27, 0.3); /* hover:bg-zinc-900/30 */
+}
+
+/* TD Cells */
+.m3-table td {
+    padding: 0.625rem 1.25rem;
+    vertical-align: middle;
+}
+
+/* =========================================
+   6. DROPDOWN MENU M3
+   ========================================= */
+.m3-dropdown-menu {
+    position: absolute;
+    z-index: 50;
+    margin-top: 0.5rem;
+    min-width: 12rem;
+    border-radius: 1rem;
+    background-color: #ffffff;
+    border: 1px solid #e4e4e7; /* zinc-200 */
+    box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 0.5rem 0;
+    animation: modalFadeIn 0.2s ease-out forwards;
+}
+
+.dark .m3-dropdown-menu {
+    background-color: #18181b; /* zinc-900 */
+    border-color: #27272a; /* zinc-800 */
+}
+
+.m3-dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 0.625rem 1.25rem;
+    font-size: 13px;
+    font-weight: 700;
+    color: #3f3f46; /* zinc-700 */
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.m3-dropdown-item:hover {
+    background-color: #fafafa; /* zinc-50 */
+}
+
+.dark .m3-dropdown-item {
+    color: #d4d4d8; /* zinc-300 */
+}
+
+.dark .m3-dropdown-item:hover {
+    background-color: rgba(39, 39, 42, 0.5); /* zinc-800/50 */
+}
+
+/* Garis Pemisah (Divider) di dalam Dropdown */
+.m3-dropdown-divider {
+    margin: 0.25rem 0;
+    border-top: 1px solid #f4f4f5; /* zinc-100 */
+}
+
+.dark .m3-dropdown-divider {
+    border-top-color: #27272a; /* zinc-800 */
+}
+
+/* Styling Select2 gaya M3 */
+.select2-container .select2-selection--single {
+    height: 42px !important;
+    border-radius: 0.75rem !important;
+    /* rounded-xl */
+    border: 1px solid #e4e4e7 !important;
+    /* border-zinc-200 */
+    background-color: #fafafa !important;
+    /* bg-zinc-50 */
+    display: flex !important;
+    align-items: center !important;
+    padding-left: 0.5rem;
+    outline: none !important;
+}
+
+.select2-container--default
+    .select2-selection--single
+    .select2-selection__arrow {
+    height: 40px !important;
+    right: 10px !important;
+}
+
+.select2-container--default
+    .select2-selection--single
+    .select2-selection__rendered {
+    color: #3f3f46 !important;
+    /* zinc-700 */
+    font-size: 0.875rem !important;
+    /* text-sm */
+    font-weight: 600 !important;
+}
+
+.select2-dropdown {
+    border-radius: 0.75rem !important;
+    border: 1px solid #e4e4e7 !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    overflow: hidden;
+}
+
+.select2-search__field {
+    border-radius: 0.5rem !important;
+    border: 1px solid #e4e4e7 !important;
+    outline: none !important;
+}
+
+.select2-search__field:focus {
+    border-color: #3b82f6 !important;
+    /* primary border */
+}
+
+/* Dark Mode Select2 */
+.dark .select2-container .select2-selection--single {
+    border-color: #27272a !important;
+    /* border-zinc-800 */
+    background-color: #18181b !important;
+    /* bg-zinc-900 */
+}
+
+.dark
+    .select2-container--default
+    .select2-selection--single
+    .select2-selection__rendered {
+    color: #e4e4e7 !important;
+    /* zinc-200 */
+}
+
+.dark .select2-dropdown {
+    background-color: #18181b !important;
+    border-color: #27272a !important;
+}
+
+.dark .select2-search__field {
+    background-color: #27272a !important;
+    border-color: #3f3f46 !important;
+    color: #fff !important;
+}
+
+.dark .select2-container--default .select2-results__option--selected {
+    background-color: #27272a !important;
+}
+
+.dark
+    .select2-container--default
+    .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: #3b82f6 !important;
+    /* bg-primary */
+    color: white !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d4d4d8;
+    border-radius: 10px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #3f3f46;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a1a1aa;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #52525b;
+}

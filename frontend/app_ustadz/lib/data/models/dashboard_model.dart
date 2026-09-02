@@ -1,0 +1,127 @@
+class DashboardModel {
+  final bool isLiburHariIni;
+  final String? keteranganLiburHariIni;
+  final int totalJadwalMingguan;
+  final int jadwalHariIni;
+  final int presensiSelesaiHariIni;
+  final int totalMuridWali;
+  final List<JadwalHariIniItem> jadwalHariIniList;
+  final List<PengumumanItem> pengumumanList;
+
+  DashboardModel({
+    this.isLiburHariIni = false,
+    this.keteranganLiburHariIni,
+    required this.totalJadwalMingguan,
+    required this.jadwalHariIni,
+    required this.presensiSelesaiHariIni,
+    required this.totalMuridWali,
+    required this.jadwalHariIniList,
+    required this.pengumumanList,
+  });
+
+  factory DashboardModel.fromJson(Map<String, dynamic> json) {
+    final stats = json['statistik'] ?? {};
+    final rawJadwal = json['jadwal_hari_ini'] as List? ?? [];
+    final rawPengumuman = json['pengumuman'] as List? ?? [];
+
+    return DashboardModel(
+      isLiburHariIni: json['is_libur_hari_ini'] ?? false,
+      keteranganLiburHariIni: json['keterangan_libur_hari_ini'],
+      totalJadwalMingguan: stats['total_jadwal_mingguan'] ?? 0,
+      jadwalHariIni: stats['jadwal_hari_ini'] ?? 0,
+      presensiSelesaiHariIni: stats['presensi_selesai_hari_ini'] ?? 0,
+      totalMuridWali: stats['total_murid_wali'] ?? 0,
+      jadwalHariIniList: rawJadwal
+          .map((e) => JadwalHariIniItem.fromJson(e))
+          .toList(),
+      pengumumanList: rawPengumuman
+          .map((e) => PengumumanItem.fromJson(e))
+          .toList(),
+    );
+  }
+}
+
+class JadwalHariIniItem {
+  final int id;
+  final String jamKe;
+  final String jam;
+  final String mapel;
+  final String kelas;
+  final bool sudahAbsen;
+
+  JadwalHariIniItem({
+    required this.id,
+    required this.jamKe,
+    required this.jam,
+    required this.mapel,
+    required this.kelas,
+    required this.sudahAbsen,
+  });
+
+  factory JadwalHariIniItem.fromJson(Map<String, dynamic> json) {
+    return JadwalHariIniItem(
+      id: json['id'] ?? 0,
+      jamKe: json['jam_ke']?.toString() ?? '',
+      jam: json['jam'] ?? '',
+      mapel: json['mapel'] ?? '',
+      kelas: json['kelas'] ?? '',
+      sudahAbsen: json['sudah_absen'] ?? false,
+    );
+  }
+}
+
+class PengumumanItem {
+  final int id;
+  final String judul;
+  final String konten;
+  final String tipe;
+  final String tanggalMulai;
+
+  PengumumanItem({
+    required this.id,
+    required this.judul,
+    required this.konten,
+    required this.tipe,
+    required this.tanggalMulai,
+  });
+
+  factory PengumumanItem.fromJson(Map<String, dynamic> json) {
+    return PengumumanItem(
+      id: json['id'] ?? 0,
+      judul: json['judul'] ?? json['nama_pengumuman'] ?? '',
+      konten: json['konten'] ?? json['isi'] ?? '',
+      tipe: json['tipe'] ?? json['kategori'] ?? 'Info',
+      tanggalMulai: json['tanggal_mulai'] ?? json['created_at'] ?? '',
+    );
+  }
+}
+
+class KalendarPendidikanItem {
+  final int id;
+  final String namaKegiatan;
+  final String tanggalMulai;
+  final String? tanggalSelesai;
+  final String? keterangan;
+  final String? tipe;
+
+  KalendarPendidikanItem({
+    required this.id,
+    required this.namaKegiatan,
+    required this.tanggalMulai,
+    this.tanggalSelesai,
+    this.keterangan,
+    this.tipe,
+  });
+
+  factory KalendarPendidikanItem.fromJson(Map<String, dynamic> json) {
+    return KalendarPendidikanItem(
+      id: json['id'] ?? 0,
+      namaKegiatan:
+          json['nama_kegiatan'] ?? json['kegiatan'] ?? json['judul'] ?? '',
+      tanggalMulai: json['tanggal_mulai'] ?? '',
+      tanggalSelesai: json['tanggal_selesai'],
+      keterangan: json['keterangan'],
+      tipe: json['tipe'] ?? json['kategori'] ?? 'Akademik',
+    );
+  }
+}

@@ -1,0 +1,9 @@
+﻿{
+  "name": "mdt-hidayatus-shibyan-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix backend run dev",
+    "build": "npm --prefix backend run build",
+    "install:backend": "npm --prefix backend install"
+  }
+}

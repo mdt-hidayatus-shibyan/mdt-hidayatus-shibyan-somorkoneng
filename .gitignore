@@ -1,0 +1,48 @@
+﻿# Environment & Secrets
+.env
+.env.*
+.env.backup
+.env.production
+auth.json
+
+# Dependencies
+node_modules/
+vendor/
+
+# Logs & Databases
+*.log
+*.sqlite
+*.sqlite3
+
+# IDE & OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Laravel Backend specifics
+backend/public/storage
+backend/public/build
+backend/public/hot
+backend/storage/*.key
+backend/storage/pail
+backend/.phpunit.result.cache
+backend/_ide_helper*.php
+backend/.phpstorm.meta.php
+
+# Flutter & Dart (Frontend apps)
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.pub-cache/
+**/.pub/
+**/build/
+**/android/.gradle
+**/android/local.properties
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh

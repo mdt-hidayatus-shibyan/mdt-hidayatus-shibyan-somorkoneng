@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Material 3 Expressive & Glassmorphism Component Utilities */
+@layer components {
+    /* M3 Glassmorphism Card */
+    .m3-glass-card {
+        @apply bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl md:rounded-3xl shadow-sm dark:shadow-none transition-all duration-300;
+    }
+
+    /* M3 Solid Card */
+    .m3-card {
+        @apply bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl md:rounded-3xl shadow-sm dark:shadow-none transition-all duration-300;
+    }
+
+    /* M3 Primary Button (Dense & Ergonomic min-h 40px/48px) */
+    .m3-btn-primary {
+        @apply inline-flex items-center justify-center gap-2 bg-primary dark:bg-primary-dark text-white dark:text-zinc-950 font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-[13px] shadow-sm hover:shadow-md hover:bg-primary-700 dark:hover:bg-primary-400 active:scale-95 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:focus:ring-primary-dark/30 disabled:opacity-50 disabled:pointer-events-none;
+    }
+
+    /* M3 Secondary Button */
+    .m3-btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-[13px] border border-zinc-200 dark:border-zinc-700 active:scale-95 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-400/30 disabled:opacity-50 disabled:pointer-events-none;
+    }
+
+    /* M3 Danger Button */
+    .m3-btn-danger {
+        @apply inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500 text-white font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-[13px] shadow-sm hover:shadow active:scale-95 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30 disabled:opacity-50 disabled:pointer-events-none;
+    }
+
+    /* M3 Ghost / Text Button */
+    .m3-btn-text {
+        @apply inline-flex items-center justify-center gap-1.5 text-primary dark:text-primary-dark font-bold hover:underline min-h-[40px] px-3 py-1.5 text-[13px] transition-colors focus:outline-none;
+    }
+
+    /* M3 Glassmorphism Input Field */
+    .m3-input-glass {
+        @apply block w-full bg-white/70 dark:bg-black/80 backdrop-blur-md border border-zinc-300 dark:border-zinc-700 rounded-xl md:rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 min-h-[40px] px-3.5 text-[13px] font-medium focus:border-primary dark:focus:border-primary-dark focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary-dark/20 transition-all outline-none;
+    }
+
+    /* M3 Standard Input Field */
+    .m3-input {
+        @apply block w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-700 rounded-xl md:rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 min-h-[40px] px-3.5 text-[13px] font-medium focus:border-primary dark:focus:border-primary-dark focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary-dark/20 transition-all outline-none;
+    }
+
+    /* M3 Compact Table */
+    .m3-table {
+        @apply w-full text-left border-collapse whitespace-nowrap text-[13px];
+    }
+    .m3-table thead {
+        @apply bg-zinc-50/80 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800 transition-colors duration-300;
+    }
+    .m3-table th {
+        @apply px-4 py-3 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider align-middle;
+    }
+    .m3-table tbody tr {
+        @apply border-b border-zinc-100 dark:border-zinc-800/60 hover:bg-zinc-50/60 dark:hover:bg-zinc-900/40 transition-colors duration-150;
+    }
+    .m3-table tbody tr:last-child {
+        @apply border-b-0;
+    }
+    .m3-table td {
+        @apply px-4 py-3 align-middle text-zinc-800 dark:text-zinc-200 font-medium;
+    }
+
+    /* M3 Dropdown Menu */
+    .m3-dropdown-menu {
+        @apply absolute z-50 mt-2 min-w-[12rem] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl p-1.5 transition-all duration-200;
+    }
+    .m3-dropdown-item {
+        @apply flex items-center gap-2 px-3 py-2 text-[13px] font-semibold text-zinc-700 dark:text-zinc-300 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-white transition-all duration-150;
+    }
+    .m3-dropdown-divider {
+        @apply my-1 border-t border-zinc-100 dark:border-zinc-800;
+    }
+}
