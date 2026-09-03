@@ -57,24 +57,27 @@ use App\Http\Controllers\Ujian\UjianController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UstadzController;
 use App\Http\Controllers\WaliMuridController;
+use App\Http\Controllers\SpmbController;
+use App\Http\Controllers\Admin\SpmbAdminController;
 use Illuminate\Support\Facades\Route;
 
-
-
-
-
-
-
-
-
-
-
-
-Route::get('/', [HomeController::class, 'index'])->name('home.index');
-Route::get('/profil-madrasah', [HomeController::class, 'profilMadrasah'])->name('home.profil');
-Route::get('/spmb', [HomeController::class, 'spmb'])->name('home.spmb');
-Route::get('/spmb/form-spmb', [HomeController::class, 'spmbForm'])->name('home.spmb.form-spmb');
-Route::get('/feedback', [HomeController::class, 'feedback'])->name('home.feedback');
+// ==========================================
+// SPMB ONLINE (PUBLIK / AUTH LAYOUT)
+// ==========================================
+Route::prefix('spmb')->name('spmb.')->group(function () {
+    Route::get('/', [SpmbController::class, 'index'])->name('index');
+    Route::get('/form', [SpmbController::class, 'form'])->name('form');
+    Route::post('/check-kk', [SpmbController::class, 'checkKk'])->name('check-kk');
+    Route::get('/daftar-wali', [SpmbController::class, 'formDaftarWali'])->name('daftar-wali');
+    Route::post('/daftar-wali', [SpmbController::class, 'storeWali'])->name('store-wali');
+    Route::get('/daftar-santri/{wali_murid_id}', [SpmbController::class, 'formDaftarSantri'])->name('daftar-santri');
+    Route::post('/daftar-santri', [SpmbController::class, 'storeSantri'])->name('store-santri');
+    Route::post('/', [SpmbController::class, 'store'])->name('store');
+    Route::get('/search-kk', [SpmbController::class, 'searchKk'])->name('search-kk');
+    Route::get('/bukti/{nomor_pendaftaran}', [SpmbController::class, 'bukti'])->name('bukti');
+    Route::get('/bukti/{nomor_pendaftaran}/cetak', [SpmbController::class, 'cetakBukti'])->name('cetak-bukti');
+    Route::get('/status', [SpmbController::class, 'cekStatus'])->name('cek-status');
+});
 
 Route::get('/', function () {
     return view('auth.login');
@@ -159,6 +162,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::resource('wali-murid', WaliMuridController::class);
 
+    // -- SPMB Admin --
+    Route::prefix('spmb-admin')->name('spmb-admin.')->controller(SpmbAdminController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/export-excel', 'exportExcel')->name('export-excel');
+        Route::get('/scan/{nomor}', 'scan')->name('scan');
+        Route::get('/{id}/detail-json', 'getDetailJson')->name('detail-json');
+        Route::post('/{id}/verifikasi', 'verifikasi')->name('verifikasi');
+        Route::post('/{id}/tolak', 'tolak')->name('tolak');
+        Route::get('/{id}/cetak-diterima', 'cetakBuktiPenerimaan')->name('cetak-diterima');
+    });
+
     // -- Murid --
     Route::prefix('murid')->name('murid.')->group(function () {
         Route::get('/yatim', [MuridController::class, 'filterYatim'])->name('yatim');
@@ -170,7 +184,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/{id}/update-foto', [MuridController::class, 'updateFoto'])->name('updateFoto');
     });
     Route::resource('murid', MuridController::class);
-
 
     Route::get('/kartu-pelajar', [KartuPelajarController::class, 'index'])->name('kartu-pelajar.index');
     Route::post('/kartu-pelajar/cetak', [KartuPelajarController::class, 'cetak'])->name('kartu-pelajar.cetak');

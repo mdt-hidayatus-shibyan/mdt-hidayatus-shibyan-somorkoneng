@@ -8,7 +8,7 @@
 </head>
 
 <body
-    class="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans antialiased selection:bg-primary/20 selection:text-primary dark:selection:bg-primary-dark/30 dark:selection:text-primary-dark flex items-center justify-center transition-colors duration-300 relative overflow-hidden">
+    class="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans antialiased selection:bg-primary/20 selection:text-primary dark:selection:bg-primary-dark/30 dark:selection:text-primary-dark transition-colors duration-300 relative overflow-x-hidden overflow-y-auto">
 
     <!-- Global Ambient Blurs (M3 Organic Glow - OLED Background) -->
     <div
@@ -18,10 +18,11 @@
         style="animation-delay: 3s;">
     </div>
 
-    <div class="min-h-screen w-full flex flex-col justify-center items-center p-4 sm:p-6 lg:p-8 relative z-10">
+    <div
+        class="min-h-screen w-full flex flex-col justify-center items-center py-6 sm:py-10 px-3 sm:px-6 lg:px-8 relative z-10">
 
         <!-- Content Slot Container -->
-        <div class="w-full max-w-[440px]">
+        <div class="w-full {{ $maxWidth ?? 'max-w-[440px]' }} transition-all duration-300">
             <!-- Main Auth Glass Card -->
             <div
                 class="m3-glass-card w-full mb-2 !p-6 sm:!p-8 !rounded-[2rem] sm:!rounded-[2.5rem] shadow-xl dark:shadow-none relative overflow-hidden transition-all duration-300">
@@ -57,6 +58,7 @@
     </div>
 
     @stack('scripts')
+    {{-- @stack('script') --}}
 
 </body>
 

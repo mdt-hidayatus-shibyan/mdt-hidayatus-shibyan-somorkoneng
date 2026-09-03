@@ -98,6 +98,17 @@
                 <i class="bi bi-box-arrow-in-right text-base font-bold"></i>
             </button>
         </div>
+
+        <!-- SPMB Online Link -->
+        <div class="pt-3 border-t border-zinc-200/70 dark:border-zinc-800 text-center">
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                Pendaftaran Murid Baru?
+                <a href="{{ route('spmb.form') }}"
+                    class="font-bold text-primary dark:text-primary-dark hover:underline ml-1">
+                    Daftar SPMB Online <i class="bi bi-arrow-right"></i>
+                </a>
+            </p>
+        </div>
     </form>
 
     @push('scripts')

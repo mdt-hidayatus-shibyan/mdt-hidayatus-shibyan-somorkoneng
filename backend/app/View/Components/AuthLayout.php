@@ -8,12 +8,14 @@ use Illuminate\View\Component;
 
 class AuthLayout extends Component
 {
+    public string $maxWidth;
+
     /**
      * Create a new component instance.
      */
-    public function __construct()
+    public function __construct(string $maxWidth = 'max-w-[440px]')
     {
-        //
+        $this->maxWidth = $maxWidth;
     }
 
     /**

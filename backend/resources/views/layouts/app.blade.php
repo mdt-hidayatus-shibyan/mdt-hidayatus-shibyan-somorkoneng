@@ -98,6 +98,8 @@
         </script>
 
         @stack('script')
+        @stack('scripts')
+    </div>
 
 </body>
 

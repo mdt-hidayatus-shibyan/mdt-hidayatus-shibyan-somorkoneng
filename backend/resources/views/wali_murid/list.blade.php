@@ -91,7 +91,7 @@
                         ? 'bg-primary/10 dark:bg-primary-dark/20 text-primary dark:text-primary-dark border border-primary/20 hover:bg-primary/20'
                         : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}"
                     title="Lihat Anggota Keluarga">
-                    <i class="bi bi-people-fill mr-1.5 text-xs"></i> {{ $wali->murids_count }} Santri
+                    <i class="bi bi-people-fill mr-1.5 text-xs"></i> {{ $wali->murids_count }} Murid
                 </a>
             @endcan
 
@@ -116,4 +116,3 @@
         {{ $walis->links('vendor.pagination.custom') }}
     </div>
 @endif
-
