@@ -3,7 +3,10 @@
 namespace App\Repositories;
 
 use App\Models\Murid;
+use App\Models\TahunPelajaran;
+use App\Models\WaliMurid;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as SupportCollection;
 
 class MuridRuanganRepository
 {
@@ -37,5 +40,52 @@ class MuridRuanganRepository
         return $query->orderBy('jenis_kelamin', 'asc') // 1. Pisahkan L/P
             ->orderBy('nama_lengkap', 'asc')  // 2. Urutkan nama sesuai abjad
             ->get();
+    }
+
+    /**
+     * Mengambil data wali murid aktif dikelompokkan berdasarkan kode kampung,
+     * beserta data santri/murid aktif dan ruangan mereka di tahun ajaran tertentu.
+     *
+     * @param int|string|null $tahun_pelajaran_id
+     * @param int|string|null $kampung_id
+     * @return SupportCollection
+     */
+    public function getWaliMuridAktifGroupedByKampung($tahun_pelajaran_id = null, $kampung_id = null): SupportCollection
+    {
+        if (!$tahun_pelajaran_id) {
+            $tahunAktif = TahunPelajaran::where('is_active', true)->first();
+            $tahun_pelajaran_id = $tahunAktif?->id;
+        }
+
+        $query = WaliMurid::with([
+            'kampung',
+            'murids' => function ($q) use ($tahun_pelajaran_id) {
+                $q->where('status', 'Aktif')
+                    ->with(['ruangans' => function ($rq) use ($tahun_pelajaran_id) {
+                        if ($tahun_pelajaran_id) {
+                            $rq->where('murid_ruangans.tahun_pelajaran_id', $tahun_pelajaran_id);
+                        }
+                    }, 'ruanganMasuk'])
+                    ->orderBy('jenis_kelamin', 'asc')
+                    ->orderBy('nama_lengkap', 'asc');
+            }
+        ])
+            ->where('is_active', true);
+
+        if ($kampung_id) {
+            $query->where('kampung_id', $kampung_id);
+        }
+
+        $walis = $query->get();
+
+        return $walis->sortBy(function ($wali) {
+            $kode = $wali->kampung ? str_pad($wali->kampung->kode, 4, '0', STR_PAD_LEFT) : '9999';
+            return $kode . '_' . ($wali->nama_kepala_keluarga ?? '');
+        })->groupBy(function ($wali) {
+            if ($wali->kampung) {
+                return $wali->kampung->kode . ' - ' . $wali->kampung->nama_kampung;
+            }
+            return 'Lainnya / Tanpa Kampung';
+        });
     }
 }

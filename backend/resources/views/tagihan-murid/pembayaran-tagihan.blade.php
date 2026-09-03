@@ -15,8 +15,7 @@
                 @if (request('search_nism'))
                     <input type="hidden" name="search_nism" value="{{ request('search_nism') }}">
                 @endif
-                <div
-                    class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none z-10 text-zinc-400">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none z-10 text-zinc-400">
                     <i class="bi bi-calendar-range text-xs"></i>
                 </div>
                 <select name="tahun_id" onchange="document.getElementById('formTahun').submit()"
@@ -35,14 +34,12 @@
     </div>
 
     <!-- PANEL PENCARIAN NISM -->
-    <div
-        class="m3-glass-card p-3 md:p-3.5 mb-6 shadow-2xs relative z-10 print:hidden">
+    <div class="m3-glass-card p-3 md:p-3.5 mb-6 shadow-2xs relative z-10 print:hidden">
         <form action="{{ request()->url() }}" method="GET" class="w-full flex flex-col sm:flex-row gap-2.5">
             <input type="hidden" name="tahun_id" value="{{ $tahunPelajaranId }}">
 
             <div class="relative w-full flex-1">
-                <div
-                    class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-zinc-400">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-zinc-400">
                     <i class="bi bi-search text-xs"></i>
                 </div>
                 <input type="text" name="search_nism" value="{{ request('search_nism') }}"
@@ -62,8 +59,7 @@
 
             <!-- KIRI: KARTU PROFIL Murid -->
             <div class="xl:col-span-4">
-                <div
-                    class="m3-glass-card p-5 shadow-2xs flex flex-col items-center text-center sticky top-20">
+                <div class="m3-glass-card p-5 shadow-2xs flex flex-col items-center text-center sticky top-20">
 
                     <!-- Foto -->
                     <div class="mb-3">
@@ -85,7 +81,8 @@
                             {{ $muridTerpilih->nama_lengkap }}
                         </h2>
                         <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2.5">
-                            NISM: <span class="text-zinc-800 dark:text-zinc-200 font-black">{{ $muridTerpilih->nism }}</span>
+                            NISM: <span
+                                class="text-zinc-800 dark:text-zinc-200 font-black">{{ $muridTerpilih->nism }}</span>
                         </p>
                         <div
                             class="px-2.5 py-1 bg-primary/10 text-primary dark:text-primary-dark font-black text-[10px] uppercase tracking-wider rounded-lg border border-primary/20 inline-flex items-center shadow-2xs">
@@ -141,7 +138,8 @@
                             <!-- Badges Status -->
                             <div>
                                 <span
-                                    class="text-[9px] font-black text-zinc-400 uppercase tracking-wider block mb-1.5">Status Pembayaran</span>
+                                    class="text-[9px] font-black text-zinc-400 uppercase tracking-wider block mb-1.5">Status
+                                    Pembayaran</span>
                                 <div class="flex gap-1.5 flex-wrap">
                                     @if ($isAsatidz)
                                         <span
@@ -162,6 +160,16 @@
                                         </span>
                                     @endif
                                 </div>
+                            </div>
+
+                            <!-- Tombol Cetak Rekap Lunas SPP -->
+                            <div class="pt-2.5 border-t border-zinc-200/60 dark:border-zinc-800">
+                                <a href="{{ route('pembayaran-tagihan.cetak-rekap-spp', [$muridTerpilih->id, $tahunPelajaranId]) }}"
+                                    target="_blank"
+                                    class="w-full flex items-center justify-center gap-2 h-8 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500 hover:text-white border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 dark:hover:text-white text-[10px] font-black uppercase tracking-wider transition-all shadow-2xs group outline-none">
+                                    <i class="bi bi-file-earmark-check-fill text-xs"></i>
+                                    <span>Cetak Rekap SPP Lunas</span>
+                                </a>
                             </div>
 
                         </div>
@@ -189,7 +197,8 @@
                                 class="sr-only peer">
                             <div
                                 class="w-5 h-5 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white/40 dark:bg-black/40 text-primary peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-all group-hover:border-primary/50 relative shadow-2xs">
-                                <i class="bi bi-check-lg text-white opacity-0 peer-checked:opacity-100 transition-opacity text-xs leading-none font-black"></i>
+                                <i
+                                    class="bi bi-check-lg text-white opacity-0 peer-checked:opacity-100 transition-opacity text-xs leading-none font-black"></i>
                             </div>
                             <span
                                 class="text-xs font-black text-zinc-800 dark:text-zinc-200 group-hover:text-primary transition-colors uppercase tracking-wider">
@@ -231,7 +240,8 @@
 
                         @if (count($semuaTagihan) === 0)
                             <div class="col-span-full">
-                                <x-empty-state icon="bi-receipt" title="Belum Ada Faktur" message="Sistem belum menerbitkan tagihan untuk Murid ini." />
+                                <x-empty-state icon="bi-receipt" title="Belum Ada Faktur"
+                                    message="Sistem belum menerbitkan tagihan untuk Murid ini." />
                             </div>
                         @else
                             <!-- CARD DAFTAR SPP -->
@@ -239,8 +249,7 @@
                                 @php
                                     $adaTunggakanSPP = collect($tagihanSPP)->contains('status_bayar', 'Belum Lunas');
                                 @endphp
-                                <div
-                                    class="m3-glass-card overflow-hidden shadow-2xs">
+                                <div class="m3-glass-card overflow-hidden shadow-2xs">
 
                                     <!-- Header Card SPP -->
                                     <div
@@ -276,7 +285,8 @@
                                                             onchange="hitungTotal()" class="chk-bayar sr-only peer">
                                                         <div
                                                             class="w-5 h-5 rounded-lg flex items-center justify-center border border-zinc-300 dark:border-zinc-600 bg-white/40 dark:bg-black/40 peer-checked:bg-primary peer-checked:border-primary transition-all shrink-0 group-hover:border-primary/50 relative shadow-2xs">
-                                                            <i class="bi bi-check-lg text-white opacity-0 peer-checked:opacity-100 transition-opacity text-xs leading-none font-black"></i>
+                                                            <i
+                                                                class="bi bi-check-lg text-white opacity-0 peer-checked:opacity-100 transition-opacity text-xs leading-none font-black"></i>
                                                         </div>
                                                         <div>
                                                             <div class="flex items-center gap-1.5 mb-0.5">
@@ -389,7 +399,8 @@
     @elseif(request('search_nism') && (!$muridTerpilih || !$ruanganTerpilih))
         <!-- ERROR STATE: NISM Tidak Valid -->
         <div class="col-span-full">
-            <x-empty-state icon="bi-exclamation-triangle" title="Murid Tidak Ditemukan" message="NISM yang dimasukkan salah, atau Murid tersebut belum memiliki catatan penempatan kelas pada Tahun Pelajaran yang Anda pilih saat ini." />
+            <x-empty-state icon="bi-exclamation-triangle" title="Murid Tidak Ditemukan"
+                message="NISM yang dimasukkan salah, atau Murid tersebut belum memiliki catatan penempatan kelas pada Tahun Pelajaran yang Anda pilih saat ini." />
         </div>
     @endif
 
@@ -466,4 +477,3 @@
     </script>
 
 </x-app-layout>
-

@@ -14,6 +14,7 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/kas_provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../auth/login_screen.dart';
+import '../../widgets/app_avatar.dart';
 import '../../widgets/digital_signature_pad.dart';
 import '../../widgets/glass_card.dart';
 
@@ -1639,36 +1640,11 @@ class _AkunTabState extends State<AkunTab> {
                   // AVATAR WITH EDIT BADGE
                   Stack(
                     children: [
-                      CircleAvatar(
+                      AppAvatar(
                         radius: 38,
-                        backgroundColor: isDark
-                            ? const Color(0xFF0F2313)
-                            : AppColors.primaryContainerLight,
-                        backgroundImage: user?.photo != null
-                            ? NetworkImage(
-                                ApiConstants.formatImageUrl(user!.photo) ??
-                                    user.photo!,
-                              )
-                            : null,
-                        onBackgroundImageError: user?.photo != null
-                            ? (exception, stackTrace) {
-                                debugPrint(
-                                  'Gagal memuat foto profil: $exception',
-                                );
-                              }
-                            : null,
-                        child: Text(
-                          (user?.name.isNotEmpty ?? false)
-                              ? user!.name[0]
-                              : 'U',
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                            color: isDark
-                                ? AppColors.primaryDark
-                                : AppColors.primaryLight,
-                          ),
-                        ),
+                        imageUrl: user?.photo,
+                        name: user?.name ?? 'Ustadz',
+                        cacheDimension: 200,
                       ),
                       Positioned(
                         bottom: 0,
@@ -1773,7 +1749,7 @@ class _AkunTabState extends State<AkunTab> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Biodata Pribadi Asatidz',
+                  'Biodata Pribadi',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
                 TextButton.icon(
@@ -2225,7 +2201,7 @@ class _AkunTabState extends State<AkunTab> {
             ElevatedButton.icon(
               onPressed: _handleLogout,
               icon: const Icon(Icons.logout_rounded, size: 18),
-              label: const Text('Keluar Akun Asatidz'),
+              label: const Text('Keluar Akun'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: isDark
                     ? const Color(0xFF3B1212)

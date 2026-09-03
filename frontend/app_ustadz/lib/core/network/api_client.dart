@@ -13,8 +13,9 @@ class ApiClient {
     dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+        sendTimeout: const Duration(seconds: 15),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -27,18 +28,25 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final customUrl = await StorageService.getBaseUrl();
+          // Instant synchronous read from in-memory cache
+          final customUrl =
+              StorageService.getCachedBaseUrl() ??
+              await StorageService.getBaseUrl();
           if (customUrl != null && customUrl.isNotEmpty) {
             options.baseUrl = customUrl;
             baseUrl = customUrl;
           }
-          final token = await StorageService.getToken();
+
+          final token =
+              StorageService.getCachedToken() ??
+              await StorageService.getToken();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
         },
         onError: (DioException e, handler) {
+          // Normalisasi pesan error agar seragam
           return handler.next(e);
         },
       ),
@@ -46,7 +54,8 @@ class ApiClient {
   }
 
   Future<void> _initBaseUrl() async {
-    final customUrl = await StorageService.getBaseUrl();
+    final customUrl =
+        StorageService.getCachedBaseUrl() ?? await StorageService.getBaseUrl();
     if (customUrl != null && customUrl.isNotEmpty) {
       baseUrl = customUrl;
       dio.options.baseUrl = customUrl;

@@ -148,6 +148,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // -- Wali Murid --
     Route::prefix('wali-murid')->name('wali-murid.')->group(function () {
+        Route::get('/cetak', [WaliMuridController::class, 'cetak'])->name('cetak');
+        Route::get('/export-excel', [WaliMuridController::class, 'exportExcel'])->name('export-excel');
         Route::get('/import', [WaliMuridController::class, 'modalImport'])->name('import');
         Route::post('/import', [WaliMuridController::class, 'import'])->name('import.store');
         Route::get('/template-import', [WaliMuridController::class, 'template'])->name('template');

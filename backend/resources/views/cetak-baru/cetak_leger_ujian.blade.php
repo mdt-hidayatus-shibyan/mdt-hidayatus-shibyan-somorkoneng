@@ -184,7 +184,7 @@
             <tr>
                 <th class="w-1">No</th>
                 <th class="w-3">NISM</th>
-                <th style="text-align: left; padding-left: 10px;">Nama Santri</th>
+                <th style="text-align: left; padding-left: 10px;">Nama Murid</th>
 
                 <!-- Looping Kolom Mata Pelajaran -->
                 @foreach ($kolomMapel as $mapel)
@@ -208,10 +208,10 @@
                             {{ $row->murid->nama_lengkap }}</div>
                     </td>
 
-                    @foreach ($kolomMapel as $mapel)
+                    @foreach ($kolomMapel as $jadwalId => $mapel)
                         @php
-                            $itemNilai = $row->nilai_per_mapel[$mapel];
-                            $angka = $itemNilai['nilai'];
+                            $itemNilai = $row->nilai_per_mapel[$jadwalId] ?? null;
+                            $angka = $itemNilai['nilai'] ?? null;
                         @endphp
 
                         <td class="{{ $angka !== null && $angka < 60 ? 'nilai-merah' : '' }}"
@@ -228,7 +228,7 @@
                 <tr>
                     <td colspan="{{ count($kolomMapel) + 6 }}"
                         style="padding: 20px; text-align: center; color: #64748b;">
-                        Belum ada data santri atau nilai pada kelas ini.
+                        Belum ada data Murid atau nilai pada kelas ini.
                     </td>
                 </tr>
             @endforelse
@@ -237,7 +237,7 @@
 
     <!-- KETERANGAN BAWAH -->
     <div style="font-size: 10px; color: #475569; margin-top: -10px; font-style: italic;">
-        *Catatan: Nilai berwarna merah menunjukkan perolehan santri di bawah batas KKM (60).
+        *Catatan: Nilai berwarna merah menunjukkan perolehan Murid di bawah batas KKM (60).
     </div>
 
     <!-- AREA TANDA TANGAN -->
@@ -245,7 +245,7 @@
         <tr style="border: none;">
             <td style="width: 50%; border: none; text-align: center; vertical-align: top; padding-bottom: 0;">
                 <p style="margin: 0; font-size: 12px;">Mengetahui,</p>
-                <p style="margin: 2px 0 6px 0; font-size: 12px; font-weight: bold;">Kepala Madrasah / Pengasuh</p>
+                <p style="margin: 2px 0 6px 0; font-size: 12px; font-weight: bold;">Pengasuh</p>
                 <div style="min-height: 65px; display: flex; justify-content: center; align-items: center;">
                     @if (!empty($pengasuh?->id))
                         {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(65)->generate(
@@ -264,7 +264,8 @@
             <td style="width: 50%; border: none; text-align: center; vertical-align: top; padding-bottom: 0;">
                 <p style="margin: 0; font-size: 12px;">Somor Koneng,
                     {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
-                <p style="margin: 2px 0 6px 0; font-size: 12px; font-weight: bold;">Wali Kelas / Ruangan</p>
+                <p style="margin: 2px 0 6px 0; font-size: 12px; font-weight: bold;">Wali Ruangan
+                    {{ strtoupper($ruanganTerpilih->nama_ruangan) }}</p>
                 <div style="min-height: 65px; display: flex; justify-content: center; align-items: center;">
                     @if (!empty($waliUstadz?->id))
                         {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(65)->generate(

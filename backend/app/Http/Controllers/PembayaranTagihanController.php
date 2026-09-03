@@ -401,4 +401,20 @@ class PembayaranTagihanController extends Controller
 
         return view('cetak-baru.cetak_donatur', compact('pembayaran', 'bulanTagihan', 'sekretaris', 'pengasuh'));
     }
+
+    // 7. Cetak Kwitansi Pembayaran Per Transaksi (SPP / Syahriyah / Tagihan Lainnya)
+    public function cetakKwitansi($id)
+    {
+        $pembayaran = PembayaranTagihan::with([
+            'tagihanMurids.murid.waliMurid.kampung',
+            'tagihanMurids.ruangan.tahunPelajaran',
+            'tagihanMurids.bulanHijriyah',
+            'tagihanMurids.semester',
+        ])->findOrFail($id);
+
+        $pengasuh = Pengurus::getAktifByJabatan('Pengasuh');
+        $bendahara = Pengurus::getAktifByJabatan('Bendahara') ?? Pengurus::getAktifByJabatan('Sekretaris Jenderal');
+
+        return view('cetak-baru.cetak_kwitansi', compact('pembayaran', 'pengasuh', 'bendahara'));
+    }
 }

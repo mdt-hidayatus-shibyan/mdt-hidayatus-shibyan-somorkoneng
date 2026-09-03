@@ -76,8 +76,10 @@
             class="p-4 sm:p-5 border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-950/40 flex flex-col sm:flex-row justify-between items-center gap-3.5">
 
             <div class="w-full sm:w-auto">
-                <h3 class="text-sm md:text-base font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-lg bg-primary/10 dark:bg-primary-dark/20 text-primary dark:text-primary-dark flex items-center justify-center border border-primary/20 shrink-0">
+                <h3
+                    class="text-sm md:text-base font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <div
+                        class="w-7 h-7 rounded-lg bg-primary/10 dark:bg-primary-dark/20 text-primary dark:text-primary-dark flex items-center justify-center border border-primary/20 shrink-0">
                         <i class="bi bi-person-lines-fill text-xs"></i>
                     </div>
                     <span>Daftar Murid</span>
@@ -139,4 +141,3 @@
     @endif
 
 </x-app-layout>
-

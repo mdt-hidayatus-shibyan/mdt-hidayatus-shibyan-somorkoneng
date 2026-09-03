@@ -12,6 +12,7 @@ use App\Repositories\MuridRuanganRepository;
 use App\Services\PelanggaranMuridService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 
 class PelanggaranMuridController extends Controller
@@ -167,20 +168,22 @@ class PelanggaranMuridController extends Controller
             'referensi_pelanggaran_ids' => 'required|array|min:1',
         ]);
 
-        foreach ($request->murid_ids as $murid_id) {
-            foreach ($request->referensi_pelanggaran_ids as $ref_id) {
-                PelanggaranMurid::create([
-                    'tanggal' => $request->tanggal,
-                    'ruangan_id' => $request->ruangan_id,
-                    'tahun_pelajaran_id' => $request->tahun_pelajaran_id,
-                    'semester_id' => $request->semester_id, // TAMBAHAN
-                    'murid_id' => $murid_id,
-                    'referensi_pelanggaran_id' => $ref_id,
-                    'keterangan' => $request->keterangan,
-                    'diinput_oleh_id' => Auth::id(),
-                ]);
+        DB::transaction(function () use ($request) {
+            foreach ($request->murid_ids as $murid_id) {
+                foreach ($request->referensi_pelanggaran_ids as $ref_id) {
+                    PelanggaranMurid::create([
+                        'tanggal' => $request->tanggal,
+                        'ruangan_id' => $request->ruangan_id,
+                        'tahun_pelajaran_id' => $request->tahun_pelajaran_id,
+                        'semester_id' => $request->semester_id,
+                        'murid_id' => $murid_id,
+                        'referensi_pelanggaran_id' => $ref_id,
+                        'keterangan' => $request->keterangan,
+                        'diinput_oleh_id' => Auth::id(),
+                    ]);
+                }
             }
-        }
+        });
 
         return redirect()->route('pelanggaran-murid.index', ['ruangan_id' => $request->ruangan_id, 'tanggal' => $request->tanggal])
             ->with('success', count($request->murid_ids) . ' murid berhasil dijatuhi sanksi pelanggaran secara kolektif!');

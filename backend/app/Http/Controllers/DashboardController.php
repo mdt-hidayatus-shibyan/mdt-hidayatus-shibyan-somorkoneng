@@ -56,9 +56,7 @@ class DashboardController extends Controller
             ->join('tahun_pelajarans', 'murid_ruangans.tahun_pelajaran_id', '=', 'tahun_pelajarans.id')
 
             ->where('murids.status', 'Aktif')
-            // 2. Tambahkan where is_active = true
-            ->where('tahun_pelajarans.is_active', $selectedTahunId)
-
+            ->where('tahun_pelajarans.id', $selectedTahunId)
             ->select(
                 'levels.nama_level',
                 DB::raw('COUNT(murids.id) as total'),
@@ -75,7 +73,7 @@ class DashboardController extends Controller
             ->join('tahun_pelajarans', 'ruangans.tahun_pelajaran_id', '=', 'tahun_pelajarans.id')
             ->join('levels', 'ruangans.level_id', '=', 'levels.id')
             ->where('murids.status', 'Aktif')
-            ->where('tahun_pelajarans.is_active', $selectedTahunId)
+            ->where('tahun_pelajarans.id', $selectedTahunId)
             ->select(
                 'ruangans.nama_ruangan',
                 DB::raw('COUNT(murids.id) as total'),

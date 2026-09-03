@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'core/storage/storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/akademik_provider.dart';
 import 'providers/auth_provider.dart';
@@ -18,6 +19,9 @@ import 'ui/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi awal SharedPreferences & In-Memory Cache
+  await StorageService.init();
 
   // Enforce Android 17 Full Edge-to-Edge System Bar Transparency
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);

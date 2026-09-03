@@ -333,8 +333,7 @@
                     <td style="width: 50%;">
                         <p style="margin: 0; font-size: 11px;">Somor Koneng,
                             {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
-                        <p style="margin: 2px 0 6px 0; font-size: 11px; font-weight: bold;">Waka Kurikulum /
-                            Administrasi</p>
+                        <p style="margin: 2px 0 6px 0; font-size: 11px; font-weight: bold;">Kepala Administrasi</p>
                         <div style="min-height: 60px; display: flex; justify-content: center; align-items: center;">
                             @if (!empty($wakaKurikulum?->id))
                                 {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(60)->generate(
@@ -346,7 +345,7 @@
                         </div>
                         <p
                             style="margin: 6px 0 0 0; font-size: 11px; font-weight: bold; text-decoration: underline; text-transform: uppercase;">
-                            {{ $wakaKurikulum?->anggota?->nama_lengkap ?? ($wakaKurikulum?->nama ?? 'Nama Waka Belum Diatur') }}
+                            {{ $wakaKurikulum?->anggota?->nama_lengkap }}
                         </p>
                     </td>
                 </tr>

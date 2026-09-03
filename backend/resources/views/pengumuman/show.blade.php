@@ -1,4 +1,4 @@
-@section('title', 'Detail Pengumuman')
+@section('title', $pengumuman->judul)
 <x-app-layout>
 
     <!-- Header Page & Actions -->
@@ -14,7 +14,7 @@
                     Detail Pengumuman
                 </h2>
                 <p class="text-xs md:text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    Baca informasi lengkap mengenai pengumuman ini.
+                    Informasi resmi dan pemberitahuan madrasah.
                 </p>
             </div>
         </div>
@@ -41,7 +41,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6 relative z-10">
 
         <!-- ================= KOLOM KIRI (KONTEN UTAMA) ================= -->
-        <div class="lg:col-span-8 flex flex-col">
+        <div class="lg:col-span-8 flex flex-col gap-5">
             <div class="m3-glass-card p-6 md:p-8 flex-1 shadow-2xs">
 
                 @php
@@ -73,6 +73,11 @@
                         <i class="bi bi-clock mr-1.5"></i> Dipublikasikan
                         {{ $pengumuman->created_at->translatedFormat('d F Y, H:i') }}
                     </span>
+                    @if ($pengumuman->lampiran_pdf)
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shadow-2xs">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> Ada Lampiran PDF
+                        </span>
+                    @endif
                 </div>
 
                 <!-- Judul Pengumuman -->
@@ -82,13 +87,49 @@
                 </h1>
 
                 <!-- Garis Pembatas -->
-                <hr class="border-zinc-200/80 dark:border-zinc-800 mb-5">
+                <hr class="border-zinc-200/80 dark:border-zinc-800 mb-6">
 
-                <!-- Isi Konten (Artikel) -->
-                <div
-                    class="text-sm md:text-[15px] leading-loose text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap font-medium">
-                    {{ $pengumuman->konten }}
+                <!-- Isi Konten (Rich Text HTML) -->
+                <div class="rich-content text-sm md:text-[15px] leading-relaxed text-zinc-700 dark:text-zinc-200 font-normal">
+                    {!! $pengumuman->konten !!}
                 </div>
+
+                <!-- ================= CARD LAMPIRAN PDF ================= -->
+                @if ($pengumuman->lampiran_pdf)
+                    <div class="mt-8 pt-6 border-t border-zinc-200/80 dark:border-zinc-800">
+                        <h4 class="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <i class="bi bi-paperclip text-rose-500 text-base"></i> Lampiran Dokumen Resmi
+                        </h4>
+
+                        <div class="p-4 sm:p-5 rounded-2xl bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+                            <div class="flex items-center gap-3.5 min-w-0">
+                                <div class="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                                    <i class="bi bi-file-earmark-pdf-fill text-2xl"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h5 class="text-sm font-black text-zinc-900 dark:text-white truncate">
+                                        {{ $pengumuman->nama_file_pdf }}
+                                    </h5>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                        Format Dokumen: Portable Document Format (.PDF)
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 shrink-0">
+                                <a href="{{ $pengumuman->lampiran_pdf_url }}" target="_blank"
+                                    class="h-9 px-4 rounded-xl text-xs font-black bg-rose-600 hover:bg-rose-700 text-white flex items-center gap-1.5 shadow-2xs transition-all active:scale-95">
+                                    <i class="bi bi-eye-fill"></i> Buka PDF
+                                </a>
+                                <a href="{{ $pengumuman->lampiran_pdf_url }}" download="{{ $pengumuman->nama_file_pdf }}"
+                                    class="h-9 px-3.5 rounded-xl text-xs font-bold bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-rose-600 dark:hover:text-rose-400 border border-zinc-200 dark:border-zinc-700 flex items-center gap-1.5 shadow-2xs transition-all active:scale-95"
+                                    title="Download File">
+                                    <i class="bi bi-download"></i> Unduh
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
             </div>
         </div>
@@ -172,11 +213,108 @@
                             </span>
                         </div>
                     </li>
+
+                    <!-- Lampiran PDF Status di Meta -->
+                    <li class="flex flex-col gap-1 border-t border-dashed border-zinc-200 dark:border-zinc-800 pt-3">
+                        <span class="text-[10px] uppercase font-black text-zinc-400 dark:text-zinc-500 tracking-wider">
+                            Lampiran File
+                        </span>
+                        @if ($pengumuman->lampiran_pdf)
+                            <span class="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                                <i class="bi bi-file-earmark-pdf-fill"></i> Ada Dokumen PDF
+                            </span>
+                        @else
+                            <span class="text-xs font-medium text-zinc-400 dark:text-zinc-500">
+                                Tidak ada lampiran
+                            </span>
+                        @endif
+                    </li>
                 </ul>
             </div>
 
         </div>
     </div>
+
+    <!-- Styling Khusus Rich Content -->
+    <style>
+        .rich-content p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+        .rich-content h1 {
+            font-size: 1.6rem;
+            font-weight: 900;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+        }
+        .rich-content h2 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+        .rich-content h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+        .rich-content strong, .rich-content b {
+            font-weight: 800;
+        }
+        .rich-content em, .rich-content i {
+            font-style: italic;
+        }
+        .rich-content u {
+            text-decoration: underline;
+        }
+        .rich-content s {
+            text-decoration: line-through;
+        }
+        .rich-content ol {
+            list-style-type: decimal !important;
+            padding-left: 1.75rem !important;
+            margin-bottom: 1rem;
+        }
+        .rich-content ul {
+            list-style-type: disc !important;
+            padding-left: 1.75rem !important;
+            margin-bottom: 1rem;
+        }
+        .rich-content li {
+            margin-bottom: 0.35rem;
+            line-height: 1.6;
+        }
+        .rich-content blockquote {
+            border-left: 4px solid #38bdf8;
+            padding-left: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            font-style: italic;
+            opacity: 0.9;
+        }
+        .rich-content a {
+            color: #2563eb;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        .dark .rich-content a {
+            color: #38bdf8;
+        }
+        .rich-content pre, .rich-content code {
+            background-color: rgba(0, 0, 0, 0.06);
+            border-radius: 0.5rem;
+            padding: 0.2rem 0.4rem;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .dark .rich-content pre, .dark .rich-content code {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
 
     <!-- FORM HAPUS (RAHASIA) -->
     @can('delete pengumuman')
@@ -194,7 +332,7 @@
                 const isDark = document.documentElement.classList.contains('dark');
                 Swal.fire({
                     title: '<span class="text-base font-black tracking-tight">Hapus Pengumuman?</span>',
-                    html: '<p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-1">Pengumuman ini akan dihapus secara permanen dari sistem.</p>',
+                    html: '<p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-1">Pengumuman ini beserta lampiran PDF akan dihapus secara permanen dari sistem.</p>',
                     icon: 'warning',
                     showCancelButton: true,
                     heightAuto: false,
@@ -220,4 +358,3 @@
     @endpush
 
 </x-app-layout>
-

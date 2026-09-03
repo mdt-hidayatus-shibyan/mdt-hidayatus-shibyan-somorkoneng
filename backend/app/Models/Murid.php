@@ -17,7 +17,19 @@ class Murid extends Model
     public function ruangans()
     {
         return $this->belongsToMany(Ruangan::class, 'murid_ruangans', 'murid_id', 'ruangan_id')
+            ->withPivot('tahun_pelajaran_id')
             ->withTimestamps();
+    }
+
+    /**
+     * Accessor untuk mendapatkan nama ruangan/kelas aktif murid
+     */
+    public function getNamaRuanganAktifAttribute()
+    {
+        if ($this->relationLoaded('ruangans') && $this->ruangans->isNotEmpty()) {
+            return $this->ruangans->pluck('nama_ruangan')->implode(', ');
+        }
+        return $this->ruanganMasuk->nama_ruangan ?? '-';
     }
     /**
      * Relasi ke Tahun Pelajaran saat pertama masuk
@@ -51,5 +63,25 @@ class Murid extends Model
     public function presensiUjians()
     {
         return $this->hasMany(\App\Models\Ujian\PresensiUjian::class, 'murid_id');
+    }
+
+    /**
+     * Accessor URL foto murid yang konsisten untuk Web & Mobile
+     */
+    public function getFotoUrlAttribute()
+    {
+        if (!$this->foto) {
+            return null;
+        }
+
+        if (str_starts_with($this->foto, 'http://') || str_starts_with($this->foto, 'https://')) {
+            return $this->foto;
+        }
+
+        if (str_starts_with($this->foto, 'storage/')) {
+            return asset($this->foto);
+        }
+
+        return asset('storage/' . $this->foto);
     }
 }

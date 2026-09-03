@@ -8,6 +8,7 @@ use App\Notifications\PengumumanNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification as FacadesNotification;
+use Illuminate\Support\Facades\Storage;
 
 class PengumumanController extends Controller
 {
@@ -46,6 +47,7 @@ class PengumumanController extends Controller
         $validated = $request->validate([
             'judul'             => 'required|string|max:255',
             'konten'            => 'required|string',
+            'lampiran_pdf'      => 'nullable|file|mimes:pdf|max:10240',
             'tipe'              => 'required|in:Informasi,Penting,Kegiatan,Libur',
             'target_audience'   => 'required|in:Semua,Wali Murid,Ustadz',
             'status'            => 'required|in:Draft,Terbit,Arsip',
@@ -53,7 +55,14 @@ class PengumumanController extends Controller
             'tanggal_selesai'   => 'nullable|date|after_or_equal:tanggal_mulai',
         ], [
             'tanggal_selesai.after_or_equal' => 'Tanggal selesai tidak boleh lebih awal dari tanggal mulai.',
+            'lampiran_pdf.mimes'             => 'Lampiran harus berupa file PDF (.pdf).',
+            'lampiran_pdf.max'               => 'Ukuran file PDF maksimal 10 MB.',
         ]);
+
+        // Upload file PDF jika ada
+        if ($request->hasFile('lampiran_pdf')) {
+            $validated['lampiran_pdf'] = $request->file('lampiran_pdf')->store('uploads/pengumuman/pdf', 'public');
+        }
 
         // Otomatis catat siapa yang membuat pengumuman ini
         $validated['user_id'] = Auth::id();
@@ -66,9 +75,9 @@ class PengumumanController extends Controller
         if ($validated['target_audience'] === 'Ustadz') {
             $target = User::role('ustadz')->get();
         } elseif ($validated['target_audience'] === 'Wali Murid') {
-            $target = User::role('wali_murid')->get(); // Sesuaikan nama role di database Anda
+            $target = User::role('wali_murid')->get();
         } elseif ($validated['target_audience'] === 'Semua') {
-            $target = User::all(); // Atau gabungan beberapa role
+            $target = User::all();
         }
 
         if ($target->isNotEmpty()) {
@@ -106,6 +115,8 @@ class PengumumanController extends Controller
         $validated = $request->validate([
             'judul'           => 'required|string|max:255',
             'konten'          => 'required|string',
+            'lampiran_pdf'    => 'nullable|file|mimes:pdf|max:10240',
+            'hapus_lampiran'  => 'nullable|boolean',
             'tipe'            => 'required|in:Informasi,Penting,Kegiatan,Libur',
             'target_audience' => 'required|in:Semua,Wali Murid,Ustadz',
             'status'          => 'required|in:Draft,Terbit,Arsip',
@@ -113,7 +124,25 @@ class PengumumanController extends Controller
             'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
         ], [
             'tanggal_selesai.after_or_equal' => 'Tanggal selesai tidak boleh lebih awal dari tanggal mulai.',
+            'lampiran_pdf.mimes'             => 'Lampiran harus berupa file PDF (.pdf).',
+            'lampiran_pdf.max'               => 'Ukuran file PDF maksimal 10 MB.',
         ]);
+
+        // Hapus lampiran PDF jika user mencentang hapus
+        if ($request->boolean('hapus_lampiran')) {
+            if ($pengumuman->lampiran_pdf && Storage::disk('public')->exists($pengumuman->lampiran_pdf)) {
+                Storage::disk('public')->delete($pengumuman->lampiran_pdf);
+            }
+            $validated['lampiran_pdf'] = null;
+        }
+
+        // Upload lampiran PDF baru jika ada
+        if ($request->hasFile('lampiran_pdf')) {
+            if ($pengumuman->lampiran_pdf && Storage::disk('public')->exists($pengumuman->lampiran_pdf)) {
+                Storage::disk('public')->delete($pengumuman->lampiran_pdf);
+            }
+            $validated['lampiran_pdf'] = $request->file('lampiran_pdf')->store('uploads/pengumuman/pdf', 'public');
+        }
 
         $pengumuman->update($validated);
 
@@ -126,10 +155,13 @@ class PengumumanController extends Controller
      */
     public function destroy(Pengumuman $pengumuman)
     {
+        if ($pengumuman->lampiran_pdf && Storage::disk('public')->exists($pengumuman->lampiran_pdf)) {
+            Storage::disk('public')->delete($pengumuman->lampiran_pdf);
+        }
+
         $pengumuman->delete();
 
         return redirect()->route('pengumuman.index')
             ->with('success', 'Pengumuman berhasil dihapus!');
     }
-    //
 }

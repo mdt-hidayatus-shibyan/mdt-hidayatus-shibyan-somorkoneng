@@ -231,4 +231,19 @@ class PembayaranUjianController extends Controller
             'ruanganTerpilih'
         ));
     }
+
+    public function cetakKwitansi($id)
+    {
+        $pembayaran = PembayaranTagihan::with([
+            'tagihanMurids.murid.waliMurid.kampung',
+            'tagihanMurids.ruangan.tahunPelajaran',
+            'tagihanMurids.bulanHijriyah',
+            'tagihanMurids.semester',
+        ])->findOrFail($id);
+
+        $pengasuh = \App\Models\Kepengurusan\Pengurus::getAktifByJabatan('Pengasuh');
+        $bendahara = \App\Models\Kepengurusan\Pengurus::getAktifByJabatan('Bendahara') ?? \App\Models\Kepengurusan\Pengurus::getAktifByJabatan('Sekretaris Jenderal');
+
+        return view('cetak-baru.cetak_kwitansi', compact('pembayaran', 'pengasuh', 'bendahara'));
+    }
 }

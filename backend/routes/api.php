@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\LaporanController;
 // 1. PUBLIC ROUTES
 // =========================================================================
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/wali/login', [AuthController::class, 'loginWali']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
@@ -118,4 +119,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/laporan/pelanggaran-murid', [LaporanController::class, 'getLaporanPelanggaranMurid']);
     Route::get('/laporan/ujian', [LaporanController::class, 'getLaporanUjian']);
     Route::get('/laporan/kenaikan-kelas', [LaporanController::class, 'getLaporanKenaikanKelas']);
+
+    // =========================================================================
+    // 3. APLIKASI SANTRI & WALI MURID (app_murid)
+    // =========================================================================
+    Route::prefix('wali')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getDashboard']);
+        Route::get('/anak/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getDetailAnak']);
+        Route::get('/tagihan/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getTagihanAnak']);
+        Route::get('/presensi/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getPresensiAnak']);
+        Route::get('/pelanggaran/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getPelanggaranAnak']);
+    });
 });

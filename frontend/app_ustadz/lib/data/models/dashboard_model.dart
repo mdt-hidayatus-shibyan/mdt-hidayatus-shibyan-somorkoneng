@@ -74,15 +74,21 @@ class PengumumanItem {
   final int id;
   final String judul;
   final String konten;
+  final String? kontenHtml;
   final String tipe;
   final String tanggalMulai;
+  final String? lampiranPdfUrl;
+  final String? namaFilePdf;
 
   PengumumanItem({
     required this.id,
     required this.judul,
     required this.konten,
+    this.kontenHtml,
     required this.tipe,
     required this.tanggalMulai,
+    this.lampiranPdfUrl,
+    this.namaFilePdf,
   });
 
   factory PengumumanItem.fromJson(Map<String, dynamic> json) {
@@ -90,8 +96,11 @@ class PengumumanItem {
       id: json['id'] ?? 0,
       judul: json['judul'] ?? json['nama_pengumuman'] ?? '',
       konten: json['konten'] ?? json['isi'] ?? '',
-      tipe: json['tipe'] ?? json['kategori'] ?? 'Info',
+      kontenHtml: json['konten_html'],
+      tipe: json['tipe'] ?? json['kategori'] ?? 'Informasi',
       tanggalMulai: json['tanggal_mulai'] ?? json['created_at'] ?? '',
+      lampiranPdfUrl: json['lampiran_pdf_url'],
+      namaFilePdf: json['nama_file_pdf'],
     );
   }
 }

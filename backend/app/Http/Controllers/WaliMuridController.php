@@ -4,14 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\WaliMuridRequest;
 use App\Models\Kampung;
+use App\Models\TahunPelajaran;
 use App\Models\WaliMurid;
+use App\Repositories\MuridRuanganRepository;
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\DB;
 
 class WaliMuridController extends Controller
 {
+    protected $muridRuanganRepo;
 
+    public function __construct(MuridRuanganRepository $muridRuanganRepo)
+    {
+        $this->muridRuanganRepo = $muridRuanganRepo;
+    }
 
     public function index(Request $request)
     {
@@ -312,5 +318,42 @@ class WaliMuridController extends Controller
             fclose($handle);
             return redirect()->route('wali-murid.index')->withErrors(['file_import' => 'Terjadi kesalahan sistem saat import. Error: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Cetak Data Wali Murid Aktif per Kode Kampung beserta Putra-Putri & Ruangannya
+     */
+    public function cetak(Request $request)
+    {
+        $kampung_id = $request->query('kampung_id');
+        $tahunAktif = TahunPelajaran::where('is_active', true)->first();
+        $groupedWalis = $this->muridRuanganRepo->getWaliMuridAktifGroupedByKampung($tahunAktif?->id, $kampung_id);
+        $filterKampung = $kampung_id ? Kampung::find($kampung_id) : null;
+
+        return view('cetak-baru.cetak-wali-murid', compact('groupedWalis', 'tahunAktif', 'filterKampung'));
+    }
+
+    /**
+     * Export Excel Data Wali Murid Aktif per Kode Kampung beserta Putra-Putri & Ruangannya
+     */
+    public function exportExcel(Request $request)
+    {
+        $kampung_id = $request->query('kampung_id');
+        $tahunAktif = TahunPelajaran::where('is_active', true)->first();
+        $groupedWalis = $this->muridRuanganRepo->getWaliMuridAktifGroupedByKampung($tahunAktif?->id, $kampung_id);
+        $filterKampung = $kampung_id ? Kampung::find($kampung_id) : null;
+
+        $namaFileSuffix = $filterKampung ? str_replace(' ', '_', $filterKampung->nama_kampung) : 'Semua_Kampung';
+        $filename = "Data_Wali_Murid_Aktif_{$namaFileSuffix}_" . date('Ymd_His') . '.xls';
+
+        $content = view('cetak-baru.export-wali-murid-excel', compact('groupedWalis', 'tahunAktif', 'filterKampung'))->render();
+
+        return response($content, 200, [
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ]);
     }
 }

@@ -367,79 +367,95 @@ class NilaiUjianController extends Controller
         $dataLeger = collect();
 
         if ($request->ruangan_id) {
-            $ruanganTerpilih = Ruangan::with('murids')->find($request->ruangan_id);
-            $levelNama = $ruanganTerpilih->level->nama_level ?? '';
+            $ruanganTerpilih = Ruangan::with([
+                'murids' => fn($q) => $q->where('status', 'Aktif')->orderBy('nama_lengkap', 'asc'),
+                'level',
+                'tahunPelajaran',
+                'waliRuangan'
+            ])->find($request->ruangan_id);
 
-            // Filter Ujian Berdasarkan Kelas
-            $isKelasAkhir = in_array($levelNama, ['3 TPQ', '6 IBT', '3 TSA']);
-            $queryUjian = Ujian::where('tahun_pelajaran_id', $tahunPelajaranId);
+            if ($ruanganTerpilih) {
+                $levelNama = $ruanganTerpilih->level->nama_level ?? '';
 
-            if ($isKelasAkhir) {
-                $queryUjian->whereIn('tipe_ujian', ['IMDA 1', 'IMNI']);
-            } else {
-                $queryUjian->whereIn('tipe_ujian', ['IMDA 1', 'IMDA 2']);
-            }
-            $daftarUjian = $queryUjian->get();
+                // Filter Ujian Berdasarkan Kelas
+                $isKelasAkhir = in_array($levelNama, ['3 TPQ', '6 IBT', '3 TSA']);
+                $queryUjian = Ujian::where('tahun_pelajaran_id', $tahunPelajaranId);
 
-            // JIKA UJIAN DIPILIH, MULAI KALKULASI LEGER RANKING
-            if ($request->ujian_id) {
-                $ujianTerpilih = Ujian::find($request->ujian_id);
-                $murids = $ruanganTerpilih->murids;
-
-                // 1. Ekstrak Daftar Mata Pelajaran dari Jadwal Ujian
-                $jadwals = JadwalUjian::with('mataPelajaran')
-                    ->where('ujian_id', $ujianTerpilih->id)
-                    ->where('level_id', $ruanganTerpilih->level_id)
-                    ->orderBy('tanggal_ujian', 'asc')
-                    ->get();
-
-                foreach ($jadwals as $jadwal) {
-                    $namaMapel = $jadwal->mata_pelajaran_id ? ($jadwal->mataPelajaran->nama_mapel ?? '-') : $jadwal->nama_mata_pelajaran_custom;
-                    $kolomMapel[$jadwal->id] = $namaMapel;
+                if ($isKelasAkhir) {
+                    $queryUjian->whereIn('tipe_ujian', ['IMDA 1', 'IMNI']);
+                } else {
+                    $queryUjian->whereIn('tipe_ujian', ['IMDA 1', 'IMDA 2']);
                 }
+                $daftarUjian = $queryUjian->get();
 
-                // 2. Ambil SEMUA nilai di kelas dan ujian ini
-                $semuaNilai = NilaiUjian::where('ujian_id', $ujianTerpilih->id)
-                    ->where('ruangan_id', $ruanganTerpilih->id)
-                    ->get();
+                // JIKA UJIAN DIPILIH, MULAI KALKULASI LEGER RANKING
+                if ($request->ujian_id) {
+                    $ujianTerpilih = Ujian::find($request->ujian_id);
+                    $murids = $ruanganTerpilih->murids;
 
-                // 3. Susun Data Per Murid & Kalkulasi Total
-                foreach ($murids as $murid) {
-                    $nilaiMurid = $semuaNilai->where('murid_id', $murid->id);
-                    $total = 0;
-                    $jumlahMapelBerisiNilai = 0;
-                    $mapelNilai = [];
+                    // 1. Ekstrak Daftar Mata Pelajaran dari Jadwal Ujian
+                    $jadwals = JadwalUjian::with('mataPelajaran')
+                        ->where('ujian_id', $ujianTerpilih->id)
+                        ->where('level_id', $ruanganTerpilih->level_id)
+                        ->orderBy('tanggal_ujian', 'asc')
+                        ->get();
 
-                    foreach ($kolomMapel as $jadwalId => $namaMapel) {
-
-                        $n = $nilaiMurid->firstWhere('jadwal_ujian_id', $jadwalId);
-
-                        $angka = $n ? $n->nilai : null;
-                        $isPub = $n ? $n->is_published : false;
-
-                        // 🔴 PERBAIKAN: Gunakan $jadwalId sebagai Key agar tidak tumpang tindih
-                        $mapelNilai[$jadwalId] = [
-                            'nama_mapel'   => $namaMapel,
-                            'nilai'        => $angka,
-                            'is_published' => $isPub
-                        ];
-
-                        if ($angka !== null) {
-                            $total += (float) $angka;
-                            $jumlahMapelBerisiNilai++;
-                        }
+                    foreach ($jadwals as $jadwal) {
+                        $namaMapel = $jadwal->mataPelajaran->nama_mapel ??  $jadwal->nama_mata_pelajaran_custom;
+                        $kolomMapel[$jadwal->id] = $namaMapel;
                     }
 
-                    $dataLeger->push((object)[
-                        'murid'           => $murid,
-                        'nilai_per_mapel' => $mapelNilai,
-                        'total'           => $total,
-                        'rata_rata'       => $jumlahMapelBerisiNilai > 0 ? round($total / $jumlahMapelBerisiNilai, 2) : 0,
-                    ]);
-                }
+                    // 2. Ambil SEMUA nilai di kelas dan ujian ini
+                    $semuaNilai = NilaiUjian::where('ujian_id', $ujianTerpilih->id)
+                        ->where('ruangan_id', $ruanganTerpilih->id)
+                        ->get();
 
-                // 4. Urutkan berdasarkan Ranking (Total Tertinggi ke Terendah)
-                $dataLeger = $dataLeger->sortByDesc('total')->values();
+                    // 3. Susun Data Per Murid & Kalkulasi Total
+                    foreach ($murids as $murid) {
+                        $nilaiMurid = $semuaNilai->where('murid_id', $murid->id);
+                        $total = 0;
+                        $jumlahMapelBerisiNilai = 0;
+                        $mapelNilai = [];
+
+                        foreach ($kolomMapel as $jadwalId => $namaMapel) {
+
+                            $n = $nilaiMurid->firstWhere('jadwal_ujian_id', $jadwalId);
+
+                            $angka = $n ? $n->nilai : null;
+                            $isPub = $n ? $n->is_published : false;
+
+                            // 🔴 PERBAIKAN: Gunakan $jadwalId sebagai Key agar tidak tumpang tindih
+                            $mapelNilai[$jadwalId] = [
+                                'nama_mapel'   => $namaMapel,
+                                'nilai'        => $angka,
+                                'is_published' => $isPub
+                            ];
+
+                            if ($angka !== null) {
+                                $total += (float) $angka;
+                                $jumlahMapelBerisiNilai++;
+                            }
+                        }
+
+                        $dataLeger->push((object)[
+                            'murid'           => $murid,
+                            'nilai_per_mapel' => $mapelNilai,
+                            'total'           => $total,
+                            'rata_rata'       => $jumlahMapelBerisiNilai > 0 ? round($total / $jumlahMapelBerisiNilai, 2) : 0,
+                        ]);
+                    }
+
+                    // 4. Urutkan berdasarkan Ranking (Total Tertinggi ke Terendah, jika sama urutkan Rata-rata lalu Nama)
+                    $dataLeger = $dataLeger->sort(function ($a, $b) {
+                        if ($a->total === $b->total) {
+                            if ($a->rata_rata === $b->rata_rata) {
+                                return strcmp($a->murid->nama_lengkap ?? '', $b->murid->nama_lengkap ?? '');
+                            }
+                            return $b->rata_rata <=> $a->rata_rata;
+                        }
+                        return $b->total <=> $a->total;
+                    })->values();
+                }
             }
         }
 

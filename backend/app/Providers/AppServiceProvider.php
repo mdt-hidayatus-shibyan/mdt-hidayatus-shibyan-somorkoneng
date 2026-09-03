@@ -16,6 +16,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(
+            \Illuminate\Foundation\Vite::class,
+            \App\Services\CustomVite::class
+        );
+
         $this->app->bind(
             \App\Repositories\Contracts\UstadzRepositoryInterface::class,
             \App\Repositories\Eloquent\UstadzRepository::class

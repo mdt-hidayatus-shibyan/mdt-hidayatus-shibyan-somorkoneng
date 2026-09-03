@@ -142,9 +142,17 @@
 
                                 <!-- 1. Kwitansi -->
                                 <td class="px-4 py-3 align-top border-r border-zinc-200/60 dark:border-zinc-800">
-                                    <div class="font-black text-zinc-900 dark:text-white tracking-tight mb-1 truncate"
-                                        title="{{ $transaksi->no_transaksi }}">
-                                        {{ $transaksi->no_transaksi }}
+                                    <div class="flex items-start justify-between gap-1.5 mb-1">
+                                        <div class="font-black text-zinc-900 dark:text-white tracking-tight truncate"
+                                            title="{{ $transaksi->no_transaksi }}">
+                                            {{ $transaksi->no_transaksi }}
+                                        </div>
+                                        <a href="{{ route('pembayaran-tagihan.cetak', $transaksi->id) }}"
+                                            target="_blank"
+                                            class="shrink-0 flex items-center justify-center w-6 h-6 rounded-lg bg-sky-500/10 hover:bg-sky-500 hover:text-white text-sky-600 dark:text-sky-400 border border-sky-500/20 transition-all shadow-2xs"
+                                            title="Cetak Kwitansi">
+                                            <i class="bi bi-printer-fill text-[11px]"></i>
+                                        </a>
                                     </div>
                                     <div
                                         class="inline-flex items-center gap-1 text-[9px] font-black text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-1.5 py-0.5 rounded-md shadow-2xs tracking-wider uppercase">

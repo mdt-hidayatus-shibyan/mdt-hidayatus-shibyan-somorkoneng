@@ -104,10 +104,18 @@ class PresensiMuridController extends Controller
 
         $jadwals = $query->orderBy('jam_ke')->get();
 
-        $data = $jadwals->map(function ($j) use ($tanggal, $ruanganWaliIds, $ustadzId) {
-            $sudahAbsen = PresensiMurid::where('jadwal_pelajaran_id', $j->id)
-                ->where('tanggal', $tanggal)
-                ->exists();
+        // Bulk query status presensi jadwal pada tanggal terpilih untuk eliminasi N+1
+        $jadwalIds = $jadwals->pluck('id')->toArray();
+        $sudahAbsenMap = !empty($jadwalIds)
+            ? PresensiMurid::whereIn('jadwal_pelajaran_id', $jadwalIds)
+            ->where('tanggal', $tanggal)
+            ->pluck('jadwal_pelajaran_id')
+            ->flip()
+            ->toArray()
+            : [];
+
+        $data = $jadwals->map(function ($j) use ($sudahAbsenMap, $ruanganWaliIds, $ustadzId) {
+            $sudahAbsen = isset($sudahAbsenMap[$j->id]);
 
             $isMilikWali = in_array($j->ruangan_id, $ruanganWaliIds) && ($j->ustadz_id != $ustadzId);
 

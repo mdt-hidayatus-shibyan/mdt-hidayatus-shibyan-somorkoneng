@@ -17,11 +17,9 @@
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
 
             <!-- Form Filter/Search -->
-            <form action="{{ route('pengumuman.index') }}" method="GET"
-                class="flex flex-col sm:flex-row gap-2 w-full">
+            <form action="{{ route('pengumuman.index') }}" method="GET" class="flex flex-col sm:flex-row gap-2 w-full">
                 <div class="relative w-full sm:w-64">
-                    <div
-                        class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
                         <i class="bi bi-search text-xs"></i>
                     </div>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari judul..."
@@ -30,7 +28,8 @@
             </form>
 
             @can('create pengumuman')
-                <a href="{{ route('pengumuman.create') }}" class="m3-btn-primary h-10 px-5 text-xs font-black shadow-2xs shrink-0 flex items-center justify-center">
+                <a href="{{ route('pengumuman.create') }}"
+                    class="m3-btn-primary h-10 px-5 text-xs font-black shadow-2xs shrink-0 flex items-center justify-center">
                     <i class="bi bi-megaphone-fill mr-1.5"></i>
                     Buat Pengumuman
                 </a>
@@ -43,14 +42,10 @@
         @forelse($pengumumans as $pengumuman)
             @php
                 $colorClass = match ($pengumuman->tipe) {
-                    'Penting'
-                        => 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20',
-                    'Kegiatan'
-                        => 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-                    'Libur'
-                        => 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
-                    default
-                        => 'text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20',
+                    'Penting' => 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20',
+                    'Kegiatan' => 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+                    'Libur' => 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
+                    default => 'text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20',
                 };
 
                 $iconClass = match ($pengumuman->tipe) {
@@ -72,12 +67,22 @@
                             <i class="bi {{ $iconClass }}"></i> {{ $pengumuman->tipe }}
                         </span>
 
-                        @if ($pengumuman->status == 'Draft')
-                            <span
-                                class="px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-black uppercase tracking-wider border border-zinc-200 dark:border-zinc-700 shadow-2xs">
-                                Draft
-                            </span>
-                        @endif
+                        <div class="flex items-center gap-1.5">
+                            @if ($pengumuman->lampiran_pdf)
+                                <span
+                                    class="px-2 py-0.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-black uppercase tracking-wider border border-rose-500/20 shadow-2xs flex items-center gap-1"
+                                    title="Ada lampiran PDF">
+                                    <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+                                </span>
+                            @endif
+
+                            @if ($pengumuman->status == 'Draft')
+                                <span
+                                    class="px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-black uppercase tracking-wider border border-zinc-200 dark:border-zinc-700 shadow-2xs">
+                                    Draft
+                                </span>
+                            @endif
+                        </div>
                     </div>
 
                     <!-- Judul & Konten Singkat -->
@@ -91,8 +96,7 @@
                 </div>
 
                 <!-- Footer Card (Tanggal & Aksi) -->
-                <div
-                    class="pt-3.5 border-t border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
+                <div class="pt-3.5 border-t border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
                     <div
                         class="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center">
                         <i class="bi bi-clock-history mr-1"></i>
@@ -119,7 +123,8 @@
             </div>
         @empty
             <div class="col-span-full">
-                <x-empty-state icon="bi-megaphone" title="Belum Ada Pengumuman" message="Papan mading masih kosong. Silakan buat pengumuman baru." />
+                <x-empty-state icon="bi-megaphone" title="Belum Ada Pengumuman"
+                    message="Papan mading masih kosong. Silakan buat pengumuman baru." />
             </div>
         @endforelse
     </div>
@@ -132,4 +137,3 @@
     @endif
 
 </x-app-layout>
-

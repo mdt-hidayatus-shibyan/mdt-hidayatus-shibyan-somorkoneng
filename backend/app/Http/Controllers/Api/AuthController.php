@@ -126,6 +126,88 @@ class AuthController extends Controller
     }
 
     /**
+     * Login Khusus Aplikasi Santri / Wali Murid (app_murid)
+     * Autentikasi via No. Registrasi / No. KK / NISM Santri
+     */
+    public function loginWali(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'identifier' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Input No. KK / No. Registrasi / NISM wajib diisi.',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $idInput = trim($request->identifier);
+
+        // 1. Cari berdasarkan Wali Murid (No. KK / No. Registrasi)
+        $wali = \App\Models\WaliMurid::with(['kampung', 'murids.ruangans'])
+            ->where(function ($q) use ($idInput) {
+                $q->where('no_kk', $idInput)
+                    ->orWhere('no_registrasi', $idInput);
+            })
+            ->where('is_active', true)
+            ->first();
+
+        // 2. Jika tidak ketemu, cari berdasarkan NISM / NISN / NIK Santri
+        if (!$wali) {
+            $murid = \App\Models\Murid::where('nism', $idInput)
+                ->orWhere('nisn', $idInput)
+                ->orWhere('nik', $idInput)
+                ->first();
+
+            if ($murid && $murid->wali_murid_id) {
+                $wali = \App\Models\WaliMurid::with(['kampung', 'murids.ruangans'])
+                    ->where('id', $murid->wali_murid_id)
+                    ->where('is_active', true)
+                    ->first();
+            }
+        }
+
+        if (!$wali) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data Wali/Santri tidak ditemukan atau status sedang nonaktif. Pastikan No. KK / No. Registrasi / NISM sudah benar.'
+            ], 404);
+        }
+
+        // Akun virtual untuk session token wali murid
+        $user = \App\Models\User::firstOrCreate(
+            ['username' => 'wali_' . $wali->no_registrasi],
+            [
+                'name'     => $wali->nama_kepala_keluarga,
+                'email'    => 'wali_' . $wali->no_registrasi . '@mdthidayatusshibyan.sch.id',
+                'password' => Hash::make('wali_' . $wali->no_registrasi),
+            ]
+        );
+
+        $token = $user->createToken('WaliAppToken')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login Berhasil',
+            'token'   => $token,
+            'role'    => 'wali',
+            'wali'    => [
+                'id'                   => $wali->id,
+                'no_registrasi'        => $wali->no_registrasi,
+                'no_kk'                => $wali->no_kk,
+                'nama_kepala_keluarga' => $wali->nama_kepala_keluarga,
+                'kepala_keluarga'      => $wali->kepala_keluarga,
+                'no_hp'                => $wali->no_hp,
+                'alamat'               => $wali->alamat_detail,
+                'kampung'              => $wali->kampung->nama_kampung ?? '-',
+                'total_anak'           => $wali->murids->where('status', 'Aktif')->count(),
+            ]
+        ], 200);
+    }
+
+    /**
      * 1.2 Lupa Password - Request Kode OTP Pemulihan
      */
     public function forgotPassword(Request $request)

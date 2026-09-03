@@ -3,12 +3,11 @@
 <x-app-layout>
 
     <!-- Header & Actions Section -->
-    <div class="mb-6 md:mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-5 relative z-10">
+    <div class="mb-6 md:mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-5 relative z-30">
 
         <!-- Judul & Subjudul -->
         <div>
-            <h2
-                class="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+            <h2 class="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
                 Kepala Keluarga (Wali)
             </h2>
             <p class="text-xs md:text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-1">
@@ -33,14 +32,16 @@
                         class="m3-input-glass w-full !pl-9 !pr-9 text-xs font-bold cursor-pointer appearance-none">
                         <option value="" class="bg-white dark:bg-zinc-900 text-zinc-500">Semua Kampung</option>
                         @foreach ($kampungs as $kp)
-                            <option value="{{ $kp->id }}" class="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-white" {{ $filterKampung == $kp->id ? 'selected' : '' }}>
-                                ({{ $kp->kode }}) - {{ $kp->nama_kampung }}
+                            <option value="{{ $kp->id }}"
+                                class="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-white"
+                                {{ $filterKampung == $kp->id ? 'selected' : '' }}>
+                                ({{ $kp->kode }})
+                                - {{ $kp->nama_kampung }}
                             </option>
                         @endforeach
                     </select>
                     <!-- Ikon Chevron M3 -->
-                    <div
-                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-zinc-400">
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-zinc-400">
                         <i class="bi bi-chevron-down text-xs font-bold"></i>
                     </div>
                 </div>
@@ -68,24 +69,56 @@
             </form>
 
             <!-- Action Buttons -->
-            @can('tambah wali-murid')
-                <div class="flex items-center gap-2 w-full sm:w-auto">
+            <div class="flex items-center gap-2 w-full sm:w-auto">
 
-                    <!-- Tombol Import (Soft Amber) -->
-                    <a href="{{ route('wali-murid.import') }}"
-                        class="action-modal flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl text-xs font-black transition-all active:scale-95 shadow-2xs">
-                        <i class="bi bi-cloud-arrow-up-fill mr-1.5 text-sm"></i>
-                        <span>Import</span>
-                    </a>
 
+
+                @can('tambah wali-murid')
                     <!-- Tombol Tambah (Primary M3) -->
-                    <a href="{{ route('wali-murid.create') }}" class="m3-btn-primary flex-1 sm:flex-none h-10 px-5 text-xs font-black shadow-2xs group/btn">
+                    <a href="{{ route('wali-murid.create') }}"
+                        class="m3-btn-primary flex-1 sm:flex-none h-10 px-5 text-xs font-black shadow-2xs group/btn">
                         <i class="bi bi-person-plus-fill mr-1.5 text-sm"></i>
                         <span>Tambah KK</span>
                     </a>
+                @endcan
 
+                <!-- Tombol Dropdown Opsi Data -->
+                <div class="relative inline-block text-left dropdown-container z-30">
+
+                    <button type="button" data-dropdown-toggle="dropdownOpsiData"
+                        class="m3-btn-secondary h-10 w-10 !p-0 inline-flex items-center justify-center shadow-2xs"
+                        title="Opsi Lainnya">
+                        <i class="bi bi-three-dots text-sm"></i>
+                    </button>
+
+                    <div id="dropdownOpsiData" class="m3-dropdown-menu hidden right-0 left-auto min-w-[180px] !z-50">
+
+                        <a href="{{ route('wali-murid.export-excel', ['kampung_id' => request('kampung_id')]) }}"
+                            class="m3-dropdown-item hover:!text-emerald-600 dark:hover:!text-emerald-400">
+                            <i class="bi bi-file-earmark-excel text-base text-emerald-600 dark:text-emerald-400"></i>
+                            <span>Export Excel</span>
+                        </a>
+
+                        <a href="{{ route('wali-murid.cetak', ['kampung_id' => request('kampung_id')]) }}"
+                            target="_blank" class="m3-dropdown-item hover:!text-blue-600 dark:hover:!text-blue-400">
+                            <i class="bi bi-printer text-base text-blue-600 dark:text-blue-400"></i>
+                            <span>Print Data</span>
+                        </a>
+
+                        @can('tambah wali-murid')
+                            <hr class="m3-dropdown-divider">
+
+                            <a href="{{ route('wali-murid.import') }}"
+                                class="m3-dropdown-item !text-amber-600 dark:!text-amber-400 hover:!bg-amber-50 dark:hover:!bg-amber-900/20 action-modal">
+                                <i class="bi bi-file-earmark-arrow-up text-base"></i>
+                                <span>Import Data</span>
+                            </a>
+                        @endcan
+
+                    </div>
                 </div>
-            @endcan
+
+            </div>
 
         </div>
     </div>

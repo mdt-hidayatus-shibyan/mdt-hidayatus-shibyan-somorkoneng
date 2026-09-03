@@ -65,10 +65,18 @@ class DashboardController extends Controller
             $jadwalHariIniList = $jadwalHariIniQuery->orderBy('jam_ke')->get();
             $jadwalHariIniCount = $jadwalHariIniList->count();
 
-            $formattedJadwal = $jadwalHariIniList->map(function ($j) use ($todayDate, &$presensiSelesaiCount) {
-                $sudahAbsen = PresensiMurid::where('jadwal_pelajaran_id', $j->id)
-                    ->where('tanggal', $todayDate)
-                    ->exists();
+            // Bulk query status presensi hari ini untuk eliminasi N+1
+            $jadwalIds = $jadwalHariIniList->pluck('id')->toArray();
+            $sudahAbsenMap = !empty($jadwalIds)
+                ? PresensiMurid::whereIn('jadwal_pelajaran_id', $jadwalIds)
+                ->where('tanggal', $todayDate)
+                ->pluck('jadwal_pelajaran_id')
+                ->flip()
+                ->toArray()
+                : [];
+
+            $formattedJadwal = $jadwalHariIniList->map(function ($j) use ($sudahAbsenMap, &$presensiSelesaiCount) {
+                $sudahAbsen = isset($sudahAbsenMap[$j->id]);
 
                 if ($sudahAbsen) {
                     $presensiSelesaiCount++;
@@ -105,22 +113,31 @@ class DashboardController extends Controller
             }
         }
 
-        // Pengumuman Aktif
-        $pengumuman = Pengumuman::where('is_published', true)
-            ->where(function ($q) {
-                $q->whereNull('tanggal_kadaluarsa')
-                    ->orWhere('tanggal_kadaluarsa', '>=', date('Y-m-d'));
+        // Pengumuman Aktif (Rentang tanggal terbit sampai tanggal selesai)
+        $today = date('Y-m-d');
+        $pengumuman = Pengumuman::where('status', 'Terbit')
+            ->where(function ($q) use ($today) {
+                $q->whereNull('tanggal_mulai')
+                    ->orWhere('tanggal_mulai', '<=', $today);
             })
+            ->where(function ($q) use ($today) {
+                $q->whereNull('tanggal_selesai')
+                    ->orWhere('tanggal_selesai', '>=', $today);
+            })
+            ->where('target_audience', 'Ustadz')
             ->latest()
             ->take(5)
             ->get()
             ->map(function ($p) {
                 return [
-                    'id' => $p->id,
-                    'judul' => $p->judul,
-                    'konten' => strip_tags($p->konten ?? $p->isi ?? ''),
-                    'tipe' => $p->kategori ?? 'Info',
-                    'tanggal_mulai' => $p->created_at ? $p->created_at->format('Y-m-d') : date('Y-m-d'),
+                    'id'                => $p->id,
+                    'judul'             => $p->judul,
+                    'konten_html'       => $p->konten,
+                    'konten'            => strip_tags($p->konten ?? ''),
+                    'tipe'              => $p->tipe ?? 'Informasi',
+                    'lampiran_pdf_url'  => $p->lampiran_pdf_url,
+                    'nama_file_pdf'     => $p->nama_file_pdf,
+                    'tanggal_mulai'     => $p->tanggal_mulai ? $p->tanggal_mulai->format('d-m-Y') : ($p->created_at ? $p->created_at->format('d-m-Y') : date('d-m-Y')),
                 ];
             });
 
@@ -143,16 +160,28 @@ class DashboardController extends Controller
 
     public function pengumuman()
     {
-        $pengumuman = Pengumuman::where('is_published', true)
+        $today = date('Y-m-d');
+        $pengumuman = Pengumuman::where('status', 'Terbit')
+            ->where(function ($q) use ($today) {
+                $q->whereNull('tanggal_mulai')
+                    ->orWhere('tanggal_mulai', '<=', $today);
+            })
+            ->where(function ($q) use ($today) {
+                $q->whereNull('tanggal_selesai')
+                    ->orWhere('tanggal_selesai', '>=', $today);
+            })
             ->latest()
             ->get()
             ->map(function ($p) {
                 return [
-                    'id' => $p->id,
-                    'judul' => $p->judul,
-                    'konten' => strip_tags($p->konten ?? $p->isi ?? ''),
-                    'tipe' => $p->kategori ?? 'Info',
-                    'tanggal_mulai' => $p->created_at ? $p->created_at->format('Y-m-d') : date('Y-m-d'),
+                    'id'                => $p->id,
+                    'judul'             => $p->judul,
+                    'konten_html'       => $p->konten,
+                    'konten'            => strip_tags($p->konten ?? ''),
+                    'tipe'              => $p->tipe ?? 'Informasi',
+                    'lampiran_pdf_url'  => $p->lampiran_pdf_url,
+                    'nama_file_pdf'     => $p->nama_file_pdf,
+                    'tanggal_mulai'     => $p->tanggal_mulai ? $p->tanggal_mulai->format('d-m-Y') : ($p->created_at ? $p->created_at->format('d-m-Y') : date('d-m-Y')),
                 ];
             });
 

@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/haptic_helper.dart';
 import '../../../data/models/murid_model.dart';
 import '../../../providers/murid_provider.dart';
+import '../../widgets/app_avatar.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/shimmer_loading.dart';
 
@@ -62,21 +63,10 @@ class _DirektoriMuridScreenState extends State<DirektoriMuridScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  CircleAvatar(
+                  AppAvatar(
                     radius: 28,
-                    backgroundColor: isDark
-                        ? const Color(0xFF0F2313)
-                        : AppColors.primaryContainerLight,
-                    child: Text(
-                      murid.namaLengkap.isNotEmpty ? murid.namaLengkap[0] : 'S',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: isDark
-                            ? AppColors.primaryDark
-                            : AppColors.primaryLight,
-                      ),
-                    ),
+                    name: murid.namaLengkap,
+                    imageUrl: murid.foto,
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -310,23 +300,11 @@ class _DirektoriMuridScreenState extends State<DirektoriMuridScreen> {
                   onTap: () => _showDetailSantri(murid),
                   child: Row(
                     children: [
-                      CircleAvatar(
+                      AppAvatar(
                         radius: 20,
-                        backgroundColor: isDark
-                            ? const Color(0xFF101710)
-                            : const Color(0xFFE8F5E9),
-                        child: Text(
-                          murid.namaLengkap.isNotEmpty
-                              ? murid.namaLengkap[0]
-                              : 'S',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: isDark
-                                ? AppColors.primaryDark
-                                : AppColors.primaryLight,
-                          ),
-                        ),
+                        name: murid.namaLengkap,
+                        imageUrl: murid.foto,
+                        cacheDimension: 80,
                       ),
                       const SizedBox(width: 12),
                       Expanded(

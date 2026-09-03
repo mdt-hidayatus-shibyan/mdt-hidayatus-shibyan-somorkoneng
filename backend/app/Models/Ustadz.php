@@ -62,4 +62,24 @@ class Ustadz extends Model
     {
         return $this->hasMany(JadwalPelajaran::class, 'ustadz_id');
     }
+
+    /**
+     * Accessor URL foto ustadz yang konsisten untuk Web & Mobile
+     */
+    public function getFotoUrlAttribute()
+    {
+        if (!$this->foto) {
+            return null;
+        }
+
+        if (str_starts_with($this->foto, 'http://') || str_starts_with($this->foto, 'https://')) {
+            return $this->foto;
+        }
+
+        if (str_starts_with($this->foto, 'storage/')) {
+            return asset($this->foto);
+        }
+
+        return asset('storage/' . $this->foto);
+    }
 }
