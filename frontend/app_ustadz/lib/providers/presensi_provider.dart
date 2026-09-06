@@ -13,6 +13,9 @@ class PresensiProvider extends ChangeNotifier {
   List<MuridPresensiItem> _muridList = [];
   bool _isLibur = false;
   String? _keteranganLibur;
+  bool _isUjian = false;
+  String? _namaUjian;
+  int? _ujianId;
   bool _isLoading = false;
   bool _isSaving = false;
   String? _errorMessage;
@@ -22,6 +25,9 @@ class PresensiProvider extends ChangeNotifier {
   List<MuridPresensiItem> get muridList => _muridList;
   bool get isLibur => _isLibur;
   String? get keteranganLibur => _keteranganLibur;
+  bool get isUjian => _isUjian;
+  String? get namaUjian => _namaUjian;
+  int? get ujianId => _ujianId;
   bool get isLoading => _isLoading;
   bool get isSaving => _isSaving;
   String? get errorMessage => _errorMessage;
@@ -34,6 +40,10 @@ class PresensiProvider extends ChangeNotifier {
   int get countAlpha => _muridList.where((m) => m.status == 'Alpha').length;
   int get countDispensasi =>
       _muridList.where((m) => m.status == 'Dispensasi').length;
+  int get countBelumDiisi =>
+      _muridList.where((m) => m.status == null || m.status!.isEmpty).length;
+  int get countSudahDiisi =>
+      _muridList.where((m) => m.status != null && m.status!.isNotEmpty).length;
 
   void setSelectedDate(DateTime date) {
     _selectedDate = date;
@@ -51,6 +61,9 @@ class PresensiProvider extends ChangeNotifier {
       _sesiList = response.sesiList;
       _isLibur = response.isLibur;
       _keteranganLibur = response.keteranganLibur;
+      _isUjian = response.isUjian;
+      _namaUjian = response.namaUjian;
+      _ujianId = response.ujianId;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
     } finally {
@@ -78,7 +91,12 @@ class PresensiProvider extends ChangeNotifier {
   void updateMuridStatus(int muridId, String newStatus) {
     final index = _muridList.indexWhere((m) => m.muridId == muridId);
     if (index != -1) {
-      _muridList[index].status = newStatus;
+      // Jika status yang diklik sama dengan status saat ini, toggle menjadi null (kosongkan)
+      if (_muridList[index].status == newStatus) {
+        _muridList[index].status = null;
+      } else {
+        _muridList[index].status = newStatus;
+      }
       HapticHelper.segmentTick();
       notifyListeners();
     }
@@ -90,6 +108,15 @@ class PresensiProvider extends ChangeNotifier {
       murid.status = 'Hadir';
     }
     HapticHelper.medium();
+    notifyListeners();
+  }
+
+  // 1-Tap Quick Action: Kosongkan Semua
+  void setSemuaKosong() {
+    for (var murid in _muridList) {
+      murid.status = null;
+    }
+    HapticHelper.light();
     notifyListeners();
   }
 
@@ -126,6 +153,9 @@ class PresensiProvider extends ChangeNotifier {
   RiwayatPresensiUstadz? _riwayatUstadz;
   bool _isLiburUstadz = false;
   String? _keteranganLiburUstadz;
+  bool _isUjianUstadz = false;
+  String? _namaUjianUstadz;
+  int? _ujianIdUstadz;
   bool _isLoadingUstadz = false;
   bool _isCheckingInUstadz = false;
 
@@ -135,6 +165,9 @@ class PresensiProvider extends ChangeNotifier {
   RiwayatPresensiUstadz? get riwayatUstadz => _riwayatUstadz;
   bool get isLiburUstadz => _isLiburUstadz;
   String? get keteranganLiburUstadz => _keteranganLiburUstadz;
+  bool get isUjianUstadz => _isUjianUstadz;
+  String? get namaUjianUstadz => _namaUjianUstadz;
+  int? get ujianIdUstadz => _ujianIdUstadz;
   bool get isLoadingUstadz => _isLoadingUstadz;
   bool get isCheckingInUstadz => _isCheckingInUstadz;
 
@@ -154,6 +187,9 @@ class PresensiProvider extends ChangeNotifier {
       _sesiUstadzList = response.sesiList;
       _isLiburUstadz = response.isLibur;
       _keteranganLiburUstadz = response.keteranganLibur;
+      _isUjianUstadz = response.isUjian;
+      _namaUjianUstadz = response.namaUjian;
+      _ujianIdUstadz = response.ujianId;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
     } finally {
@@ -217,6 +253,9 @@ class PresensiProvider extends ChangeNotifier {
     _muridList = [];
     _isLibur = false;
     _keteranganLibur = null;
+    _isUjian = false;
+    _namaUjian = null;
+    _ujianId = null;
     _isLoading = false;
     _isSaving = false;
     _errorMessage = null;
@@ -227,6 +266,9 @@ class PresensiProvider extends ChangeNotifier {
     _riwayatUstadz = null;
     _isLiburUstadz = false;
     _keteranganLiburUstadz = null;
+    _isUjianUstadz = false;
+    _namaUjianUstadz = null;
+    _ujianIdUstadz = null;
     _isLoadingUstadz = false;
     _isCheckingInUstadz = false;
     notifyListeners();

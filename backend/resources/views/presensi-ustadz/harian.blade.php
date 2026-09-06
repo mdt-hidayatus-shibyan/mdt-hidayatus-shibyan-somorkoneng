@@ -37,8 +37,7 @@
                             class="m3-input-glass w-full !pl-9 !pr-8 text-xs font-bold cursor-pointer appearance-none">
                             <option value="" class="text-zinc-500">-- Pilih Ruangan --</option>
                             @foreach ($ruangans as $ruangan)
-                                <option value="{{ $ruangan->id }}"
-                                    {{ $ruangan_id == $ruangan->id ? 'selected' : '' }}>
+                                <option value="{{ $ruangan->id }}" {{ $ruangan_id == $ruangan->id ? 'selected' : '' }}>
                                     {{ $ruangan->nama_ruangan }}
                                 </option>
                             @endforeach
@@ -63,6 +62,38 @@
 
     </div>
 
+    @if (!empty($isUjian))
+        <!-- BANNER INFO JADWAL/MASA UJIAN -->
+        <div
+            class="mb-6 m3-glass-card p-4 md:p-5 border-violet-500/30 bg-violet-500/10 relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+                <div
+                    class="w-11 h-11 bg-violet-500/20 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center text-xl shrink-0 border border-violet-500/30">
+                    <i class="bi bi-file-earmark-check-fill"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="px-2 py-0.5 rounded-md bg-violet-500/20 text-violet-700 dark:text-violet-300 font-extrabold text-[10px] uppercase tracking-wider">
+                            Masa Ujian Madrasah
+                        </span>
+                    </div>
+                    <h4 class="text-sm font-black text-zinc-900 dark:text-white mt-0.5">
+                        Tanggal ini bertepatan dengan {{ $namaUjian ?? 'Ujian Madrasah' }}
+                    </h4>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                        Presensi mengajar reguler dialihkan ke Presensi Pengawas Ujian di ruang ujian.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('presensi-ujian.input', ['ruangan_id' => $ruangan_id, 'ujian_id' => $ujianId]) }}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-md transition-all shrink-0">
+                <i class="bi bi-box-arrow-up-right text-xs"></i>
+                <span>Buka Presensi Ujian</span>
+            </a>
+        </div>
+    @endif
+
     <!-- AREA HASIL PENCARIAN -->
     @if ($ruangan_id)
         @if ($isLibur)
@@ -73,27 +104,57 @@
                     class="w-14 h-14 bg-rose-500/20 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-rose-500/30 text-rose-500">
                     <i class="bi bi-brightness-high-fill text-2xl"></i>
                 </div>
-                <h3 class="text-xl font-black text-rose-600 dark:text-rose-400 mb-1 tracking-tight">Hari Libur Madrasah</h3>
+                <h3 class="text-xl font-black text-rose-600 dark:text-rose-400 mb-1 tracking-tight">Hari Libur Madrasah
+                </h3>
                 <div
                     class="inline-block bg-white/60 dark:bg-black/40 py-1.5 px-4 rounded-xl border border-rose-500/20 mt-2">
                     <p class="text-xs font-black text-rose-600 dark:text-rose-400 tracking-wide uppercase">
                         Keterangan: {{ $keteranganLibur }}
                     </p>
                 </div>
-                <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-3">Form presensi dinonaktifkan pada hari libur.</p>
+                <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-3">Form presensi dinonaktifkan pada
+                    hari libur.</p>
+            </div>
+        @elseif (!empty($isUjian))
+            <!-- STATE MASA UJIAN MADRASAH (FORM KBM DINONAKTIFKAN & DIALIHKAN KE PRESENSI UJIAN) -->
+            <div
+                class="m3-glass-card p-8 md:p-12 text-center relative z-10 border-violet-500/30 bg-violet-500/5 shadow-2xs">
+                <div
+                    class="w-16 h-16 bg-violet-500/20 text-violet-600 dark:text-violet-400 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-violet-500/30 text-3xl shadow-sm">
+                    <i class="bi bi-file-earmark-check-fill"></i>
+                </div>
+                <h3 class="text-xl font-black text-zinc-900 dark:text-white mb-1 tracking-tight">Masa Ujian Madrasah
+                </h3>
+                <div
+                    class="inline-block bg-white/80 dark:bg-black/40 py-1.5 px-4 rounded-xl border border-violet-500/20 mt-2">
+                    <p class="text-xs font-black text-violet-700 dark:text-violet-300 tracking-wide uppercase">
+                        Sedang Berlangsung: {{ $namaUjian ?? 'Ujian Madrasah' }}
+                    </p>
+                </div>
+                <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-3 max-w-md mx-auto">
+                    Presensi mengajar reguler dinonaktifkan pada tanggal pelaksanaan ujian. Silakan gunakan modul
+                    Presensi Pengawas Ujian untuk mencatat kehadiran dan berita acara.
+                </p>
+                <div class="mt-6">
+                    <a href="{{ route('presensi-ujian.input', ['ruangan_id' => $ruangan_id, 'ujian_id' => $ujianId]) }}"
+                        class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-md transition-all">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        <span>Buka Presensi Pengawas Ujian</span>
+                    </a>
+                </div>
             </div>
         @elseif ($jadwals->isEmpty())
             <!-- STATE TIDAK ADA JADWAL -->
             <div class="col-span-full">
-                <x-empty-state icon="bi-calendar-x" title="Tidak Ada Jadwal" message="Tidak ditemukan jadwal pelajaran di ruangan ini pada tanggal yang Anda pilih." />
+                <x-empty-state icon="bi-calendar-x" title="Tidak Ada Jadwal"
+                    message="Tidak ditemukan jadwal pelajaran di ruangan ini pada tanggal yang Anda pilih." />
             </div>
         @else
             <!-- FORM PENGISIAN PRESENSI (GRID KIRI-KANAN) -->
             <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 md:gap-6 relative z-10">
 
                 <!-- KOLOM KIRI (FORM INPUT) -->
-                <div
-                    class="xl:col-span-8 m3-glass-card overflow-hidden relative flex flex-col shadow-2xs">
+                <div class="xl:col-span-8 m3-glass-card overflow-hidden relative flex flex-col shadow-2xs">
 
                     <!-- Header Kiri -->
                     <div
@@ -135,8 +196,7 @@
                                                 class="inline-block px-2 py-0.5 bg-primary/10 text-primary dark:text-primary-dark border border-primary/20 text-[9px] font-black rounded-lg uppercase tracking-wider mb-1">
                                                 Jam Ke-{{ $jadwal->jam_ke }}
                                             </span>
-                                            <h4
-                                                class="text-sm font-black text-zinc-900 dark:text-white tracking-tight">
+                                            <h4 class="text-sm font-black text-zinc-900 dark:text-white tracking-tight">
                                                 {{ $jadwal->mataPelajaran->nama_mapel }}
                                             </h4>
                                         </div>
@@ -183,8 +243,9 @@
 
                                                 <!-- Opsi Sakit -->
                                                 <label class="relative cursor-pointer">
-                                                    <input type="radio" name="presensi[{{ $jadwal->id }}][status]"
-                                                        value="Sakit" class="status-radio sr-only peer"
+                                                    <input type="radio"
+                                                        name="presensi[{{ $jadwal->id }}][status]" value="Sakit"
+                                                        class="status-radio sr-only peer"
                                                         {{ $currentStatus == 'Sakit' ? 'checked' : '' }}>
                                                     <div
                                                         class="w-full flex items-center justify-center py-2 px-1 text-xs font-black rounded-xl border transition-all shadow-2xs
@@ -197,8 +258,9 @@
 
                                                 <!-- Opsi Izin -->
                                                 <label class="relative cursor-pointer">
-                                                    <input type="radio" name="presensi[{{ $jadwal->id }}][status]"
-                                                        value="Izin" class="status-radio sr-only peer"
+                                                    <input type="radio"
+                                                        name="presensi[{{ $jadwal->id }}][status]" value="Izin"
+                                                        class="status-radio sr-only peer"
                                                         {{ $currentStatus == 'Izin' ? 'checked' : '' }}>
                                                     <div
                                                         class="w-full flex items-center justify-center py-2 px-1 text-xs font-black rounded-xl border transition-all shadow-2xs
@@ -211,8 +273,9 @@
 
                                                 <!-- Opsi Alpha -->
                                                 <label class="relative cursor-pointer">
-                                                    <input type="radio" name="presensi[{{ $jadwal->id }}][status]"
-                                                        value="Alpha" class="status-radio sr-only peer"
+                                                    <input type="radio"
+                                                        name="presensi[{{ $jadwal->id }}][status]" value="Alpha"
+                                                        class="status-radio sr-only peer"
                                                         {{ $currentStatus == 'Alpha' ? 'checked' : '' }}>
                                                     <div
                                                         class="w-full flex items-center justify-center py-2 px-1 text-xs font-black rounded-xl border transition-all shadow-2xs
@@ -225,8 +288,9 @@
 
                                                 <!-- Opsi Kosong -->
                                                 <label class="relative cursor-pointer col-span-2 sm:col-span-1">
-                                                    <input type="radio" name="presensi[{{ $jadwal->id }}][status]"
-                                                        value="Kosong" class="status-radio sr-only peer"
+                                                    <input type="radio"
+                                                        name="presensi[{{ $jadwal->id }}][status]" value="Kosong"
+                                                        class="status-radio sr-only peer"
                                                         {{ $currentStatus == 'Kosong' ? 'checked' : '' }}>
                                                     <div
                                                         class="w-full flex items-center justify-center py-2 px-1 text-xs font-black rounded-xl border transition-all shadow-2xs
@@ -249,7 +313,8 @@
                                             <div class="relative">
                                                 <select name="presensi[{{ $jadwal->id }}][ustadz_pengganti_id]"
                                                     class="m3-input-glass w-full !pr-8 text-xs font-bold text-amber-800 dark:text-amber-400 !border-amber-500/30 cursor-pointer appearance-none">
-                                                    <option value="" class="text-zinc-500">-- Pilih Guru Pengganti --</option>
+                                                    <option value="" class="text-zinc-500">-- Pilih Guru
+                                                        Pengganti --</option>
                                                     @foreach ($semuaGuru as $guru)
                                                         @if ($guru->id != $jadwal->ustadz_id)
                                                             <option value="{{ $guru->id }}"
@@ -294,8 +359,7 @@
 
                 <!-- KOLOM KANAN (STATUS HARI INI) -->
                 <div class="xl:col-span-4">
-                    <div
-                        class="m3-glass-card overflow-hidden sticky top-6 relative shadow-2xs">
+                    <div class="m3-glass-card overflow-hidden sticky top-6 relative shadow-2xs">
 
                         <!-- Header Kanan -->
                         <div
@@ -304,8 +368,7 @@
                                 class="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 text-primary dark:text-primary-dark flex items-center justify-center text-sm shrink-0">
                                 <i class="bi bi-clock-history"></i>
                             </div>
-                            <h3
-                                class="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider">
+                            <h3 class="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider">
                                 Status Hari Ini
                             </h3>
                         </div>
@@ -329,10 +392,13 @@
                                                 => 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700',
                                             default => 'bg-zinc-100 text-zinc-600 border-zinc-200',
                                         };
-                                        $cardStyle = 'border-zinc-200/80 dark:border-zinc-800 bg-white/40 dark:bg-zinc-900/30';
+                                        $cardStyle =
+                                            'border-zinc-200/80 dark:border-zinc-800 bg-white/40 dark:bg-zinc-900/30';
                                     } else {
-                                        $badgeColor = 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700';
-                                        $cardStyle = 'border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/10';
+                                        $badgeColor =
+                                            'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700';
+                                        $cardStyle =
+                                            'border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/10';
                                     }
                                 @endphp
 
@@ -405,7 +471,8 @@
     @else
         <!-- State Awal (Belum Pilih Filter) -->
         <div class="col-span-full">
-            <x-empty-state icon="bi-door-open" title="Pilih Ruangan" message="Silakan tentukan ruangan/kelas pada filter di atas untuk memuat daftar jadwal guru yang mengajar hari ini." />
+            <x-empty-state icon="bi-door-open" title="Pilih Ruangan"
+                message="Silakan tentukan ruangan/kelas pada filter di atas untuk memuat daftar jadwal guru yang mengajar hari ini." />
         </div>
     @endif
     <form id="formHapusPresensi" method="POST" class="hidden">
@@ -470,4 +537,3 @@
         }
     </script>
 </x-app-layout>
-

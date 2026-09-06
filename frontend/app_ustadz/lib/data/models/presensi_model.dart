@@ -1,11 +1,17 @@
 class SesiPresensiResponse {
   final bool isLibur;
   final String? keteranganLibur;
+  final bool isUjian;
+  final String? namaUjian;
+  final int? ujianId;
   final List<SesiPresensiItem> sesiList;
 
   SesiPresensiResponse({
     required this.isLibur,
     this.keteranganLibur,
+    this.isUjian = false,
+    this.namaUjian,
+    this.ujianId,
     required this.sesiList,
   });
 
@@ -14,6 +20,9 @@ class SesiPresensiResponse {
     return SesiPresensiResponse(
       isLibur: json['is_libur'] ?? false,
       keteranganLibur: json['keterangan_libur'],
+      isUjian: json['is_ujian'] ?? false,
+      namaUjian: json['nama_ujian'],
+      ujianId: json['ujian_id'],
       sesiList: rawList.map((e) => SesiPresensiItem.fromJson(e)).toList(),
     );
   }
@@ -56,14 +65,15 @@ class MuridPresensiItem {
   final String nama;
   final String nism;
   final String jenisKelamin;
-  String status; // Hadir, Sakit, Izin, Alpha, Dispensasi
+  String?
+  status; // Hadir, Sakit, Izin, Alpha, Dispensasi, or null (Belum diisi)
 
   MuridPresensiItem({
     required this.muridId,
     required this.nama,
     required this.nism,
     required this.jenisKelamin,
-    this.status = 'Hadir',
+    this.status,
   });
 
   factory MuridPresensiItem.fromJson(Map<String, dynamic> json) {
@@ -72,7 +82,7 @@ class MuridPresensiItem {
       nama: json['nama'] ?? json['nama_lengkap'] ?? '',
       nism: json['nism'] ?? '',
       jenisKelamin: json['jenis_kelamin'] ?? 'L',
-      status: json['status'] ?? 'Hadir',
+      status: json['status'],
     );
   }
 
@@ -143,11 +153,17 @@ class RiwayatUstadzItem {
 class SesiPresensiUstadzResponse {
   final bool isLibur;
   final String? keteranganLibur;
+  final bool isUjian;
+  final String? namaUjian;
+  final int? ujianId;
   final List<SesiPresensiUstadzItem> sesiList;
 
   SesiPresensiUstadzResponse({
     required this.isLibur,
     this.keteranganLibur,
+    this.isUjian = false,
+    this.namaUjian,
+    this.ujianId,
     required this.sesiList,
   });
 
@@ -156,6 +172,9 @@ class SesiPresensiUstadzResponse {
     return SesiPresensiUstadzResponse(
       isLibur: json['is_libur'] ?? false,
       keteranganLibur: json['keterangan_libur'],
+      isUjian: json['is_ujian'] ?? false,
+      namaUjian: json['nama_ujian'],
+      ujianId: json['ujian_id'],
       sesiList: rawList.map((e) => SesiPresensiUstadzItem.fromJson(e)).toList(),
     );
   }

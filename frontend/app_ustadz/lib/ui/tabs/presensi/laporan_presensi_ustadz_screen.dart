@@ -95,7 +95,57 @@ class _LaporanPresensiUstadzScreenState
                 ],
               ),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 16),
+
+            // Banner Keterangan Presensi Ujian
+            GlassCard(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.violetAccent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.assignment_turned_in_rounded,
+                      size: 20,
+                      color: AppColors.violetAccent,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Presensi Pengawasan Ujian',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF581C87),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Catatan kehadiran mengawas pada tanggal ujian madrasah dialihkan dan dicatat terpisah pada Modul Ujian.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark
+                                ? const Color(0xFF8D9387)
+                                : const Color(0xFF73796E),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
 
             // 2. Daftar Riwayat Kehadiran & Guru Badal
             const Text(

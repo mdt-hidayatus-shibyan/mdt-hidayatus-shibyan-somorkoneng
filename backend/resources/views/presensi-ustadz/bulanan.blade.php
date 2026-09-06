@@ -25,8 +25,7 @@
                             class="m3-input-glass w-full !pl-9 !pr-8 text-xs font-bold cursor-pointer appearance-none">
                             <option value="" class="text-zinc-500">-- Pilih Bulan --</option>
                             @foreach ($bulans as $b)
-                                <option value="{{ $b->id }}"
-                                    {{ $bulan_id == $b->id ? 'selected' : '' }}>
+                                <option value="{{ $b->id }}" {{ $bulan_id == $b->id ? 'selected' : '' }}>
                                     {{ $b->nama_bulan }} {{ $b->tahun_hijriyah }}
                                 </option>
                             @endforeach
@@ -49,8 +48,7 @@
                             class="m3-input-glass w-full !pl-9 !pr-8 text-xs font-bold cursor-pointer appearance-none">
                             <option value="" class="text-zinc-500">-- Pilih Ruangan --</option>
                             @foreach ($ruangans as $ruangan)
-                                <option value="{{ $ruangan->id }}"
-                                    {{ $ruangan_id == $ruangan->id ? 'selected' : '' }}>
+                                <option value="{{ $ruangan->id }}" {{ $ruangan_id == $ruangan->id ? 'selected' : '' }}>
                                     {{ $ruangan->nama_ruangan }}
                                 </option>
                             @endforeach
@@ -75,8 +73,7 @@
 
     <!-- AREA HASIL TABEL -->
     @if ($bulan_id && $ruangan_id)
-        <div
-            class="m3-glass-card overflow-hidden relative z-10 shadow-2xs">
+        <div class="m3-glass-card overflow-hidden relative z-10 shadow-2xs">
 
             <!-- Header Leger -->
             <div
@@ -88,7 +85,8 @@
                     </h3>
                     <p
                         class="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center">
-                        <i class="bi bi-info-circle-fill mr-1.5 opacity-70"></i> Menampilkan jadwal & presensi Ustadz harian.
+                        <i class="bi bi-info-circle-fill mr-1.5 opacity-70"></i> Menampilkan jadwal & presensi Ustadz
+                        harian.
                     </p>
                 </div>
             </div>
@@ -99,19 +97,23 @@
                     <thead
                         class="bg-zinc-100/70 dark:bg-zinc-800/50 border-b border-zinc-200/80 dark:border-zinc-800 sticky top-0 z-20">
                         <tr class="text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                            <th class="py-3 px-4 w-16 text-center border-r border-zinc-200/60 dark:border-zinc-800/60">Tgl</th>
-                            <th class="py-3 px-4 w-28 text-center border-r border-zinc-200/60 dark:border-zinc-800/60">Hari</th>
-                            <th class="py-3 px-5 w-1/3 border-r border-zinc-200/60 dark:border-zinc-800/60">Jam Nadzoman</th>
-                            <th class="py-3 px-5 w-1/3 border-r border-zinc-200/60 dark:border-zinc-800/60">Jam Ke-1</th>
-                            <th class="py-3 px-5 w-1/3 border-r border-zinc-200/60 dark:border-zinc-800/60">Jam Ke-2</th>
+                            <th class="py-3 px-4 w-16 text-center border-r border-zinc-200/60 dark:border-zinc-800/60">
+                                Tgl</th>
+                            <th class="py-3 px-4 w-28 text-center border-r border-zinc-200/60 dark:border-zinc-800/60">
+                                Hari</th>
+                            <th class="py-3 px-5 w-1/3 border-r border-zinc-200/60 dark:border-zinc-800/60">Jam Nadzoman
+                            </th>
+                            <th class="py-3 px-5 w-1/3 border-r border-zinc-200/60 dark:border-zinc-800/60">Jam Ke-1
+                            </th>
+                            <th class="py-3 px-5 w-1/3 border-r border-zinc-200/60 dark:border-zinc-800/60">Jam Ke-2
+                            </th>
                             <th class="py-3 px-5 w-1/3">Jam Ekstra</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-zinc-200/80 dark:divide-zinc-800/60">
                         @php $noTgl = 1; @endphp
                         @foreach ($dates as $tglMasehi => $info)
-                            <tr
-                                class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors group/row">
+                            <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors group/row">
 
                                 <!-- Tanggal -->
                                 <td
@@ -136,6 +138,26 @@
                                             class="flex items-center justify-center gap-2 text-rose-500 dark:text-rose-400 font-black text-[11px] uppercase tracking-wider">
                                             <i class="bi bi-brightness-high-fill"></i>
                                             {{ $info['keterangan_libur'] }}
+                                        </div>
+                                    </td>
+                                @elseif (!empty($info['is_ujian']))
+                                    <!-- MASA UJIAN -->
+                                    <td colspan="4"
+                                        class="py-3 px-5 bg-violet-500/5 dark:bg-violet-500/10 align-middle">
+                                        <div class="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+                                            <div
+                                                class="flex items-center gap-2 text-violet-600 dark:text-violet-400 font-black text-[11px] uppercase tracking-wider">
+                                                <i class="bi bi-card-checklist text-sm"></i>
+                                                <span>Masa Ujian: {{ $info['nama_ujian'] }} (Dialihkan ke Presensi
+                                                    Ujian)</span>
+                                            </div>
+                                            @can('create presensi-ujian')
+                                                <a href="{{ route('presensi-ujian.input') }}"
+                                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white font-black text-[10px] tracking-wide shadow-2xs transition-colors shrink-0">
+                                                    <i class="bi bi-arrow-right-circle"></i>
+                                                    <span>Buka Presensi Ujian</span>
+                                                </a>
+                                            @endcan
                                         </div>
                                     </td>
                                 @else
@@ -251,7 +273,8 @@
     @else
         <!-- State Awal saat halaman baru dibuka -->
         <div class="col-span-full">
-            <x-empty-state icon="bi-door-open" title="Pilih Parameter" message="Tentukan Bulan dan Ruangan pada filter di atas untuk melihat rekapitulasi kehadiran dan jadwal Badal Asatidz." />
+            <x-empty-state icon="bi-door-open" title="Pilih Parameter"
+                message="Tentukan Bulan dan Ruangan pada filter di atas untuk melihat rekapitulasi kehadiran dan jadwal Badal Asatidz." />
         </div>
     @endif
 
@@ -502,4 +525,3 @@
         }
     </script>
 </x-app-layout>
-

@@ -67,6 +67,7 @@ class PresensiMuridController extends Controller
             // ==========================================================
 
             // ==========================================================
+            // ==========================================================
             // CEK HARI LIBUR & JUMAT
             // ==========================================================
             $libur = \App\Models\HariLibur::where('tanggal_mulai', '<=', $tanggal)
@@ -84,6 +85,24 @@ class PresensiMuridController extends Controller
             }
             // ==========================================================
 
+            // ==========================================================
+            // CEK TANGGAL UJIAN MADRASAH
+            // ==========================================================
+            $ujian = \App\Models\Ujian\Ujian::whereDate('tanggal_mulai', '<=', $tanggal)
+                ->whereDate('tanggal_selesai', '>=', $tanggal)
+                ->first();
+
+            if (!$ujian) {
+                $jadwalUjianAda = \App\Models\Ujian\JadwalUjian::whereDate('tanggal_ujian', $tanggal)->first();
+                if ($jadwalUjianAda) {
+                    $ujian = $jadwalUjianAda->ujian;
+                }
+            }
+
+            $isUjian = ($ujian != null);
+            $namaUjian = $ujian ? $ujian->nama_ujian : null;
+            $ujianId = $ujian ? $ujian->id : null;
+            // ==========================================================
 
             // JIKA TIDAK LIBUR, BARU EKSEKUSI PENCARIAN JADWAL DAN MURID
             if (!$isLibur) {
@@ -125,6 +144,20 @@ class PresensiMuridController extends Controller
                         ->keyBy('murid_id'); // Kunci array pakai ID murid agar mudah dicari di View
                 }
             }
+        } else {
+            // Cek ujian jika ruangan / jam belum dipilih tapi tanggal sudah ada
+            $ujian = \App\Models\Ujian\Ujian::whereDate('tanggal_mulai', '<=', $tanggal)
+                ->whereDate('tanggal_selesai', '>=', $tanggal)
+                ->first();
+            if (!$ujian) {
+                $jadwalUjianAda = \App\Models\Ujian\JadwalUjian::whereDate('tanggal_ujian', $tanggal)->first();
+                if ($jadwalUjianAda) {
+                    $ujian = $jadwalUjianAda->ujian;
+                }
+            }
+            $isUjian = ($ujian != null);
+            $namaUjian = $ujian ? $ujian->nama_ujian : null;
+            $ujianId = $ujian ? $ujian->id : null;
         }
 
         return view('presensi-murid.harian', compact(
@@ -138,7 +171,10 @@ class PresensiMuridController extends Controller
             'murids',
             'presensiTersimpan',
             'isLibur', // Tambahan
-            'keteranganLibur' // Tambahan
+            'keteranganLibur', // Tambahan
+            'isUjian',
+            'namaUjian',
+            'ujianId'
         ));
     }
 

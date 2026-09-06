@@ -65,6 +65,25 @@ class PresensiUstadzController extends Controller
             }
             // ==========================================================
 
+            // ==========================================================
+            // CEK TANGGAL UJIAN MADRASAH
+            // ==========================================================
+            $ujian = \App\Models\Ujian\Ujian::whereDate('tanggal_mulai', '<=', $tanggal)
+                ->whereDate('tanggal_selesai', '>=', $tanggal)
+                ->first();
+
+            if (!$ujian) {
+                $jadwalUjianAda = \App\Models\Ujian\JadwalUjian::whereDate('tanggal_ujian', $tanggal)->first();
+                if ($jadwalUjianAda) {
+                    $ujian = $jadwalUjianAda->ujian;
+                }
+            }
+
+            $isUjian = ($ujian != null);
+            $namaUjian = $ujian ? $ujian->nama_ujian : null;
+            $ujianId = $ujian ? $ujian->id : null;
+            // ==========================================================
+
             // Jika TIDAK LIBUR, baru kita cari jadwal dan riwayat presensinya
             if (!$isLibur) {
                 // Ambil jadwal pelajaran khusus ruangan dan hari tersebut
@@ -83,9 +102,35 @@ class PresensiUstadzController extends Controller
                         ->keyBy('jadwal_pelajaran_id');
                 }
             }
+        } else {
+            // Cek ujian jika ruangan belum dipilih tapi tanggal sudah ada
+            $ujian = \App\Models\Ujian\Ujian::whereDate('tanggal_mulai', '<=', $tanggal)
+                ->whereDate('tanggal_selesai', '>=', $tanggal)
+                ->first();
+            if (!$ujian) {
+                $jadwalUjianAda = \App\Models\Ujian\JadwalUjian::whereDate('tanggal_ujian', $tanggal)->first();
+                if ($jadwalUjianAda) {
+                    $ujian = $jadwalUjianAda->ujian;
+                }
+            }
+            $isUjian = ($ujian != null);
+            $namaUjian = $ujian ? $ujian->nama_ujian : null;
+            $ujianId = $ujian ? $ujian->id : null;
         }
 
-        return view('presensi-ustadz.harian', compact('tanggal', 'ruangan_id', 'ruangans', 'semuaGuru', 'jadwals', 'riwayatPresensi', 'isLibur', 'keteranganLibur'));
+        return view('presensi-ustadz.harian', compact(
+            'tanggal',
+            'ruangan_id',
+            'ruangans',
+            'semuaGuru',
+            'jadwals',
+            'riwayatPresensi',
+            'isLibur',
+            'keteranganLibur',
+            'isUjian',
+            'namaUjian',
+            'ujianId'
+        ));
     }
 
 
@@ -175,6 +220,20 @@ class PresensiUstadzController extends Controller
                     });
             })->get();
 
+            // Ambil data Ujian pada bulan ini
+            $ujians = \App\Models\Ujian\Ujian::where(function ($q) use ($bulanTerpilih) {
+                $q->whereBetween('tanggal_mulai', [$bulanTerpilih->tanggal_mulai_masehi, $bulanTerpilih->tanggal_selesai_masehi])
+                    ->orWhereBetween('tanggal_selesai', [$bulanTerpilih->tanggal_mulai_masehi, $bulanTerpilih->tanggal_selesai_masehi])
+                    ->orWhere(function ($sub) use ($bulanTerpilih) {
+                        $sub->where('tanggal_mulai', '<=', $bulanTerpilih->tanggal_mulai_masehi)
+                            ->where('tanggal_selesai', '>=', $bulanTerpilih->tanggal_selesai_masehi);
+                    });
+            })->get();
+
+            $jadwalUjians = \App\Models\Ujian\JadwalUjian::with('ujian')
+                ->whereBetween('tanggal_ujian', [$bulanTerpilih->tanggal_mulai_masehi, $bulanTerpilih->tanggal_selesai_masehi])
+                ->get();
+
             // Ambil presensi guru bulan ini (Riwayat inputan)
             $presensiDb = PresensiUstadz::with(['ustadz', 'guruPengganti'])
                 ->whereBetween('tanggal', [$bulanTerpilih->tanggal_mulai_masehi, $bulanTerpilih->tanggal_selesai_masehi])
@@ -223,14 +282,44 @@ class PresensiUstadzController extends Controller
                     }
                 }
 
+                // Cek Ujian
+                $isUjian = false;
+                $namaUjian = null;
+                $ujianId = null;
+
+                if (!$isLibur) {
+                    foreach ($ujians as $u) {
+                        $uMulai = Carbon::parse($u->tanggal_mulai)->format('Y-m-d');
+                        $uSelesai = Carbon::parse($u->tanggal_selesai)->format('Y-m-d');
+                        if ($tglMasehi >= $uMulai && $tglMasehi <= $uSelesai) {
+                            $isUjian = true;
+                            $namaUjian = $u->nama_ujian;
+                            $ujianId = $u->id;
+                            break;
+                        }
+                    }
+
+                    if (!$isUjian) {
+                        $jUjian = $jadwalUjians->firstWhere('tanggal_ujian', $tglMasehi);
+                        if ($jUjian) {
+                            $isUjian = true;
+                            $namaUjian = $jUjian->ujian->nama_ujian ?? 'Ujian Madrasah';
+                            $ujianId = $jUjian->ujian_id;
+                        }
+                    }
+                }
+
                 $dates[$tglMasehi] = [
                     'hari' => $hariIndo,
                     'is_libur' => $isLibur,
-                    'keterangan_libur' => $keteranganLibur
+                    'keterangan_libur' => $keteranganLibur,
+                    'is_ujian' => $isUjian,
+                    'nama_ujian' => $namaUjian,
+                    'ujian_id' => $ujianId,
                 ];
 
-                // Susun matriks per jam jika tidak libur
-                if (!$isLibur) {
+                // Susun matriks per jam jika tidak libur & tidak ujian
+                if (!$isLibur && !$isUjian) {
                     $jadwalHariIni = $jadwals->get($hariIndo);
 
                     foreach ($jamList as $jam) {
@@ -240,10 +329,8 @@ class PresensiUstadzController extends Controller
                             $presensi = $presensiFormatted[$tglMasehi][$jadwalJamIni->id] ?? null;
                             $matrix[$tglMasehi][$jam] = [
                                 'is_jadwal' => true,
-                                // 2. TAMBAHKAN 2 BARIS INI KE DALAM ARRAY:
                                 'jadwal_id' => $jadwalJamIni->id,
                                 'ustadz_id' => $jadwalJamIni->ustadz_id,
-
                                 'mapel' => $jadwalJamIni->mataPelajaran->nama_mapel,
                                 'guru_utama' => $jadwalJamIni->ustadz->nama_lengkap,
                                 'presensi' => $presensi

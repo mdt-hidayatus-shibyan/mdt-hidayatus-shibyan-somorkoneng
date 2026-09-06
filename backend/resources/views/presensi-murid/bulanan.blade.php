@@ -134,11 +134,40 @@
                                 <span class="text-blue-600 dark:text-blue-400 font-black">S</span> (Sakit),
                                 <span class="text-amber-600 dark:text-amber-400 font-black">I</span> (Izin),
                                 <span class="text-rose-600 dark:text-rose-400 font-black">A</span> (Alpha),
-                                <span class="text-purple-600 dark:text-purple-400 font-black">D</span> (Dispensasi).
+                                <span class="text-purple-600 dark:text-purple-400 font-black">D</span> (Dispensasi),
+                                <span class="text-violet-600 dark:text-violet-400 font-black">U</span> (Masa Ujian -
+                                Dialihkan).
                                 Kosongkan untuk menghapus.
                             </p>
                         </div>
                     </div>
+
+                    @php
+                        $examDatesInMonth = collect($dates)->where('is_ujian', true);
+                    @endphp
+                    @if ($examDatesInMonth->isNotEmpty())
+                        <div
+                            class="m-4 p-3.5 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="flex items-center gap-2.5 text-violet-800 dark:text-violet-300">
+                                <div
+                                    class="w-8 h-8 rounded-xl bg-violet-500/20 flex items-center justify-center shrink-0">
+                                    <i class="bi bi-card-checklist text-sm text-violet-600 dark:text-violet-400"></i>
+                                </div>
+                                <div class="text-xs font-bold leading-relaxed">
+                                    Terdapat tanggal pelaksanaan ujian madrasah pada bulan ini. Presensi pada tanggal
+                                    tersebut dinonaktifkan di KBM reguler dan dialihkan ke <strong>Presensi
+                                        Ujian</strong>.
+                                </div>
+                            </div>
+                            @can('create presensi-ujian')
+                                <a href="{{ route('presensi-ujian.input') }}"
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-black text-xs shadow-xs transition-colors shrink-0">
+                                    <i class="bi bi-arrow-right-circle"></i>
+                                    <span>Buka Presensi Ujian</span>
+                                </a>
+                            @endcan
+                        </div>
+                    @endif
 
                     <!-- AREA SCROLL TABEL -->
                     <div class="overflow-auto max-h-[600px] custom-scrollbar relative z-0">
@@ -168,6 +197,17 @@
                                                 <div class="text-[8px] font-black text-rose-500 dark:text-rose-400 mt-0.5 uppercase tracking-wider truncate max-w-[45px] mx-auto"
                                                     title="{{ $data['is_libur_madrasah'] ? $data['keterangan_libur'] : 'Libur Jumat' }}">
                                                     {{ $data['is_libur_madrasah'] ? 'Libur' : 'Jum' }}
+                                                </div>
+                                            </th>
+                                        @elseif (!empty($data['is_ujian']))
+                                            <th class="p-2 text-center sticky top-0 z-20 border-r border-b border-zinc-200 dark:border-zinc-800 min-w-[48px] bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                                                title="Masa Ujian: {{ $data['nama_ujian'] }} (Dialihkan ke Presensi Ujian)">
+                                                <div class="text-[9px] uppercase font-bold opacity-75">
+                                                    {{ substr($data['hari'], 0, 3) }}</div>
+                                                <div class="text-xs font-black">{{ $tgl }}</div>
+                                                <div class="text-[8px] font-black text-violet-600 dark:text-violet-400 mt-0.5 uppercase tracking-wider truncate max-w-[45px] mx-auto"
+                                                    title="{{ $data['nama_ujian'] }}">
+                                                    Ujian
                                                 </div>
                                             </th>
                                         @else
@@ -221,6 +261,16 @@
                                                     <div
                                                         class="w-8 h-7 mx-auto rounded flex items-center justify-center text-xs font-black text-rose-300 dark:text-rose-500/50 select-none">
                                                         <i class="bi bi-x"></i>
+                                                    </div>
+                                                </td>
+                                            @elseif (!empty($data['is_ujian']))
+                                                <!-- Sel Ujian (Dialihkan) -->
+                                                <td class="p-1 text-center border-r border-zinc-100 dark:border-zinc-800/60 align-middle bg-violet-500/5 dark:bg-violet-500/10"
+                                                    title="Masa Ujian: {{ $data['nama_ujian'] }} (Dialihkan ke Presensi Ujian)">
+                                                    <div
+                                                        class="w-8 h-7 mx-auto rounded flex items-center justify-center text-[10px] font-black text-violet-600 dark:text-violet-400 select-none bg-violet-500/10 dark:bg-violet-500/20">
+                                                        <i class="bi bi-card-checklist text-xs"
+                                                            title="Masa Ujian (Dialihkan ke Presensi Ujian)"></i>
                                                     </div>
                                                 </td>
                                             @else

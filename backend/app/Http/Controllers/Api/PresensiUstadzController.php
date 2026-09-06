@@ -95,7 +95,37 @@ class PresensiUstadzController extends Controller
 
         $jadwals = $query->orderBy('jam_ke')->get();
 
-        // 4. Ambil riwayat presensi ustadz yang sudah tersimpan pada tanggal & jadwal tersebut
+        // 4. Cek apakah tanggal bertepatan dengan masa / jadwal Ujian Madrasah
+        $ujian = \App\Models\Ujian\Ujian::whereDate('tanggal_mulai', '<=', $tanggal)
+            ->whereDate('tanggal_selesai', '>=', $tanggal)
+            ->first();
+
+        if (!$ujian) {
+            $jadwalUjianAda = \App\Models\Ujian\JadwalUjian::whereDate('tanggal_ujian', $tanggal)->first();
+            if ($jadwalUjianAda) {
+                $ujian = $jadwalUjianAda->ujian;
+            }
+        }
+
+        $isUjian = ($ujian != null);
+        $namaUjian = $ujian ? $ujian->nama_ujian : null;
+        $ujianId = $ujian ? $ujian->id : null;
+
+        // Jika hari bertepatan dengan Ujian Madrasah, sesi KBM mengajar reguler TIDAK DITAMPILKAN (kosong) dan dialihkan
+        if ($isUjian) {
+            return response()->json([
+                'success' => true,
+                'is_libur' => false,
+                'keterangan_libur' => null,
+                'is_ujian' => true,
+                'nama_ujian' => $namaUjian,
+                'ujian_id' => $ujianId,
+                'ruangan_wali' => $ruanganWaliNama ?: null,
+                'data' => []
+            ], 200);
+        }
+
+        // 5. Ambil riwayat presensi ustadz yang sudah tersimpan pada tanggal & jadwal tersebut
         $presensiTersimpan = PresensiUstadz::with(['guruPengganti'])
             ->where('tanggal', $tanggal)
             ->whereIn('jadwal_pelajaran_id', $jadwals->pluck('id'))
@@ -135,6 +165,9 @@ class PresensiUstadzController extends Controller
             'success' => true,
             'is_libur' => false,
             'keterangan_libur' => null,
+            'is_ujian' => false,
+            'nama_ujian' => null,
+            'ujian_id' => null,
             'ruangan_wali' => $ruanganWaliNama ?: null,
             'data' => $data
         ], 200);

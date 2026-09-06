@@ -18,12 +18,12 @@ class MainNavigationShell extends StatefulWidget {
 class _MainNavigationShellState extends State<MainNavigationShell> {
   late int _currentIndex;
 
-  final List<Widget> _tabs = const [
-    HomeTab(),
-    PresensiTab(),
-    PelanggaranTab(),
-    UjianTab(),
-    AkunTab(),
+  List<Widget> get _tabs => [
+    const HomeTab(),
+    PresensiTab(onNavigateToUjian: () => _onTabSelected(3)),
+    const PelanggaranTab(),
+    const UjianTab(),
+    const AkunTab(),
   ];
 
   @override

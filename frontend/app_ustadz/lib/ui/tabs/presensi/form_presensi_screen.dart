@@ -91,18 +91,61 @@ class _FormPresensiScreenState extends State<FormPresensiScreen> {
           ],
         ),
         actions: [
-          // 1-Tap Quick Action: Set Semua Hadir
-          TextButton.icon(
-            onPressed: presensi.isLoading
-                ? null
-                : () => presensi.setSemuaHadir(),
-            icon: const Icon(Icons.done_all_rounded, size: 16),
-            label: const Text(
-              'Hadirkan Semua',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-            ),
+          // Quick Actions Menu
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded),
+            tooltip: 'Aksi Cepat',
+            onSelected: (val) {
+              if (val == 'hadir') {
+                presensi.setSemuaHadir();
+              } else if (val == 'kosong') {
+                presensi.setSemuaKosong();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'hadir',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.done_all_rounded,
+                      size: 18,
+                      color: AppColors.hadirTextLight,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Hadirkan Semua',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'kosong',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.clear_all_rounded,
+                      size: 18,
+                      color: AppColors.amberAccent,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Kosongkan Semua',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
         ],
       ),
       body: Stack(
@@ -121,11 +164,13 @@ class _FormPresensiScreenState extends State<FormPresensiScreen> {
                 16,
                 12,
                 16,
-                120,
+                125,
               ), // Bottom padding for sticky bar
               itemCount: presensi.muridList.length,
               itemBuilder: (context, index) {
                 final murid = presensi.muridList[index];
+                final isFilled =
+                    murid.status != null && murid.status!.isNotEmpty;
 
                 return GlassCard(
                   margin: const EdgeInsets.only(bottom: 10),
@@ -135,39 +180,98 @@ class _FormPresensiScreenState extends State<FormPresensiScreen> {
                   ),
                   child: Row(
                     children: [
-                      // Avatar Number
-                      CircleAvatar(
-                        radius: 18,
-                        backgroundColor: isDark
-                            ? const Color(0xFF101710)
-                            : const Color(0xFFE8F5E9),
+                      // Avatar Number with Status Ring
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isFilled
+                              ? (isDark
+                                    ? const Color(0xFF142414)
+                                    : const Color(0xFFE8F5E9))
+                              : (isDark
+                                    ? const Color(0xFF181C18)
+                                    : const Color(0xFFF1F5F9)),
+                          border: Border.all(
+                            color: isFilled
+                                ? (isDark
+                                      ? AppColors.primaryDark
+                                      : AppColors.primaryLight)
+                                : (isDark
+                                      ? AppColors.outlineDark
+                                      : AppColors.outlineLight),
+                            width: isFilled ? 1.5 : 1.0,
+                          ),
+                        ),
+                        alignment: Alignment.center,
                         child: Text(
                           '${index + 1}',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: isDark
-                                ? AppColors.primaryDark
-                                : AppColors.primaryLight,
+                            color: isFilled
+                                ? (isDark
+                                      ? AppColors.primaryDark
+                                      : AppColors.primaryLight)
+                                : (isDark
+                                      ? const Color(0xFF8D9387)
+                                      : const Color(0xFF73796E)),
                           ),
                         ),
                       ),
                       const SizedBox(width: 12),
 
-                      // Nama & NISM
+                      // Nama, NISM & Status Badge
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              murid.nama,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    murid.nama,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (!isFilled) ...[
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.amberAccent.withValues(
+                                        alpha: 0.15,
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: AppColors.amberAccent.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                        width: 0.8,
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Belum',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.amberAccent,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
+                            const SizedBox(height: 2),
                             Text(
                               'NISM: ${murid.nism} • ${murid.jenisKelamin == "L" ? "Putra" : "Putri"}',
                               style: TextStyle(
@@ -261,40 +365,56 @@ class _FormPresensiScreenState extends State<FormPresensiScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Live Counters Summary Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildSummaryPill(
-                        'Hadir',
-                        presensi.countHadir,
-                        AppColors.hadirTextLight,
-                        isDark,
-                      ),
-                      _buildSummaryPill(
-                        'Sakit',
-                        presensi.countSakit,
-                        AppColors.sakitTextLight,
-                        isDark,
-                      ),
-                      _buildSummaryPill(
-                        'Izin',
-                        presensi.countIzin,
-                        AppColors.izinTextLight,
-                        isDark,
-                      ),
-                      _buildSummaryPill(
-                        'Alpha',
-                        presensi.countAlpha,
-                        AppColors.alphaTextLight,
-                        isDark,
-                      ),
-                      _buildSummaryPill(
-                        'Disp',
-                        presensi.countDispensasi,
-                        AppColors.dispensasiTextLight,
-                        isDark,
-                      ),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (presensi.countBelumDiisi > 0) ...[
+                          _buildSummaryPill(
+                            'Belum',
+                            presensi.countBelumDiisi,
+                            AppColors.amberAccent,
+                            isDark,
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        _buildSummaryPill(
+                          'Hadir',
+                          presensi.countHadir,
+                          AppColors.hadirTextLight,
+                          isDark,
+                        ),
+                        const SizedBox(width: 10),
+                        _buildSummaryPill(
+                          'Sakit',
+                          presensi.countSakit,
+                          AppColors.sakitTextLight,
+                          isDark,
+                        ),
+                        const SizedBox(width: 10),
+                        _buildSummaryPill(
+                          'Izin',
+                          presensi.countIzin,
+                          AppColors.izinTextLight,
+                          isDark,
+                        ),
+                        const SizedBox(width: 10),
+                        _buildSummaryPill(
+                          'Alpha',
+                          presensi.countAlpha,
+                          AppColors.alphaTextLight,
+                          isDark,
+                        ),
+                        const SizedBox(width: 10),
+                        _buildSummaryPill(
+                          'Disp',
+                          presensi.countDispensasi,
+                          AppColors.dispensasiTextLight,
+                          isDark,
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 10),
 
@@ -313,7 +433,9 @@ class _FormPresensiScreenState extends State<FormPresensiScreen> {
                             ),
                           )
                         : Text(
-                            'Simpan Presensi (${presensi.totalMurid} Murid: ${presensi.countHadir}H, ${presensi.countSakit}S, ${presensi.countIzin}I, ${presensi.countAlpha}A, ${presensi.countDispensasi}D)',
+                            presensi.countBelumDiisi == 0
+                                ? 'Simpan Semua Presensi (${presensi.totalMurid} Santri)'
+                                : 'Simpan Presensi (${presensi.countSudahDiisi}/${presensi.totalMurid} Diisi)',
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,

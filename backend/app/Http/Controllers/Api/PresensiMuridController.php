@@ -104,6 +104,36 @@ class PresensiMuridController extends Controller
 
         $jadwals = $query->orderBy('jam_ke')->get();
 
+        // 4. Cek apakah tanggal bertepatan dengan masa / jadwal Ujian Madrasah
+        $ujian = \App\Models\Ujian\Ujian::whereDate('tanggal_mulai', '<=', $tanggal)
+            ->whereDate('tanggal_selesai', '>=', $tanggal)
+            ->first();
+
+        if (!$ujian) {
+            $jadwalUjianAda = \App\Models\Ujian\JadwalUjian::whereDate('tanggal_ujian', $tanggal)->first();
+            if ($jadwalUjianAda) {
+                $ujian = $jadwalUjianAda->ujian;
+            }
+        }
+
+        $isUjian = ($ujian != null);
+        $namaUjian = $ujian ? $ujian->nama_ujian : null;
+        $ujianId = $ujian ? $ujian->id : null;
+
+        // Jika hari bertepatan dengan Ujian Madrasah, sesi KBM reguler TIDAK DITAMPILKAN (kosong) dan dialihkan
+        if ($isUjian) {
+            return response()->json([
+                'success' => true,
+                'is_libur' => false,
+                'keterangan_libur' => null,
+                'is_ujian' => true,
+                'nama_ujian' => $namaUjian,
+                'ujian_id' => $ujianId,
+                'ruangan_wali' => $ruanganWaliNama ?: null,
+                'data' => []
+            ], 200);
+        }
+
         // Bulk query status presensi jadwal pada tanggal terpilih untuk eliminasi N+1
         $jadwalIds = $jadwals->pluck('id')->toArray();
         $sudahAbsenMap = !empty($jadwalIds)
@@ -142,6 +172,9 @@ class PresensiMuridController extends Controller
             'success' => true,
             'is_libur' => false,
             'keterangan_libur' => null,
+            'is_ujian' => false,
+            'nama_ujian' => null,
+            'ujian_id' => null,
             'ruangan_wali' => $ruanganWaliNama ?: null,
             'data' => $data
         ], 200);
@@ -258,7 +291,7 @@ class PresensiMuridController extends Controller
                 'nama' => $m->nama_lengkap ?? $m->nama,
                 'nism' => $m->nism,
                 'jenis_kelamin' => $m->jenis_kelamin,
-                'status' => $existing ? $existing->status : 'Hadir',
+                'status' => $existing ? $existing->status : null,
             ];
         });
 
@@ -278,7 +311,7 @@ class PresensiMuridController extends Controller
             'tanggal' => 'required|date',
             'presensi' => 'required|array',
             'presensi.*.murid_id' => 'required|exists:murids,id',
-            'presensi.*.status' => 'required|in:Hadir,Sakit,Izin,Alpha,Dispensasi',
+            'presensi.*.status' => 'nullable|in:Hadir,Sakit,Izin,Alpha,Dispensasi',
         ]);
 
         if ($validator->fails()) {
@@ -364,17 +397,25 @@ class PresensiMuridController extends Controller
         DB::beginTransaction();
         try {
             foreach ($request->presensi as $item) {
-                PresensiMurid::updateOrCreate(
-                    [
-                        'jadwal_pelajaran_id' => $jadwal->id,
-                        'murid_id' => $item['murid_id'],
-                        'tanggal' => $tanggal,
-                    ],
-                    [
-                        'status' => $item['status'],
-                        'semester_id' => $semesterId,
-                    ]
-                );
+                if (!empty($item['status'])) {
+                    PresensiMurid::updateOrCreate(
+                        [
+                            'jadwal_pelajaran_id' => $jadwal->id,
+                            'murid_id' => $item['murid_id'],
+                            'tanggal' => $tanggal,
+                        ],
+                        [
+                            'status' => $item['status'],
+                            'semester_id' => $semesterId,
+                        ]
+                    );
+                } else {
+                    // Jika status kosong/null, hapus data presensi jika sebelumnya ada
+                    PresensiMurid::where('jadwal_pelajaran_id', $jadwal->id)
+                        ->where('murid_id', $item['murid_id'])
+                        ->where('tanggal', $tanggal)
+                        ->delete();
+                }
             }
 
             DB::commit();

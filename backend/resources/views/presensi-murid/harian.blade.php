@@ -69,8 +69,7 @@
 
                 <!-- Tombol Submit Tampilkan -->
                 <div class="w-full sm:w-auto shrink-0">
-                    <button type="submit"
-                        class="m3-btn-primary w-full sm:w-auto h-10 px-5 text-xs group/btn">
+                    <button type="submit" class="m3-btn-primary w-full sm:w-auto h-10 px-5 text-xs group/btn">
                         <i class="bi bi-search text-xs mr-1"></i>
                         <span>Tampilkan</span>
                     </button>
@@ -80,23 +79,84 @@
 
     </div>
 
+    @if (!empty($isUjian))
+        <!-- BANNER INFO JADWAL/MASA UJIAN -->
+        <div
+            class="mb-6 m3-glass-card p-4 md:p-5 border-violet-500/30 bg-violet-500/10 relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+                <div
+                    class="w-11 h-11 bg-violet-500/20 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center text-xl shrink-0 border border-violet-500/30">
+                    <i class="bi bi-file-earmark-check-fill"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="px-2 py-0.5 rounded-md bg-violet-500/20 text-violet-700 dark:text-violet-300 font-extrabold text-[10px] uppercase tracking-wider">
+                            Masa Ujian Madrasah
+                        </span>
+                    </div>
+                    <h4 class="text-sm font-black text-zinc-900 dark:text-white mt-0.5">
+                        Tanggal ini bertepatan dengan {{ $namaUjian ?? 'Ujian Madrasah' }}
+                    </h4>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                        Presensi KBM reguler dialihkan ke Presensi Ujian santri dan pengawas ruangan.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('presensi-ujian.input', ['ruangan_id' => $ruangan_id, 'ujian_id' => $ujianId]) }}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-md transition-all shrink-0">
+                <i class="bi bi-box-arrow-up-right text-xs"></i>
+                <span>Buka Presensi Ujian</span>
+            </a>
+        </div>
+    @endif
+
     @if ($ruangan_id && $jam_ke)
         @if ($isLibur)
             <!-- STATE HARI LIBUR -->
-            <div
-                class="m3-glass-card p-8 md:p-12 text-center relative z-10 border-rose-500/30 bg-rose-500/5">
+            <div class="m3-glass-card p-8 md:p-12 text-center relative z-10 border-rose-500/30 bg-rose-500/5">
                 <div
                     class="w-14 h-14 bg-rose-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-500/20 text-rose-500 text-2xl shadow-2xs">
                     <i class="bi bi-brightness-high-fill"></i>
                 </div>
-                <h3 class="text-xl font-black text-rose-600 dark:text-rose-400 mb-1 tracking-tight">Hari Libur Madrasah</h3>
+                <h3 class="text-xl font-black text-rose-600 dark:text-rose-400 mb-1 tracking-tight">Hari Libur Madrasah
+                </h3>
                 <div
                     class="inline-block bg-white/80 dark:bg-black/40 py-1.5 px-4 rounded-xl border border-rose-500/20 mt-2">
                     <p class="text-xs font-black text-rose-600 dark:text-rose-400 tracking-wide uppercase">
                         Keterangan: {{ $keteranganLibur }}
                     </p>
                 </div>
-                <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-3">Form presensi dinonaktifkan pada hari libur.</p>
+                <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-3">Form presensi dinonaktifkan pada hari
+                    libur.</p>
+            </div>
+        @elseif (!empty($isUjian))
+            <!-- STATE MASA UJIAN MADRASAH (FORM KBM DINONAKTIFKAN & DIALIHKAN KE PRESENSI UJIAN) -->
+            <div
+                class="m3-glass-card p-8 md:p-12 text-center relative z-10 border-violet-500/30 bg-violet-500/5 shadow-2xs">
+                <div
+                    class="w-16 h-16 bg-violet-500/20 text-violet-600 dark:text-violet-400 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-violet-500/30 text-3xl shadow-sm">
+                    <i class="bi bi-file-earmark-check-fill"></i>
+                </div>
+                <h3 class="text-xl font-black text-zinc-900 dark:text-white mb-1 tracking-tight">Masa Ujian Madrasah
+                </h3>
+                <div
+                    class="inline-block bg-white/80 dark:bg-black/40 py-1.5 px-4 rounded-xl border border-violet-500/20 mt-2">
+                    <p class="text-xs font-black text-violet-700 dark:text-violet-300 tracking-wide uppercase">
+                        Sedang Berlangsung: {{ $namaUjian ?? 'Ujian Madrasah' }}
+                    </p>
+                </div>
+                <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-3 max-w-md mx-auto">
+                    Presensi KBM reguler dinonaktifkan pada tanggal pelaksanaan ujian. Silakan gunakan modul Presensi
+                    Ujian untuk mendata kehadiran santri.
+                </p>
+                <div class="mt-6">
+                    <a href="{{ route('presensi-ujian.input', ['ruangan_id' => $ruangan_id, 'ujian_id' => $ujianId]) }}"
+                        class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-md transition-all">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        <span>Buka Halaman Presensi Ujian</span>
+                    </a>
+                </div>
             </div>
         @elseif (!$jadwal)
             <!-- STATE TIDAK ADA JADWAL -->
@@ -105,7 +165,8 @@
                     class="w-12 h-12 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl flex items-center justify-center mx-auto mb-3 text-zinc-400 dark:text-zinc-500 text-2xl shadow-2xs">
                     <i class="bi bi-calendar-x"></i>
                 </div>
-                <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight mb-0.5">Tidak Ada Jadwal</h3>
+                <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight mb-0.5">Tidak Ada Jadwal
+                </h3>
                 <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
                     Kelas ini tidak memiliki jadwal pada hari {{ $hari_ini }} Jam ke-{{ $jam_ke }}.
                 </p>
@@ -118,14 +179,14 @@
                     <i class="bi bi-people"></i>
                 </div>
                 <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight mb-0.5">Kelas Kosong</h3>
-                <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">Belum ada murid yang terdaftar di ruangan ini.</p>
+                <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">Belum ada murid yang
+                    terdaftar di ruangan ini.</p>
             </div>
         @else
             <!-- ============================================== -->
             <!-- FORM INPUT PRESENSI (DENSE LIST) -->
             <!-- ============================================== -->
-            <form action="{{ route('presensi-murid.storeHarian') }}" method="POST"
-                class="relative z-10">
+            <form action="{{ route('presensi-murid.storeHarian') }}" method="POST" class="relative z-10">
                 @csrf
                 <input type="hidden" name="jadwal_pelajaran_id" value="{{ $jadwal->id }}">
                 <input type="hidden" name="tanggal" value="{{ $tanggal }}">
@@ -154,15 +215,23 @@
                         </div>
 
                         <div
-                            class="text-left md:text-right flex items-center md:items-end gap-3 md:flex-col md:gap-1.5">
-                            <span
-                                class="inline-block px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 text-[9px] font-black rounded-lg uppercase tracking-widest">
-                                Jam Ke-{{ $jam_ke }}
-                            </span>
+                            class="text-left md:text-right flex items-center md:items-end gap-2 md:flex-col md:gap-1.5">
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="setSemuaPresensi('Hadir')"
+                                    class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-black rounded-lg transition-colors flex items-center gap-1">
+                                    <i class="bi bi-check-all"></i>
+                                    <span>Hadirkan Semua</span>
+                                </button>
+                                <button type="button" onclick="kosongkanSemuaPresensi()"
+                                    class="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 text-[10px] font-black rounded-lg transition-colors flex items-center gap-1">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                    <span>Kosongkan</span>
+                                </button>
+                            </div>
                             <span
                                 class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
                                 <i class="bi bi-calendar-event mr-1"></i>
-                                {{ \Carbon\Carbon::parse($tanggal)->format('d M Y') }}
+                                {{ \Carbon\Carbon::parse($tanggal)->format('d M Y') }} • Jam Ke-{{ $jam_ke }}
                             </span>
                         </div>
                     </div>
@@ -174,7 +243,7 @@
                                 @php
                                     $statusSekarang = $presensiTersimpan->has($murid->id)
                                         ? $presensiTersimpan[$murid->id]->status
-                                        : 'Hadir';
+                                        : null;
                                 @endphp
 
                                 <li
@@ -183,16 +252,28 @@
                                     <!-- Info Identitas -->
                                     <div class="flex items-center gap-3 flex-1 min-w-0">
                                         <div
-                                            class="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-bold text-zinc-500 dark:text-zinc-400 shrink-0 text-[11px]">
+                                            class="w-7 h-7 rounded-lg {{ $statusSekarang ? 'bg-primary/10 border-primary/20 text-primary dark:text-primary-dark font-black' : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 font-bold' }} border flex items-center justify-center shrink-0 text-[11px]">
                                             {{ $loop->iteration }}
                                         </div>
                                         <div class="flex-1 min-w-0 pr-2">
-                                            <h4
-                                                class="font-black text-xs text-zinc-900 dark:text-white truncate mb-0.5">
-                                                {{ $murid->nama_lengkap }}
-                                            </h4>
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-black text-xs text-zinc-900 dark:text-white truncate">
+                                                    {{ $murid->nama_lengkap }}
+                                                </h4>
+                                                @if (!$statusSekarang)
+                                                    <span id="badge-status-{{ $murid->id }}"
+                                                        class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase tracking-wider">
+                                                        Belum Diisi
+                                                    </span>
+                                                @else
+                                                    <span id="badge-status-{{ $murid->id }}"
+                                                        class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                                                        {{ $statusSekarang }}
+                                                    </span>
+                                                @endif
+                                            </div>
                                             <p
-                                                class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider truncate font-mono">
+                                                class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider truncate font-mono mt-0.5">
                                                 NISM: {{ $murid->nism ?? '-' }}
                                             </p>
                                         </div>
@@ -206,8 +287,10 @@
                                             @foreach (['Hadir' => 'H', 'Sakit' => 'S', 'Izin' => 'I', 'Alpha' => 'A', 'Dispen' => 'D'] as $val => $label)
                                                 <label class="cursor-pointer relative block w-full text-center">
                                                     <input type="radio" name="presensi[{{ $murid->id }}]"
-                                                        value="{{ $val }}" class="peer sr-only"
-                                                        {{ $statusSekarang == $val ? 'checked' : '' }}>
+                                                        value="{{ $val }}"
+                                                        class="peer sr-only presensi-radio-{{ $murid->id }}"
+                                                        {{ $statusSekarang == $val ? 'checked' : '' }}
+                                                        onchange="updateStatusBadge('{{ $murid->id }}', '{{ $val }}')">
 
                                                     <div
                                                         class="w-full py-1.5 flex items-center justify-center text-[11px] font-black rounded-lg transition-all duration-200 border border-transparent text-zinc-400 dark:text-zinc-500 hover:bg-white dark:hover:bg-zinc-800
@@ -231,9 +314,11 @@
                     <!-- Footer / Tombol Simpan -->
                     @can('create presensi-murid')
                         <div
-                            class="px-5 py-3.5 bg-zinc-50/80 dark:bg-zinc-950/70 border-t border-zinc-200/80 dark:border-zinc-800 flex justify-end z-20 sticky bottom-0">
-                            <button type="submit"
-                                class="m3-btn-primary w-full md:w-auto h-10 px-6 text-xs group/btn">
+                            class="px-5 py-3.5 bg-zinc-50/80 dark:bg-zinc-950/70 border-t border-zinc-200/80 dark:border-zinc-800 flex flex-col sm:flex-row justify-between sm:items-center gap-3 z-20 sticky bottom-0">
+                            <div class="text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                                Total: {{ $murids->count() }} Santri
+                            </div>
+                            <button type="submit" class="m3-btn-primary w-full md:w-auto h-10 px-6 text-xs group/btn">
                                 <i class="bi bi-check2-circle text-sm mr-1"></i>
                                 <span>Simpan Presensi Jam Ini</span>
                             </button>
@@ -241,6 +326,42 @@
                     @endcan
                 </div>
             </form>
+
+            <script>
+                function updateStatusBadge(muridId, status) {
+                    const badge = document.getElementById('badge-status-' + muridId);
+                    if (badge) {
+                        badge.textContent = status;
+                        badge.className =
+                            'px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider';
+                    }
+                }
+
+                function setSemuaPresensi(status) {
+                    document.querySelectorAll('input[type="radio"][value="' + status + '"]').forEach(radio => {
+                        radio.checked = true;
+                        const match = radio.className.match(/presensi-radio-(\d+)/);
+                        if (match && match[1]) {
+                            updateStatusBadge(match[1], status);
+                        }
+                    });
+                }
+
+                function kosongkanSemuaPresensi() {
+                    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                        radio.checked = false;
+                        const match = radio.className.match(/presensi-radio-(\d+)/);
+                        if (match && match[1]) {
+                            const badge = document.getElementById('badge-status-' + match[1]);
+                            if (badge) {
+                                badge.textContent = 'Belum Diisi';
+                                badge.className =
+                                    'px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase tracking-wider';
+                            }
+                        }
+                    });
+                }
+            </script>
         @endif
     @else
         <div class="py-16 text-center m3-glass-card relative z-10">
@@ -248,11 +369,11 @@
                 class="w-12 h-12 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl flex items-center justify-center mx-auto mb-3 text-zinc-400 dark:text-zinc-500 text-2xl shadow-2xs">
                 <i class="bi bi-funnel"></i>
             </div>
-            <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight mb-0.5">Pilih Filter Terlebih Dahulu</h3>
+            <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight mb-0.5">Pilih Filter Terlebih
+                Dahulu</h3>
             <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
                 Silakan pilih Tanggal, Ruangan, dan Jam Pelajaran di atas untuk mulai menginput data presensi.
             </p>
         </div>
     @endif
 </x-app-layout>
-

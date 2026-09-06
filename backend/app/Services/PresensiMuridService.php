@@ -49,6 +49,19 @@ class PresensiMuridService
                 });
         })->get();
 
+        $ujians = \App\Models\Ujian\Ujian::where(function ($q) use ($bulanTerpilih) {
+            $q->whereBetween('tanggal_mulai', [$bulanTerpilih->tanggal_mulai_masehi, $bulanTerpilih->tanggal_selesai_masehi])
+                ->orWhereBetween('tanggal_selesai', [$bulanTerpilih->tanggal_mulai_masehi, $bulanTerpilih->tanggal_selesai_masehi])
+                ->orWhere(function ($sub) use ($bulanTerpilih) {
+                    $sub->where('tanggal_mulai', '<=', $bulanTerpilih->tanggal_mulai_masehi)
+                        ->where('tanggal_selesai', '>=', $bulanTerpilih->tanggal_selesai_masehi);
+                });
+        })->get();
+
+        $jadwalUjians = \App\Models\Ujian\JadwalUjian::with('ujian')
+            ->whereBetween('tanggal_ujian', [$bulanTerpilih->tanggal_mulai_masehi, $bulanTerpilih->tanggal_selesai_masehi])
+            ->get();
+
         $mapHari = [
             'Sunday'    => 'Ahad',
             'Monday'    => 'Senin',
@@ -83,14 +96,44 @@ class PresensiMuridService
                 }
             }
 
+            // Cek Ujian
+            $isUjian = false;
+            $namaUjian = null;
+            $ujianId = null;
+
+            if (!$isLiburMadrasah && $hariIndo !== 'Jumat') {
+                foreach ($ujians as $u) {
+                    $uMulai = Carbon::parse($u->tanggal_mulai)->format('Y-m-d');
+                    $uSelesai = Carbon::parse($u->tanggal_selesai)->format('Y-m-d');
+                    if ($tglMasehi >= $uMulai && $tglMasehi <= $uSelesai) {
+                        $isUjian = true;
+                        $namaUjian = $u->nama_ujian;
+                        $ujianId = $u->id;
+                        break;
+                    }
+                }
+
+                if (!$isUjian) {
+                    $jUjian = $jadwalUjians->firstWhere('tanggal_ujian', $tglMasehi);
+                    if ($jUjian) {
+                        $isUjian = true;
+                        $namaUjian = $jUjian->ujian->nama_ujian ?? 'Ujian Madrasah';
+                        $ujianId = $jUjian->ujian_id;
+                    }
+                }
+            }
+
             $dates[$i + 1] = [
                 'masehi'            => $tglMasehi,
                 'hari'              => $hariIndo,
-                'is_jadwal'         => $isAdaJadwal,
-                'jadwal_id'         => $jadwalHariIni ? $jadwalHariIni->id : null,
+                'is_jadwal'         => ($isUjian || $isLiburMadrasah || $hariIndo === 'Jumat') ? false : $isAdaJadwal,
+                'jadwal_id'         => ($isUjian || $isLiburMadrasah || $hariIndo === 'Jumat') ? null : ($jadwalHariIni ? $jadwalHariIni->id : null),
                 'mapel'             => $jadwalHariIni ? $jadwalHariIni->mataPelajaran->nama_mapel : null,
                 'is_libur_madrasah' => $isLiburMadrasah,
-                'keterangan_libur'  => $keteranganLibur
+                'keterangan_libur'  => $keteranganLibur,
+                'is_ujian'          => $isUjian,
+                'nama_ujian'        => $namaUjian,
+                'ujian_id'          => $ujianId,
             ];
         }
 

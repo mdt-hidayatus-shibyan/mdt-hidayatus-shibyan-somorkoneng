@@ -233,6 +233,56 @@ class _PusatLaporanScreenState extends State<PusatLaporanScreen>
               ],
             ),
           ),
+          const SizedBox(height: 12),
+
+          // Banner Keterangan Presensi Ujian
+          GlassCard(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.violetAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.assignment_turned_in_rounded,
+                    size: 20,
+                    color: AppColors.violetAccent,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Presensi Masa Ujian Santri',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF581C87),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Kehadiran pada tanggal ujian madrasah dialihkan & dicatat melalui Modul Presensi Ujian.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark
+                              ? const Color(0xFF8D9387)
+                              : const Color(0xFF73796E),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 14),
 
           // 2. Filter Bulan & Search Bar
@@ -569,6 +619,56 @@ class _PusatLaporanScreenState extends State<PusatLaporanScreen>
                           : const Color(0xFFFFE4E6),
                     ),
                   ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Banner Keterangan Presensi Ujian Ustadz
+          GlassCard(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.violetAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.assignment_turned_in_rounded,
+                    size: 20,
+                    color: AppColors.violetAccent,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Presensi Pengawasan Ujian',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF581C87),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Kehadiran pengawas pada masa ujian madrasah dialihkan & dicatat pada Modul Ujian.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark
+                              ? const Color(0xFF8D9387)
+                              : const Color(0xFF73796E),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

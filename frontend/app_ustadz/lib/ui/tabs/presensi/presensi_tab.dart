@@ -12,7 +12,9 @@ import 'checkin_ustadz_sheet.dart';
 import 'form_presensi_screen.dart';
 
 class PresensiTab extends StatefulWidget {
-  const PresensiTab({super.key});
+  final VoidCallback? onNavigateToUjian;
+
+  const PresensiTab({super.key, this.onNavigateToUjian});
 
   @override
   State<PresensiTab> createState() => _PresensiTabState();
@@ -184,8 +186,113 @@ class _PresensiTabState extends State<PresensiTab>
                       ),
                       const SizedBox(height: 12),
 
-                      // 1. Kondisi Khusus: HARI LIBUR MADRASAH (Jangan Tampilkan Presensi Murid)
-                      if (presensi.isLibur) ...[
+                      // 1. Kondisi Khusus: MASA UJIAN MADRASAH (Tampilkan State Khusus & Jangan Tampilkan Presensi KBM)
+                      if (presensi.isUjian) ...[
+                        GlassCard(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 32,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 76,
+                                height: 76,
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF2E1065)
+                                      : const Color(0xFFF3E8FF),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.violetAccent.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.assignment_turned_in_rounded,
+                                  size: 40,
+                                  color: AppColors.violetAccent,
+                                ),
+                              ),
+                              const SizedBox(height: 18),
+                              Text(
+                                'Masa Ujian Madrasah',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF581C87),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF1E0A3C)
+                                      : const Color(0xFFE9D5FF),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  presensi.namaUjian ??
+                                      'Ujian Madrasah Sedang Berlangsung',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark
+                                        ? const Color(0xFFD8B4FE)
+                                        : const Color(0xFF6B21A8),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              Text(
+                                'Presensi KBM reguler dinonaktifkan pada tanggal pelaksanaan ujian. Silakan gunakan modul Presensi Ujian untuk mencatat kehadiran santri.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? const Color(0xFF8D9387)
+                                      : const Color(0xFF73796E),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              FilledButton.icon(
+                                onPressed: () {
+                                  HapticHelper.medium();
+                                  if (widget.onNavigateToUjian != null) {
+                                    widget.onNavigateToUjian!();
+                                  }
+                                },
+                                icon: const Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 16,
+                                ),
+                                label: const Text('Buka Presensi Ujian'),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.violetAccent,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 22,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else if (presensi.isLibur) ...[
                         GlassCard(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20,
@@ -524,8 +631,113 @@ class _PresensiTabState extends State<PresensiTab>
                       ),
                       const SizedBox(height: 12),
 
-                      // 1. Kondisi Libur untuk Ustadz
-                      if (presensi.isLiburUstadz) ...[
+                      // 1. Kondisi Khusus: MASA UJIAN MADRASAH (Tampilkan State Khusus & Jangan Tampilkan Presensi Mengajar KBM)
+                      if (presensi.isUjianUstadz) ...[
+                        GlassCard(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 32,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 76,
+                                height: 76,
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF2E1065)
+                                      : const Color(0xFFF3E8FF),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.violetAccent.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.assignment_turned_in_rounded,
+                                  size: 40,
+                                  color: AppColors.violetAccent,
+                                ),
+                              ),
+                              const SizedBox(height: 18),
+                              Text(
+                                'Masa Ujian Madrasah',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF581C87),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF1E0A3C)
+                                      : const Color(0xFFE9D5FF),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  presensi.namaUjianUstadz ??
+                                      'Ujian Madrasah Sedang Berlangsung',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark
+                                        ? const Color(0xFFD8B4FE)
+                                        : const Color(0xFF6B21A8),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              Text(
+                                'Presensi mengajar reguler ditiadakan pada tanggal pelaksanaan ujian. Silakan gunakan modul Presensi Pengawas Ujian untuk mencatat kehadiran dan berita acara.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? const Color(0xFF8D9387)
+                                      : const Color(0xFF73796E),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              FilledButton.icon(
+                                onPressed: () {
+                                  HapticHelper.medium();
+                                  if (widget.onNavigateToUjian != null) {
+                                    widget.onNavigateToUjian!();
+                                  }
+                                },
+                                icon: const Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 16,
+                                ),
+                                label: const Text('Buka Presensi Ujian'),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.violetAccent,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 22,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else if (presensi.isLiburUstadz) ...[
                         GlassCard(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20,
