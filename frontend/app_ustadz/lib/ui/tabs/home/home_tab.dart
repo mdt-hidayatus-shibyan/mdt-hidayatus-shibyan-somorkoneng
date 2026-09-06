@@ -18,6 +18,7 @@ import '../murid/direktori_murid_screen.dart';
 import '../pelanggaran/referensi_pelanggaran_screen.dart';
 import '../presensi/form_presensi_screen.dart';
 import '../tagihan/tagihan_screen.dart';
+import '../akun/hubungi_admin_screen.dart';
 import 'kalendar_screen.dart';
 import 'pengumuman_screen.dart';
 
@@ -88,6 +89,32 @@ class _HomeTabState extends State<HomeTab> {
                           ),
                         ],
                       ),
+                    ),
+                    IconButton(
+                      icon: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFF10B981,
+                          ).withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.support_agent_rounded,
+                          size: 20,
+                          color: Color(0xFF10B981),
+                        ),
+                      ),
+                      tooltip: 'Hubungi Admin & Pusat Bantuan',
+                      onPressed: () {
+                        HapticHelper.light();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const HubungiAdminScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

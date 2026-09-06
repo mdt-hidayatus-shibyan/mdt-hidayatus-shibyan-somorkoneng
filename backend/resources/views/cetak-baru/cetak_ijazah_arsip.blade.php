@@ -44,7 +44,7 @@
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: #e2e8f0;
-            color: #111827;
+            color: #000000;
         }
 
         /* WADAH UTAMA KERTAS */
@@ -59,7 +59,7 @@
             overflow: hidden;
             /* Mencegah elemen keluar halaman */
 
-            background-image: url('{{ asset('storage/ijazah_tpq_wrapper.png') }}');
+            background-image: url('{{ asset('storage/ijazah-wrapper.png') }}');
             background-size: 100% 100%;
             background-position: center;
             background-repeat: no-repeat;
@@ -78,13 +78,13 @@
         }
 
         .logo-box img {
-            height: 60px;
+            height: 80px;
             width: auto;
             object-fit: contain;
         }
 
         .arabic-image img {
-            height: 55px;
+            height: 75px;
             width: auto;
             object-fit: contain;
         }
@@ -107,7 +107,7 @@
         .title-tingkat {
             font-size: 11pt;
             font-weight: 700;
-            color: #16a34a;
+            color: #000000;
             letter-spacing: 1px;
             text-transform: uppercase;
             margin-bottom: 2px;
@@ -232,7 +232,7 @@
             left: 1cm;
             font-size: 9.5pt;
             font-weight: 700;
-            color: #16a34a;
+            color: #000000;
             letter-spacing: 0.5px;
         }
     </style>
@@ -261,7 +261,7 @@
         <!-- HEADER (LOGO & LAFADZ) -->
         <div class="header-section">
             <div class="logo-box">
-                <img src="{{ asset(getSetting('app_logo')) }}" alt="Logo Madrasah">
+                <img src="{{ asset('storage/logo_hitam.png') }}" alt="Logo Madrasah">
             </div>
             <div class="arabic-image">
                 <img src="{{ asset('storage/lafadz.png') }}" alt="Kaligrafi Ayat">

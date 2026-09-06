@@ -176,6 +176,67 @@ class AuthController extends Controller
             ], 404);
         }
 
+        // Cek jika request hanya untuk validasi identitas (Step 1)
+        if ($request->boolean('check_only')) {
+            return response()->json([
+                'success'    => true,
+                'step'       => 'pin_required',
+                'wali_name'  => $wali->nama_kepala_keluarga,
+                'no_reg'     => $wali->no_registrasi,
+                'total_anak' => $wali->murids->where('status', 'Aktif')->count(),
+                'kampung'    => $wali->kampung->nama_kampung ?? '-',
+            ], 200);
+        }
+
+        // Verifikasi PIN Keamanan Ter-Hash (PIN default: 112233)
+        $inputPin = trim($request->input('pin', ''));
+
+        if (empty($inputPin)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PIN keamanan wajib diisi.',
+                'step'    => 'pin_required'
+            ], 422);
+        }
+
+        $isPinValid = false;
+
+        // 1. Default PIN '112233' selalu diizinkan (dan otomatis auto-sync hash Bcrypt jika belum tersinkronisasi)
+        if ($inputPin === '112233') {
+            $isPinValid = true;
+            if (empty($wali->pin) || (!str_starts_with($wali->pin, '$2y$') && !str_starts_with($wali->pin, '$2a$') && !str_starts_with($wali->pin, '$2b$'))) {
+                $wali->pin = Hash::make('112233');
+                $wali->save();
+            }
+        }
+
+        // 2. Verifikasi PIN kustom (jika bukan default atau pengguna telah mengubah PIN kustom)
+        if (!$isPinValid && !empty($wali->pin)) {
+            if (str_starts_with($wali->pin, '$2y$') || str_starts_with($wali->pin, '$2a$') || str_starts_with($wali->pin, '$2b$')) {
+                try {
+                    if (Hash::check($inputPin, $wali->pin)) {
+                        $isPinValid = true;
+                    }
+                } catch (\Throwable $e) {
+                    $isPinValid = false;
+                }
+            } else {
+                if ($wali->pin === $inputPin) {
+                    $wali->pin = Hash::make($inputPin);
+                    $wali->save();
+                    $isPinValid = true;
+                }
+            }
+        }
+
+        if (!$isPinValid) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PIN keamanan yang Anda masukkan salah. (PIN default: 112233)',
+                'step'    => 'pin_required'
+            ], 401);
+        }
+
         // Akun virtual untuk session token wali murid
         $user = \App\Models\User::firstOrCreate(
             ['username' => 'wali_' . $wali->no_registrasi],
@@ -189,11 +250,12 @@ class AuthController extends Controller
         $token = $user->createToken('WaliAppToken')->plainTextToken;
 
         return response()->json([
-            'success' => true,
-            'message' => 'Login Berhasil',
-            'token'   => $token,
-            'role'    => 'wali',
-            'wali'    => [
+            'success'        => true,
+            'message'        => 'Login Berhasil',
+            'token'          => $token,
+            'role'           => 'wali',
+            'is_first_login' => !(bool) $wali->is_pin_changed,
+            'wali'           => [
                 'id'                   => $wali->id,
                 'no_registrasi'        => $wali->no_registrasi,
                 'no_kk'                => $wali->no_kk,
@@ -203,7 +265,87 @@ class AuthController extends Controller
                 'alamat'               => $wali->alamat_detail,
                 'kampung'              => $wali->kampung->nama_kampung ?? '-',
                 'total_anak'           => $wali->murids->where('status', 'Aktif')->count(),
+                'is_first_login'       => !(bool) $wali->is_pin_changed,
+                'is_pin_changed'       => (bool) $wali->is_pin_changed,
             ]
+        ], 200);
+    }
+
+    /**
+     * Update PIN Keamanan Wali Murid
+     */
+    public function updatePinWali(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'pin_lama' => 'required|string',
+            'pin_baru' => 'required|string|min:6|max:6|regex:/^[0-9]+$/',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PIN baru harus terdiri dari 6 digit angka.',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $user = $request->user();
+        if (!str_starts_with($user->username ?? '', 'wali_')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses hanya untuk akun Wali Murid.'
+            ], 403);
+        }
+
+        $noReg = substr($user->username, 5);
+        $wali = \App\Models\WaliMurid::where('no_registrasi', $noReg)->first();
+
+        if (!$wali) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data Wali Murid tidak ditemukan.'
+            ], 404);
+        }
+
+        $currentPin = $wali->pin;
+        $isOldPinValid = false;
+
+        if (!empty($currentPin)) {
+            if (str_starts_with($currentPin, '$2y$') || str_starts_with($currentPin, '$2a$') || str_starts_with($currentPin, '$2b$')) {
+                try {
+                    if (Hash::check($request->pin_lama, $currentPin)) {
+                        $isOldPinValid = true;
+                    }
+                } catch (\Throwable $e) {
+                    $isOldPinValid = false;
+                }
+            } else {
+                if ($currentPin === $request->pin_lama) {
+                    $isOldPinValid = true;
+                }
+            }
+        } else {
+            if ($request->pin_lama === '112233') {
+                $isOldPinValid = true;
+            }
+        }
+
+        if (!$isOldPinValid) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PIN lama yang Anda masukkan tidak sesuai.'
+            ], 400);
+        }
+
+        // Simpan PIN baru dalam bentuk Bcrypt Hash dan tandai is_pin_changed = true
+        $wali->update([
+            'pin'            => Hash::make($request->pin_baru),
+            'is_pin_changed' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'PIN keamanan berhasil diperbarui.'
         ], 200);
     }
 

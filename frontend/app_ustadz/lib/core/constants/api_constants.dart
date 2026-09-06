@@ -86,6 +86,11 @@ class ApiConstants {
   static const String laporanUjian = '/laporan/ujian';
   static const String laporanKenaikanKelas = '/laporan/kenaikan-kelas';
 
+  // Bantuan & Hubungi Admin
+  static const String bantuanKontak = '/bantuan/kontak';
+  static const String bantuanLaporan = '/bantuan/laporan';
+  static const String bantuanRiwayat = '/bantuan/riwayat';
+
   /// Format URL foto/gambar dari backend agar cocok dengan host yang aktif.
   /// Menghindari kegagalan koneksi ketika backend mengembalikan host 'localhost' / '127.0.0.1'
   /// saat diakses dari HP fisik atau emulator Android.

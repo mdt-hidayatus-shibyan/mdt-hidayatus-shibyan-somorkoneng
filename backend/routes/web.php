@@ -392,6 +392,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/arsip-dokumen/{id}/cetak', [ArsipDokumenController::class, 'cetak'])
         ->name('arsip.cetak');
+    Route::get('/arsip-dokumen/{id}/download', [ArsipDokumenController::class, 'download'])
+        ->name('arsip.download');
 
 
 
@@ -490,6 +492,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', 'index')->name('database');
         Route::post('/process', 'process')->name('process');
         Route::post('/restore', 'restore')->name('restore');
+    });
+
+    // ==========================================
+    // 12. PUSAT BANTUAN & LAPORAN KENDALA USTADZ
+    // ==========================================
+    Route::prefix('laporan-kendala-admin')->name('laporan-kendala-admin.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\LaporanKendalaAdminController::class, 'index'])->name('index');
+        Route::put('/{id}/status', [\App\Http\Controllers\Admin\LaporanKendalaAdminController::class, 'updateStatus'])->name('update-status');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\LaporanKendalaAdminController::class, 'destroy'])->name('destroy');
     });
 });
 

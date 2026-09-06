@@ -315,4 +315,222 @@ class WaliMuridApiController extends Controller
             ]
         ], 200);
     }
+
+    /**
+     * Rapor Nilai & Hasil Ujian Santri
+     */
+    public function getNilaiAnak($id, Request $request)
+    {
+        $murid = Murid::findOrFail($id);
+        $tahunAktif = TahunPelajaran::where('is_active', true)->first();
+        $tahunId = $tahunAktif?->id;
+
+        $nilais = NilaiUjian::with(['ujian.semester', 'mataPelajaran', 'ruangan'])
+            ->where('murid_id', $murid->id)
+            ->where('is_published', true)
+            ->when($tahunId, function ($q) use ($tahunId) {
+                $q->whereHas('ujian', fn($uq) => $uq->where('tahun_pelajaran_id', $tahunId));
+            })
+            ->get();
+
+        // Group by Ujian
+        $grouped = $nilais->groupBy('ujian_id')->map(function ($items) use ($murid) {
+            $first = $items->first();
+            $ujian = $first->ujian;
+            $ruangan = $first->ruangan;
+
+            $mapelList = $items->map(function ($n) {
+                $kkm = $n->kkm ?? 65;
+                $angka = $n->nilai_angka ?? 0;
+                $huruf = $n->nilai_huruf ?? ($angka >= 85 ? 'A' : ($angka >= 75 ? 'B' : ($angka >= 65 ? 'C' : 'D')));
+                return [
+                    'id'             => $n->id,
+                    'mapel'          => $n->mataPelajaran->nama_mapel ?? 'Mata Pelajaran',
+                    'kkm'            => $kkm,
+                    'nilai_angka'    => (float) $angka,
+                    'nilai_huruf'    => $huruf,
+                    'is_lulus'       => $angka >= $kkm,
+                    'catatan'        => $n->catatan ?: '-',
+                ];
+            });
+
+            $rataRata = $items->count() > 0 ? round($items->avg('nilai_angka'), 2) : 0;
+            $totalNilai = $items->sum('nilai_angka');
+
+            return [
+                'ujian_id'       => $ujian->id ?? null,
+                'nama_ujian'     => $ujian->nama_ujian ?? 'Ujian Madrasah',
+                'tipe_ujian'     => $ujian->tipe_ujian ?? $ujian->jenis_ujian ?? 'IMDA',
+                'semester'       => $ujian->semester->nama_semester ?? 'Semester Aktif',
+                'ruangan'        => $ruangan->nama_ruangan ?? '-',
+                'total_mapel'    => $items->count(),
+                'total_nilai'    => (float) $totalNilai,
+                'rata_rata'      => (float) $rataRata,
+                'daftar_nilai'   => $mapelList,
+            ];
+        })->values();
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'santri' => [
+                    'id'           => $murid->id,
+                    'nama_lengkap' => $murid->nama_lengkap,
+                    'nism'         => $murid->nism,
+                    'ruangan'      => $murid->nama_ruangan_aktif,
+                ],
+                'daftar_ujian' => $grouped,
+            ]
+        ], 200);
+    }
+
+    /**
+     * Jadwal Pelajaran Santri di Ruangan Aktif
+     */
+    public function getJadwalAnak($id, Request $request)
+    {
+        $murid = Murid::findOrFail($id);
+        $tahunAktif = TahunPelajaran::where('is_active', true)->first();
+        $tahunId = $tahunAktif?->id;
+
+        $ruanganAktif = $murid->ruangans()
+            ->when($tahunId, fn($q) => $q->where('murid_ruangans.tahun_pelajaran_id', $tahunId))
+            ->first();
+
+        if (!$ruanganAktif) {
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'santri' => [
+                        'id'           => $murid->id,
+                        'nama_lengkap' => $murid->nama_lengkap,
+                        'nism'         => $murid->nism,
+                    ],
+                    'ruangan' => '-',
+                    'jadwal'  => [],
+                ]
+            ], 200);
+        }
+
+        $jadwals = \App\Models\JadwalPelajaran::with(['mataPelajaran', 'ustadz'])
+            ->where('ruangan_id', $ruanganAktif->id)
+            ->get();
+
+        $hariOrder = ['Sabtu' => 1, 'Ahad' => 2, 'Senin' => 3, 'Selasa' => 4, 'Rabu' => 5, 'Kamis' => 6];
+
+        $sorted = $jadwals->sortBy(function ($j) use ($hariOrder) {
+            return ($hariOrder[$j->hari] ?? 99) * 100 + (is_numeric($j->jam_ke) ? (int)$j->jam_ke : 10);
+        })->values()->map(function ($j) {
+            return [
+                'id'       => $j->id,
+                'hari'     => $j->hari,
+                'jam_ke'   => $j->jam_ke,
+                'waktu'    => $j->jam_mulai ? ($j->jam_mulai . ' - ' . $j->jam_selesai) : 'Sesuai Jadwal',
+                'mapel'    => $j->mataPelajaran->nama_mapel ?? 'Pelajaran',
+                'ustadz'   => $j->ustadz->nama_lengkap ?? 'Ustadz Pengampu',
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'santri' => [
+                    'id'           => $murid->id,
+                    'nama_lengkap' => $murid->nama_lengkap,
+                    'nism'         => $murid->nism,
+                ],
+                'ruangan' => $ruanganAktif->nama_ruangan,
+                'jadwal'  => $sorted,
+            ]
+        ], 200);
+    }
+
+    /**
+     * Dokumen Arsip Santri: Rapor (IMDA 1 & IMDA 2 / IMNI), SK Kelulusan, dan Ijazah
+     */
+    public function getDokumenAnak($id, Request $request)
+    {
+        $murid = Murid::with(['ruangans.level'])->findOrFail($id);
+        $tahunAktif = TahunPelajaran::where('is_active', true)->first();
+        $tahunId = $tahunAktif?->id;
+
+        $ruanganAktif = $murid->ruangans()
+            ->when($tahunId, fn($q) => $q->where('murid_ruangans.tahun_pelajaran_id', $tahunId))
+            ->first();
+
+        $levelNama = $ruanganAktif?->level?->nama_level ?? '';
+        $isKelasAkhir = in_array($levelNama, ['3 TPQ', '6 IBT', '3 TSA']);
+
+        // Ambil semua arsip dokumen santri ini
+        $arsips = \App\Models\Arsip\ArsipDokumen::where('referensi_id', $murid->id)
+            ->where('referensi_tipe', Murid::class)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 1. Rapor Murid (IMDA 1, IMDA 2, IMNI)
+        $raporList = $arsips->where('tipe_dokumen', 'rapor_murid')->values()->map(function ($a) {
+            $data = $a->snapshot_data ?? [];
+            return [
+                'id'               => $a->id,
+                'nama_dokumen'     => $data['nama_ujian'] ?? 'Rapor Ujian',
+                'tipe_ujian'       => $data['tipe_ujian'] ?? 'IMDA',
+                'tahun_pelajaran'  => $data['tahun_pelajaran'] ?? '-',
+                'nomor_dokumen'    => $data['nomor_dokumen'] ?? '-',
+                'ruangan'          => $data['nama_ruangan'] ?? '-',
+                'rata_rata'        => (float) ($data['rata_rata'] ?? 0),
+                'total_mapel'      => is_array($data['matriks_nilai'] ?? null) ? count($data['matriks_nilai']) : 0,
+                'tanggal_disahkan' => $data['tanggal_disahkan'] ?? $a->created_at->format('d-m-Y'),
+                'download_url'     => url("/arsip-dokumen/{$a->id}/download"),
+                'cetak_url'        => url("/arsip-dokumen/{$a->id}/cetak"),
+            ];
+        });
+
+        // 2. Surat Keterangan Kelulusan / SKTB
+        $skList = $arsips->where('tipe_dokumen', 'sk_keputusan')->values()->map(function ($a) {
+            $data = $a->snapshot_data ?? [];
+            return [
+                'id'               => $a->id,
+                'nama_dokumen'     => 'Surat Keterangan Kelulusan',
+                'nomor_dokumen'    => $data['nomor_dokumen'] ?? '-',
+                'tahun_pelajaran'  => $data['tahun_pelajaran'] ?? '-',
+                'status_keputusan' => $data['status_keputusan'] ?? 'LULUS',
+                'tanggal_disahkan' => $data['tanggal_disahkan'] ?? $a->created_at->format('d-m-Y'),
+                'download_url'     => url("/arsip-dokumen/{$a->id}/download"),
+                'cetak_url'        => url("/arsip-dokumen/{$a->id}/cetak"),
+            ];
+        });
+
+        // 3. Ijazah Madrasah (Khusus Kelas Akhir)
+        $ijazahList = $arsips->where('tipe_dokumen', 'ijazah')->values()->map(function ($a) {
+            $data = $a->snapshot_data ?? [];
+            return [
+                'id'                 => $a->id,
+                'nama_dokumen'       => 'Ijazah Madrasah ' . ($data['lulus_dari_tingkat'] ?? ''),
+                'nomor_dokumen'      => $data['nomor_dokumen'] ?? '-',
+                'tahun_pelajaran'    => $data['tahun_pelajaran'] ?? '-',
+                'lulus_dari_tingkat' => $data['lulus_dari_tingkat'] ?? '-',
+                'rata_rata'          => (float) ($data['rata_rata'] ?? 0),
+                'tanggal_disahkan'   => $data['tanggal_disahkan'] ?? $a->created_at->format('d-m-Y'),
+                'download_url'       => url("/arsip-dokumen/{$a->id}/download"),
+                'cetak_url'          => url("/arsip-dokumen/{$a->id}/cetak"),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'santri' => [
+                    'id'             => $murid->id,
+                    'nama_lengkap'   => $murid->nama_lengkap,
+                    'nism'           => $murid->nism,
+                    'ruangan'        => $ruanganAktif?->nama_ruangan ?? '-',
+                    'level'          => $levelNama,
+                    'is_kelas_akhir' => $isKelasAkhir,
+                ],
+                'rapor'  => $raporList,
+                'sk'     => $skList,
+                'ijazah' => $ijazahList,
+            ]
+        ], 200);
+    }
 }

@@ -17,6 +17,7 @@ import '../../auth/login_screen.dart';
 import '../../widgets/app_avatar.dart';
 import '../../widgets/digital_signature_pad.dart';
 import '../../widgets/glass_card.dart';
+import 'hubungi_admin_screen.dart';
 
 class AkunTab extends StatefulWidget {
   const AkunTab({super.key});
@@ -2115,7 +2116,53 @@ class _AkunTabState extends State<AkunTab> {
             ],
 
             // =================================================================
-            // 6. KARTU TAMPILAN & SISTEM
+            // 6. KARTU BANTUAN & LAYANAN ADMIN
+            // =================================================================
+            const Text(
+              'Bantuan & Layanan Admin',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            GlassCard(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.support_agent_rounded,
+                    size: 18,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
+                title: const Text(
+                  'Hubungi Admin & Pusat Bantuan',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text(
+                  'Laporan kendala, masalah teknis, & rekomendasi fitur',
+                  style: TextStyle(fontSize: 11),
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  HapticHelper.light();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const HubungiAdminScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            // =================================================================
+            // 7. KARTU TAMPILAN & SISTEM
             // =================================================================
             const Text(
               'Tampilan & Sistem',

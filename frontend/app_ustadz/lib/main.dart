@@ -5,6 +5,7 @@ import 'core/storage/storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/akademik_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/bantuan_provider.dart';
 import 'providers/dashboard_provider.dart';
 import 'providers/kas_provider.dart';
 import 'providers/laporan_provider.dart';
@@ -55,11 +56,12 @@ class MDTHidayatusShibyanApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MuridProvider()),
         ChangeNotifierProvider(create: (_) => AkademikProvider()),
         ChangeNotifierProvider(create: (_) => LaporanProvider()),
+        ChangeNotifierProvider(create: (_) => BantuanProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
           return MaterialApp(
-            title: 'MDT Hidayatus Shibyan',
+            title: 'Ustadz MDTHS',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,

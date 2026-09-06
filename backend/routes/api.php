@@ -120,6 +120,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/laporan/ujian', [LaporanController::class, 'getLaporanUjian']);
     Route::get('/laporan/kenaikan-kelas', [LaporanController::class, 'getLaporanKenaikanKelas']);
 
+    // 2.11 Pusat Bantuan, Laporan Kendala, & Hubungi Admin
+    Route::get('/bantuan/kontak', [\App\Http\Controllers\Api\BantuanController::class, 'getKontak']);
+    Route::post('/bantuan/laporan', [\App\Http\Controllers\Api\BantuanController::class, 'simpanLaporan']);
+    Route::get('/bantuan/riwayat', [\App\Http\Controllers\Api\BantuanController::class, 'getRiwayat']);
+
     // =========================================================================
     // 3. APLIKASI SANTRI & WALI MURID (app_murid)
     // =========================================================================
@@ -129,5 +134,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/tagihan/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getTagihanAnak']);
         Route::get('/presensi/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getPresensiAnak']);
         Route::get('/pelanggaran/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getPelanggaranAnak']);
+        Route::get('/nilai/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getNilaiAnak']);
+        Route::get('/jadwal/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getJadwalAnak']);
+        Route::get('/dokumen/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getDokumenAnak']);
+        Route::post('/update-pin', [\App\Http\Controllers\Api\AuthController::class, 'updatePinWali']);
     });
 });

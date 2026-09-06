@@ -9,6 +9,14 @@ class WaliMurid extends Model
 
     protected $guarded = ['id'];
 
+    protected $hidden = [
+        'pin',
+    ];
+
+    protected $casts = [
+        'is_pin_changed' => 'boolean',
+    ];
+
     protected static function boot()
     {
         parent::boot();
