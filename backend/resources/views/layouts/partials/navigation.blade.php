@@ -1,5 +1,58 @@
 <nav class="flex-1 overflow-y-auto py-2.5 px-2.5 pb-12 md:pb-4 space-y-1 custom-scrollbar">
 
+    @php
+        $isMenuActive = function ($url) {
+            if (!$url || $url === '#') {
+                return false;
+            }
+
+            // 1. Direct route exact match
+            if (request()->routeIs($url)) {
+                return true;
+            }
+
+            // 2. Match route prefix if URL ends with .index (e.g. 'tabungan.rekening.index' -> 'tabungan.rekening.*')
+            if (str_ends_with($url, '.index')) {
+                $prefix = substr($url, 0, -6);
+                if (request()->routeIs($prefix . '.*')) {
+                    return true;
+                }
+            }
+
+            // 3. Direct URL path match
+            $path = trim($url, '/');
+            if ($path) {
+                if (request()->is($path)) {
+                    return true;
+                }
+                if (!str_contains($url, 'dashboard') && request()->is($path . '/*')) {
+                    return true;
+                }
+            }
+
+            // 4. Resolve Route URI
+            if (\Illuminate\Support\Facades\Route::has($url)) {
+                try {
+                    $routeUri = \Illuminate\Support\Facades\Route::getRoutes()->getByName($url)?->uri();
+                    if ($routeUri) {
+                        $cleanUri = trim(preg_replace('/\{.*?\}/', '', $routeUri), '/');
+                        if ($cleanUri) {
+                            if (request()->is($cleanUri)) {
+                                return true;
+                            }
+                            if (!str_contains($url, 'dashboard') && request()->is($cleanUri . '/*')) {
+                                return true;
+                            }
+                        }
+                    }
+                } catch (\Throwable $e) {
+                }
+            }
+
+            return false;
+        };
+    @endphp
+
     {{-- Ambil data dari database yang digrup berdasarkan kategori --}}
     @foreach (menus() as $category => $mainMenus)
         @php
@@ -33,10 +86,7 @@
                 @if ($menu->subMenus->count() == 0)
                     {{-- TIPE 2: LINK TUNGGAL --}}
                     @php
-                        // Cek apakah aktif (bisa mendeteksi nama route misal 'roles.*' atau path URL misal '/roles*')
-                        $isActive = request()->routeIs($menu->url . '*') || request()->is(trim($menu->url, '/') . '*');
-
-                        // Cek apakah $menu->url itu route name yang valid, jika tidak anggap sebagai URL path biasa
+                        $isActive = $isMenuActive($menu->url);
                         $link = Route::has($menu->url) ? route($menu->url) : url($menu->url);
                     @endphp
 
@@ -52,10 +102,9 @@
                 @else
                     {{-- TIPE 3: DROPDOWN (MEMILIKI SUB-MENU) --}}
                     @php
-                        // Cek apakah ada anak (sub-menu) yang sedang aktif
                         $isActive = false;
                         foreach ($menu->subMenus as $sub) {
-                            if (request()->routeIs($sub->url . '*') || request()->is(trim($sub->url, '/') . '*')) {
+                            if ($isMenuActive($sub->url)) {
                                 $isActive = true;
                                 break;
                             }
@@ -91,9 +140,7 @@
                                 @endif
 
                                 @php
-                                    $isChildActive =
-                                        request()->routeIs($child->url . '*') ||
-                                        request()->is(trim($child->url, '/') . '*');
+                                    $isChildActive = $isMenuActive($child->url);
                                     $childLink = Route::has($child->url) ? route($child->url) : url($child->url);
                                 @endphp
 

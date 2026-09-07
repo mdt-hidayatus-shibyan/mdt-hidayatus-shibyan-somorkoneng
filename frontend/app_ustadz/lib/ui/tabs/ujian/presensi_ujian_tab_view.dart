@@ -544,7 +544,7 @@ class _PresensiUjianTabViewState extends State<PresensiUjianTabView> {
             ],
 
             // ===================================================================
-            // 5. LIVE SUMMARY BAR & TANDAI SEMUA HADIR
+            // 5. LIVE SUMMARY BAR & AKSI CEPAT (SEMUA HADIR & KOSONGKAN)
             // ===================================================================
             if (provider.muridList.isNotEmpty) ...[
               Container(
@@ -567,13 +567,18 @@ class _PresensiUjianTabViewState extends State<PresensiUjianTabView> {
                   children: [
                     Expanded(
                       child: Wrap(
-                        spacing: 8,
+                        spacing: 6,
                         runSpacing: 4,
                         children: [
                           _buildBadge(
                             'Total: ${provider.totalMurid}',
                             Colors.grey,
                           ),
+                          if (provider.countBelumDiisi > 0)
+                            _buildBadge(
+                              'Belum: ${provider.countBelumDiisi}',
+                              AppColors.amberAccent,
+                            ),
                           _buildBadge(
                             'Hadir: ${provider.countHadir}',
                             AppColors.primaryLight,
@@ -601,23 +606,52 @@ class _PresensiUjianTabViewState extends State<PresensiUjianTabView> {
                         ],
                       ),
                     ),
-                    TextButton.icon(
-                      onPressed: () => provider.setAllMuridStatus('Hadir'),
-                      icon: const Icon(Icons.done_all_rounded, size: 16),
-                      label: const Text(
-                        'Semua Hadir',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert_rounded, size: 20),
+                      tooltip: 'Aksi Cepat',
+                      onSelected: (val) {
+                        if (val == 'hadir') {
+                          provider.setAllMuridStatus('Hadir');
+                        } else if (val == 'kosong') {
+                          provider.setSemuaKosong();
+                        }
+                      },
+                      itemBuilder: (ctx) => [
+                        const PopupMenuItem(
+                          value: 'hadir',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.done_all_rounded,
+                                size: 18,
+                                color: AppColors.primaryLight,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Hadirkan Semua',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                        const PopupMenuItem(
+                          value: 'kosong',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.refresh_rounded,
+                                size: 18,
+                                color: AppColors.amberAccent,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Kosongkan Semua',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
                         ),
-                        visualDensity: VisualDensity.compact,
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -629,30 +663,35 @@ class _PresensiUjianTabViewState extends State<PresensiUjianTabView> {
             // 6. DAFTAR SANTRI PRESENSI UJIAN
             // ===================================================================
             ...provider.muridList.map((m) {
+              final isBelumDiisi = m.status == null || m.status!.isEmpty;
+              final statusColor = _getStatusColor(m.status);
+
               return GlassCard(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header Santri (Avatar, Nama, NISM, Lock status)
+                    // Header Santri (Avatar, Nama, NISM, Badge Status & Lock status)
                     Row(
                       children: [
                         CircleAvatar(
                           radius: 18,
-                          backgroundColor:
-                              (isDark
-                                      ? AppColors.primaryDark
-                                      : AppColors.primaryLight)
-                                  .withValues(alpha: 0.15),
+                          backgroundColor: isBelumDiisi
+                              ? (isDark
+                                    ? Colors.white10
+                                    : Colors.black.withValues(alpha: 0.06))
+                              : statusColor.withValues(alpha: 0.15),
                           child: Text(
                             m.nama.isNotEmpty ? m.nama[0].toUpperCase() : 'S',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
-                              color: isDark
-                                  ? AppColors.primaryDark
-                                  : AppColors.primaryLight,
+                              color: isBelumDiisi
+                                  ? (isDark
+                                        ? const Color(0xFF8D9387)
+                                        : const Color(0xFF73796E))
+                                  : statusColor,
                             ),
                           ),
                         ),
@@ -661,15 +700,30 @@ class _PresensiUjianTabViewState extends State<PresensiUjianTabView> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                m.nama,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      m.nama,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  if (isBelumDiisi)
+                                    _buildBadge(
+                                      'Belum Diisi',
+                                      AppColors.amberAccent,
+                                    )
+                                  else
+                                    _buildBadge(m.status!, statusColor),
+                                ],
                               ),
+                              const SizedBox(height: 2),
                               Text(
                                 'NISM: ${m.nism} • ${m.jenisKelamin == 'L' ? 'Murid Putra' : 'Murid Putri'}',
                                 style: TextStyle(
@@ -748,16 +802,7 @@ class _PresensiUjianTabViewState extends State<PresensiUjianTabView> {
                               'Dispensasi',
                             ].map((st) {
                               final isSelected = m.status == st;
-                              Color chipColor = AppColors.primaryLight;
-                              if (st == 'Izin') {
-                                chipColor = AppColors.skyBlueAccent;
-                              } else if (st == 'Sakit') {
-                                chipColor = AppColors.amberAccent;
-                              } else if (st == 'Alpha') {
-                                chipColor = AppColors.roseDanger;
-                              } else if (st == 'Dispensasi') {
-                                chipColor = AppColors.violetAccent;
-                              }
+                              final chipColor = _getStatusColor(st);
 
                               return Padding(
                                 padding: const EdgeInsets.only(right: 6),
@@ -861,7 +906,7 @@ class _PresensiUjianTabViewState extends State<PresensiUjianTabView> {
                 label: Text(
                   provider.isSaving
                       ? 'Menyimpan Presensi...'
-                      : 'Simpan Presensi Ujian',
+                      : 'Simpan Presensi (${provider.countSudahDiisi}/${provider.totalMurid})',
                 ),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -874,6 +919,23 @@ class _PresensiUjianTabViewState extends State<PresensiUjianTabView> {
         ],
       ),
     );
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status) {
+      case 'Hadir':
+        return AppColors.primaryLight;
+      case 'Izin':
+        return AppColors.skyBlueAccent;
+      case 'Sakit':
+        return AppColors.amberAccent;
+      case 'Alpha':
+        return AppColors.roseDanger;
+      case 'Dispensasi':
+        return AppColors.violetAccent;
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget _buildBelumAdaJadwalEmptyState(

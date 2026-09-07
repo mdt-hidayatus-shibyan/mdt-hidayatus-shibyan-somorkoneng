@@ -216,22 +216,27 @@ class PresensiUjianController extends Controller
                 $sakitCount = 0;
                 $alphaCount = 0;
                 $dispensasiCount = 0;
+                $belumCount = 0;
 
-                $muridList = $muridsWithStatus->map(function ($item) use ($presensiExisting, &$hadirCount, &$izinCount, &$sakitCount, &$alphaCount, &$dispensasiCount) {
+                $muridList = $muridsWithStatus->map(function ($item) use ($presensiExisting, &$hadirCount, &$izinCount, &$sakitCount, &$alphaCount, &$dispensasiCount, &$belumCount) {
                     $m = $item->murid ?? $item;
                     $existing = $presensiExisting->get($m->id);
 
-                    $status = $existing?->status ?? ($item->is_locked ? 'Dispensasi' : 'Hadir');
+                    $status = $existing?->status ?? null;
                     $catatan = $existing?->catatan;
 
-                    match ($status) {
-                        'Hadir' => $hadirCount++,
-                        'Izin' => $izinCount++,
-                        'Sakit' => $sakitCount++,
-                        'Alpha' => $alphaCount++,
-                        'Dispensasi' => $dispensasiCount++,
-                        default => $hadirCount++,
-                    };
+                    if ($status) {
+                        match ($status) {
+                            'Hadir' => $hadirCount++,
+                            'Izin' => $izinCount++,
+                            'Sakit' => $sakitCount++,
+                            'Alpha' => $alphaCount++,
+                            'Dispensasi' => $dispensasiCount++,
+                            default => null,
+                        };
+                    } else {
+                        $belumCount++;
+                    }
 
                     return [
                         'murid_id' => $m->id,
@@ -247,6 +252,7 @@ class PresensiUjianController extends Controller
 
                 $summary = [
                     'total' => $muridList->count(),
+                    'belum' => $belumCount,
                     'hadir' => $hadirCount,
                     'izin' => $izinCount,
                     'sakit' => $sakitCount,
@@ -296,6 +302,8 @@ class PresensiUjianController extends Controller
             'ruangan_id' => 'required|exists:ruangans,id',
             'jadwal_ujian_id' => 'required|exists:jadwal_ujians,id',
             'presensi' => 'required|array',
+            'presensi.*.status' => 'nullable|in:Hadir,Sakit,Izin,Alpha,Dispensasi',
+            'presensi.*.catatan' => 'nullable|string|max:255',
             'pengawas' => 'nullable|array',
         ]);
 

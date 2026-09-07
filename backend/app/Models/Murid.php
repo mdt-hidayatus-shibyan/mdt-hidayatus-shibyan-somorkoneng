@@ -65,6 +65,16 @@ class Murid extends Model
         return $this->hasMany(\App\Models\Ujian\PresensiUjian::class, 'murid_id');
     }
 
+    public function tabungans()
+    {
+        return $this->hasMany(\App\Models\Tabungan\Tabungan::class, 'murid_id');
+    }
+
+    public function tabunganUtama()
+    {
+        return $this->hasOne(\App\Models\Tabungan\Tabungan::class, 'murid_id')->oldestOfMany();
+    }
+
     /**
      * Accessor URL foto murid yang konsisten untuk Web & Mobile
      */

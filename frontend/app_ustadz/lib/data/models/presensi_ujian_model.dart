@@ -155,7 +155,8 @@ class MuridPresensiUjianItem {
   final String jenisKelamin;
   final bool isLocked;
   final String? lockReason;
-  String status; // Hadir, Izin, Sakit, Alpha, Dispensasi
+  String?
+  status; // Hadir, Izin, Sakit, Alpha, Dispensasi, or null if belum diisi
   String? catatan;
 
   MuridPresensiUjianItem({
@@ -165,7 +166,7 @@ class MuridPresensiUjianItem {
     required this.jenisKelamin,
     required this.isLocked,
     this.lockReason,
-    required this.status,
+    this.status,
     this.catatan,
   });
 
@@ -177,12 +178,16 @@ class MuridPresensiUjianItem {
       jenisKelamin: json['jenis_kelamin'] ?? 'L',
       isLocked: json['is_locked'] ?? false,
       lockReason: json['lock_reason'],
-      status: json['status'] ?? 'Hadir',
+      status: json['status'],
       catatan: json['catatan'],
     );
   }
 
-  MuridPresensiUjianItem copyWith({String? status, String? catatan}) {
+  MuridPresensiUjianItem copyWith({
+    String? status,
+    bool clearStatus = false,
+    String? catatan,
+  }) {
     return MuridPresensiUjianItem(
       muridId: muridId,
       nama: nama,
@@ -190,7 +195,7 @@ class MuridPresensiUjianItem {
       jenisKelamin: jenisKelamin,
       isLocked: isLocked,
       lockReason: lockReason,
-      status: status ?? this.status,
+      status: clearStatus ? null : (status ?? this.status),
       catatan: catatan ?? this.catatan,
     );
   }
@@ -198,6 +203,7 @@ class MuridPresensiUjianItem {
 
 class PresensiUjianSummary {
   final int total;
+  final int belum;
   final int hadir;
   final int izin;
   final int sakit;
@@ -206,6 +212,7 @@ class PresensiUjianSummary {
 
   PresensiUjianSummary({
     required this.total,
+    this.belum = 0,
     required this.hadir,
     required this.izin,
     required this.sakit,
@@ -216,6 +223,7 @@ class PresensiUjianSummary {
   factory PresensiUjianSummary.fromJson(Map<String, dynamic> json) {
     return PresensiUjianSummary(
       total: json['total'] ?? 0,
+      belum: json['belum'] ?? 0,
       hadir: json['hadir'] ?? 0,
       izin: json['izin'] ?? 0,
       sakit: json['sakit'] ?? 0,

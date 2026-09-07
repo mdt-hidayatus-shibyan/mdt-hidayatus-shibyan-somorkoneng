@@ -61,6 +61,10 @@ class PresensiUjianProvider extends ChangeNotifier {
 
   // Live Summary Counters
   int get totalMurid => _muridList.length;
+  int get countBelumDiisi =>
+      _muridList.where((m) => m.status == null || m.status!.isEmpty).length;
+  int get countSudahDiisi =>
+      _muridList.where((m) => m.status != null && m.status!.isNotEmpty).length;
   int get countHadir => _muridList.where((m) => m.status == 'Hadir').length;
   int get countIzin => _muridList.where((m) => m.status == 'Izin').length;
   int get countSakit => _muridList.where((m) => m.status == 'Sakit').length;
@@ -126,12 +130,16 @@ class PresensiUjianProvider extends ChangeNotifier {
     final idx = _muridList.indexWhere((m) => m.muridId == muridId);
     if (idx != -1) {
       HapticHelper.selection();
-      _muridList[idx].status = newStatus;
+      if (_muridList[idx].status == newStatus) {
+        _muridList[idx].status = null;
+      } else {
+        _muridList[idx].status = newStatus;
+      }
       notifyListeners();
     }
   }
 
-  void setAllMuridStatus(String status) {
+  void setAllMuridStatus(String? status) {
     HapticHelper.medium();
     for (var m in _muridList) {
       if (!m.isLocked) {
@@ -139,6 +147,10 @@ class PresensiUjianProvider extends ChangeNotifier {
       }
     }
     notifyListeners();
+  }
+
+  void setSemuaKosong() {
+    setAllMuridStatus(null);
   }
 
   void updateMuridCatatan(int muridId, String? catatan) {

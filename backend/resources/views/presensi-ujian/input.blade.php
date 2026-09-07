@@ -254,23 +254,39 @@
                 <!-- CARD LIST SANTRI (DENSE / COMPACT) -->
                 <div class="m3-glass-card overflow-hidden">
                     <div
-                        class="px-5 py-3.5 bg-zinc-50/80 dark:bg-zinc-950/70 border-b border-zinc-200/80 dark:border-zinc-800 flex justify-between items-center">
+                        class="px-5 py-3.5 bg-zinc-50/80 dark:bg-zinc-950/70 border-b border-zinc-200/80 dark:border-zinc-800 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                         <span
                             class="font-black text-xs text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                             <i class="bi bi-people-fill text-primary dark:text-primary-dark text-sm"></i>
                             Daftar Peserta Ujian ({{ $muridsWithStatus->count() }} Santri)
                         </span>
-                        <div class="flex items-center gap-3 text-[11px] font-bold text-zinc-500">
-                            <span class="flex items-center gap-1"><span
-                                    class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Hadir</span>
-                            <span class="flex items-center gap-1"><span
-                                    class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Sakit</span>
-                            <span class="flex items-center gap-1"><span
-                                    class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> Izin</span>
-                            <span class="flex items-center gap-1"><span
-                                    class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Alpha</span>
-                            <span class="flex items-center gap-1"><span
-                                    class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span> Dispen</span>
+                        <div class="flex items-center gap-3 flex-wrap justify-between sm:justify-end">
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="setSemuaPresensi('Hadir')"
+                                    class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-black rounded-lg transition-colors flex items-center gap-1 cursor-pointer">
+                                    <i class="bi bi-check-all"></i>
+                                    <span>Hadirkan Semua</span>
+                                </button>
+                                <button type="button" onclick="kosongkanSemuaPresensi()"
+                                    class="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 text-[10px] font-black rounded-lg transition-colors flex items-center gap-1 cursor-pointer">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                    <span>Kosongkan</span>
+                                </button>
+                            </div>
+                            <div class="hidden md:flex items-center gap-3 text-[11px] font-bold text-zinc-500">
+                                <span class="flex items-center gap-1"><span
+                                        class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                                    Hadir</span>
+                                <span class="flex items-center gap-1"><span
+                                        class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Sakit</span>
+                                <span class="flex items-center gap-1"><span
+                                        class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> Izin</span>
+                                <span class="flex items-center gap-1"><span
+                                        class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Alpha</span>
+                                <span class="flex items-center gap-1"><span
+                                        class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span>
+                                    Dispen</span>
+                            </div>
                         </div>
                     </div>
 
@@ -278,7 +294,7 @@
                         @foreach ($muridsWithStatus as $murid)
                             @php
                                 $pExisting = $presensiExisting->get($murid->id);
-                                $statusSekarang = $pExisting ? $pExisting->status : 'Hadir';
+                                $statusSekarang = $pExisting ? $pExisting->status : null;
                                 $catatanSekarang = $pExisting ? $pExisting->catatan : null;
                                 $isLocked = $murid->is_locked ?? false;
                                 $lockReason = $murid->lock_reason ?? 'Lunas Administrasi';
@@ -298,6 +314,18 @@
                                                 {{ $murid->nama_lengkap }}
                                             </h4>
 
+                                            @if (!$statusSekarang)
+                                                <span id="badge-status-{{ $murid->id }}"
+                                                    class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase tracking-wider">
+                                                    Belum Diisi
+                                                </span>
+                                            @else
+                                                <span id="badge-status-{{ $murid->id }}"
+                                                    class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                                                    {{ $statusSekarang }}
+                                                </span>
+                                            @endif
+
                                             @if ($isLocked)
                                                 <span
                                                     class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
@@ -308,7 +336,7 @@
                                             @else
                                                 <span
                                                     class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                                    <i class="bi bi-check-circle mr-0.5"></i> Syarat OK
+                                                    <i class="bi bi-check-circle mr-0.5"></i> Terpenuhi
                                                 </span>
                                             @endif
                                         </div>
@@ -328,9 +356,10 @@
                                             <label class="cursor-pointer relative block w-full text-center">
                                                 <input type="radio" name="presensi[{{ $murid->id }}][status]"
                                                     value="{{ $val }}"
-                                                    class="peer sr-only presensi-radio-{{ $val }}"
+                                                    class="peer sr-only presensi-radio-{{ $val }} presensi-radio-{{ $murid->id }}"
                                                     data-murid-id="{{ $murid->id }}"
-                                                    {{ $statusSekarang == $val ? 'checked' : '' }}>
+                                                    {{ $statusSekarang == $val ? 'checked' : '' }}
+                                                    onchange="updateStatusBadge('{{ $murid->id }}', '{{ $val }}')">
 
                                                 <div
                                                     class="w-full py-1.5 flex items-center justify-center text-[11px] font-black rounded-lg transition-all duration-200 border border-transparent text-zinc-400 dark:text-zinc-500 hover:bg-white dark:hover:bg-zinc-800
@@ -379,11 +408,37 @@
 
     @push('script')
         <script>
-            function setSemuaHadir() {
-                document.querySelectorAll('.presensi-radio-Hadir').forEach(radio => {
+            function updateStatusBadge(muridId, status) {
+                const badge = document.getElementById('badge-status-' + muridId);
+                if (badge) {
+                    badge.textContent = status;
+                    badge.className =
+                        'px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider';
+                }
+            }
+
+            function setSemuaPresensi(status) {
+                document.querySelectorAll('input[type="radio"][value="' + status + '"]').forEach(radio => {
                     radio.checked = true;
-                    // Trigger change event if needed
-                    radio.dispatchEvent(new Event('change'));
+                    const muridId = radio.getAttribute('data-murid-id');
+                    if (muridId) {
+                        updateStatusBadge(muridId, status);
+                    }
+                });
+            }
+
+            function kosongkanSemuaPresensi() {
+                document.querySelectorAll('input[type="radio"][name^="presensi"]').forEach(radio => {
+                    radio.checked = false;
+                    const muridId = radio.getAttribute('data-murid-id');
+                    if (muridId) {
+                        const badge = document.getElementById('badge-status-' + muridId);
+                        if (badge) {
+                            badge.textContent = 'Belum Diisi';
+                            badge.className =
+                                'px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase tracking-wider';
+                        }
+                    }
                 });
             }
         </script>

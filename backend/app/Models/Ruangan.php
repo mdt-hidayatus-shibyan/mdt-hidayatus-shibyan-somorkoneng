@@ -94,6 +94,11 @@ class Ruangan extends Model
         return $this->hasMany(SetoranKasRuangan::class);
     }
 
+    public function tabungans()
+    {
+        return $this->hasMany(\App\Models\Tabungan\Tabungan::class, 'ruangan_id');
+    }
+
     public function presensiUjians()
     {
         return $this->hasMany(\App\Models\Ujian\PresensiUjian::class, 'ruangan_id');

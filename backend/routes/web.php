@@ -468,6 +468,59 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/setoran-kas-ruangan/{id}', [SetoranKasRuanganController::class, 'updateSetoran'])->name('setoran-kas-ruangan.update');
     Route::delete('/setoran-kas-ruangan/{id}', [SetoranKasRuanganController::class, 'destroySetoran'])->name('setoran-kas-ruangan.destroy');
 
+    // ==========================================
+    // 5.1 TABUNGAN MADRASAH
+    // ==========================================
+    Route::prefix('tabungan')->name('tabungan.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'index'])->name('dashboard');
+
+        // Master Rekening & AJAX Lookup
+        Route::get('/ajax/cari-murid', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'cariMuridByNism'])->name('ajax.cari-murid');
+        Route::get('/ajax/cari-ustadz', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'cariUstadzByNigm'])->name('ajax.cari-ustadz');
+        Route::get('/ajax/cari-rekening', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'cariRekeningByBarcode'])->name('ajax.cari-rekening');
+        Route::get('/barcode/generator', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'generatorBarcode'])->name('barcode.generator');
+        Route::get('/barcode/export', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'exportBarcode'])->name('barcode.export');
+        Route::get('/rekening', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'rekening'])->name('rekening.index');
+        Route::get('/rekening/create', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'createRekening'])->name('rekening.create');
+        Route::post('/rekening', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'storeRekening'])->name('rekening.store');
+        Route::get('/rekening/{id}', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'detailRekening'])->name('rekening.detail');
+        Route::get('/rekening/{id}/cetak', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'cetakBukuTabungan'])->name('rekening.cetak');
+
+        // Transaksi Langsung Setor & Tarik
+        Route::get('/setor', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'formSetorTunai'])->name('setor.index');
+        Route::post('/setor', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'setorTunai'])->name('setor');
+        Route::get('/setor/{id}/edit', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'editTransaksiSetor'])->name('setor.edit');
+        Route::put('/setor/{id}', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'updateTransaksiSetor'])->name('setor.update');
+        Route::delete('/setor/{id}', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'destroyTransaksiSetor'])->name('setor.destroy');
+        Route::post('/tarik', [\App\Http\Controllers\Tabungan\TabunganMadrasahController::class, 'tarikTunai'])->name('tarik');
+
+        // Pengajuan & Approval Penarikan
+        Route::get('/pengajuan', [\App\Http\Controllers\Tabungan\PengajuanPenarikanController::class, 'index'])->name('pengajuan.index');
+        Route::post('/pengajuan', [\App\Http\Controllers\Tabungan\PengajuanPenarikanController::class, 'store'])->name('pengajuan.store');
+        Route::post('/pengajuan/{id}/setujui', [\App\Http\Controllers\Tabungan\PengajuanPenarikanController::class, 'setujui'])->name('pengajuan.setujui');
+        Route::post('/pengajuan/{id}/tolak', [\App\Http\Controllers\Tabungan\PengajuanPenarikanController::class, 'tolak'])->name('pengajuan.tolak');
+        Route::post('/pengajuan/{id}/cairkan', [\App\Http\Controllers\Tabungan\PengajuanPenarikanController::class, 'cairkan'])->name('pengajuan.cairkan');
+        Route::get('/pengajuan/{id}/kwitansi', [\App\Http\Controllers\Tabungan\PengajuanPenarikanController::class, 'cetakKwitansi'])->name('pengajuan.kwitansi');
+
+        // Pengaturan Potongan & Periode
+        Route::get('/pengaturan', [\App\Http\Controllers\Tabungan\PengaturanPotonganController::class, 'index'])->name('pengaturan.index');
+        Route::post('/pengaturan/potongan', [\App\Http\Controllers\Tabungan\PengaturanPotonganController::class, 'updatePotongan'])->name('pengaturan.update');
+        Route::get('/pengaturan/periode/create', [\App\Http\Controllers\Tabungan\PengaturanPotonganController::class, 'createPeriode'])->name('pengaturan.periode.create');
+        Route::post('/pengaturan/periode', [\App\Http\Controllers\Tabungan\PengaturanPotonganController::class, 'storePeriode'])->name('pengaturan.periode.store');
+        Route::get('/pengaturan/periode/{id}/edit', [\App\Http\Controllers\Tabungan\PengaturanPotonganController::class, 'editPeriode'])->name('pengaturan.periode.edit');
+        Route::put('/pengaturan/periode/{id}', [\App\Http\Controllers\Tabungan\PengaturanPotonganController::class, 'updatePeriode'])->name('pengaturan.periode.update');
+        Route::delete('/pengaturan/periode/{id}', [\App\Http\Controllers\Tabungan\PengaturanPotonganController::class, 'destroyPeriode'])->name('pengaturan.periode.destroy');
+        Route::get('/pengaturan/periode/{id}/potongan', [\App\Http\Controllers\Tabungan\PengaturanPotonganController::class, 'editPotonganModal'])->name('pengaturan.periode.potongan.edit');
+        Route::put('/pengaturan/periode/{id}/potongan', [\App\Http\Controllers\Tabungan\PengaturanPotonganController::class, 'updatePotonganModal'])->name('pengaturan.periode.potongan.update');
+        Route::post('/pengaturan/periode/{id}/toggle-status', [\App\Http\Controllers\Tabungan\PengaturanPotonganController::class, 'toggleStatusPeriode'])->name('pengaturan.periode.toggle-status');
+        Route::post('/pengaturan/periode/{id}/aktif', [\App\Http\Controllers\Tabungan\PengaturanPotonganController::class, 'setPeriodeAktif'])->name('pengaturan.periode.aktif');
+
+        // Pembagian Akhir Periode Massal
+        Route::get('/pembagian', [\App\Http\Controllers\Tabungan\PembagianTabunganController::class, 'index'])->name('pembagian.index');
+        Route::post('/pembagian/eksekusi', [\App\Http\Controllers\Tabungan\PembagianTabunganController::class, 'eksekusi'])->name('pembagian.eksekusi');
+        Route::get('/pembagian/cetak-laporan', [\App\Http\Controllers\Tabungan\PembagianTabunganController::class, 'cetakLaporan'])->name('pembagian.cetak');
+    });
+
 
     Route::post('/pengguna/{id}/force-logout', [UserController::class, 'forceLogout'])->name('pengguna.force-logout');
     Route::get('/pengguna/{id}/whatsapp', [UserController::class, 'hubungiWhatsApp'])->name('pengguna.whatsapp');

@@ -63,6 +63,11 @@ class Ustadz extends Model
         return $this->hasMany(JadwalPelajaran::class, 'ustadz_id');
     }
 
+    public function tabungans()
+    {
+        return $this->hasMany(\App\Models\Tabungan\Tabungan::class, 'ustadz_id');
+    }
+
     /**
      * Accessor URL foto ustadz yang konsisten untuk Web & Mobile
      */

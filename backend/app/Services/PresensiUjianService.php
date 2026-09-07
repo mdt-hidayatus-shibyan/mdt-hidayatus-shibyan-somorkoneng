@@ -89,7 +89,7 @@ class PresensiUjianService
 
             // 1. Simpan Presensi Santri
             foreach ($dataPresensi as $muridId => $item) {
-                $status = is_array($item) ? ($item['status'] ?? 'Hadir') : $item;
+                $status = is_array($item) ? ($item['status'] ?? null) : $item;
                 $catatan = is_array($item) ? ($item['catatan'] ?? null) : null;
 
                 if (!empty($status)) {
@@ -107,6 +107,12 @@ class PresensiUjianService
                         ]
                     );
                     $jumlahDisimpan++;
+                } else {
+                    PresensiUjian::where('ujian_id', $ujianId)
+                        ->where('jadwal_ujian_id', $jadwalId)
+                        ->where('ruangan_id', $ruanganId)
+                        ->where('murid_id', $muridId)
+                        ->delete();
                 }
             }
 
