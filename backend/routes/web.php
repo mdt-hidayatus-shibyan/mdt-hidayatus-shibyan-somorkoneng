@@ -73,7 +73,17 @@ use App\Http\Controllers\Tabungan\RincianTabunganController;
 use App\Http\Controllers\Tabungan\CekMutasiTabunganController;
 use App\Http\Controllers\Tabungan\PecahanUangTabunganController;
 
-// 9. Pengaturan Sistem & RBAC Controllers
+// 9. Koperasi Madrasah (POS Kasir & Toko) Controllers
+use App\Http\Controllers\Koperasi\KoperasiDashboardController;
+use App\Http\Controllers\Koperasi\KategoriProdukController;
+use App\Http\Controllers\Koperasi\ProdukKoperasiController;
+use App\Http\Controllers\Koperasi\PaketKoperasiController;
+use App\Http\Controllers\Koperasi\KasirKoperasiController;
+use App\Http\Controllers\Koperasi\TransaksiKoperasiController;
+use App\Http\Controllers\Koperasi\StokKoperasiController;
+use App\Http\Controllers\Koperasi\LaporanKoperasiController;
+
+// 10. Pengaturan Sistem & RBAC Controllers
 use App\Http\Controllers\PengaturanMenu\MenuController;
 use App\Http\Controllers\PengaturanMenu\RoleController;
 use App\Http\Controllers\PengaturanMenu\PermissionController;
@@ -621,6 +631,49 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/pecahan/cetak', [PecahanUangTabunganController::class, 'cetak'])->name('pecahan.cetak');
         Route::get('/pecahan/slip/{id}', [PecahanUangTabunganController::class, 'cetakSlip'])->name('pecahan.cetak-slip');
         Route::get('/pecahan/slip-massal', [PecahanUangTabunganController::class, 'cetakSlipMassal'])->name('pecahan.cetak-slip-massal');
+    });
+
+
+    // ==========================================
+    // 9. KOPERASI MADRASAH (POS KASIR & TOKO)
+    // ==========================================
+    Route::prefix('koperasi')->name('koperasi.')->group(function () {
+        // Dashboard Koperasi
+        Route::get('/dashboard', [KoperasiDashboardController::class, 'index'])->name('dashboard');
+
+        // Kasir POS
+        Route::get('/pos', [KasirKoperasiController::class, 'index'])->name('pos.index');
+        Route::get('/pos/cari-barcode', [KasirKoperasiController::class, 'cariBarcode'])->name('pos.cari-barcode');
+        Route::get('/pos/cari-pelanggan', [KasirKoperasiController::class, 'cariPelanggan'])->name('pos.cari-pelanggan');
+        Route::get('/pos/paket-rekomendasi', [KasirKoperasiController::class, 'getPaketRekomendasi'])->name('pos.paket-rekomendasi');
+        Route::post('/pos/checkout', [KasirKoperasiController::class, 'checkout'])->name('pos.checkout');
+        Route::get('/pos/struk/{id}', [KasirKoperasiController::class, 'struk'])->name('kasir.struk');
+
+        // Master Produk & Kategori
+        Route::post('/produk/{produk}/toggle-status', [ProdukKoperasiController::class, 'toggleStatus'])->name('produk.toggle-status');
+        Route::post('/kategori/{kategori}/toggle-status', [KategoriProdukController::class, 'toggleStatus'])->name('kategori.toggle-status');
+        Route::resource('kategori', KategoriProdukController::class);
+        Route::resource('produk', ProdukKoperasiController::class);
+
+        // Paket Bundling (Kitab/Seragam per Level)
+        Route::post('/paket/{paket}/toggle-status', [PaketKoperasiController::class, 'toggleStatus'])->name('paket.toggle-status');
+        Route::resource('paket', PaketKoperasiController::class);
+
+        // Stok & Kartu Mutasi
+        Route::get('/stok/restock', [StokKoperasiController::class, 'restockModal'])->name('stok.restock');
+        Route::get('/stok/opname', [StokKoperasiController::class, 'opnameModal'])->name('stok.opname');
+        Route::get('/stok', [StokKoperasiController::class, 'index'])->name('stok.index');
+        Route::post('/stok', [StokKoperasiController::class, 'store'])->name('stok.store');
+
+        // Riwayat Transaksi & Detail
+        Route::get('/transaksi', [TransaksiKoperasiController::class, 'index'])->name('transaksi.index');
+        Route::get('/transaksi/{id}', [TransaksiKoperasiController::class, 'show'])->name('transaksi.show');
+        Route::post('/transaksi/{id}/lunasi', [TransaksiKoperasiController::class, 'lunasiHutang'])->name('transaksi.lunasi');
+        Route::post('/transaksi/{id}/batal', [TransaksiKoperasiController::class, 'batal'])->name('transaksi.batal');
+
+        // Laporan Keuangan & Penjualan
+        Route::get('/laporan', [LaporanKoperasiController::class, 'index'])->name('laporan.index');
+        Route::get('/laporan/cetak', [LaporanKoperasiController::class, 'cetak'])->name('laporan.cetak');
     });
 
 

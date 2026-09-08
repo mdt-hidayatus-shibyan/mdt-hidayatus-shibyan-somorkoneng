@@ -11,17 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('pengaturan_potongan_tabungans', function (Blueprint $table) {
-            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
-                $table->dropUnique('pengaturan_potongan_tabungans_jenis_nasabah_unique');
-            }
-            if (!Schema::hasColumn('pengaturan_potongan_tabungans', 'periode_tabungan_id')) {
+        if (!Schema::hasColumn('pengaturan_potongan_tabungans', 'periode_tabungan_id')) {
+            Schema::table('pengaturan_potongan_tabungans', function (Blueprint $table) {
                 $table->foreignId('periode_tabungan_id')->nullable()->after('id')->constrained('periode_tabungans')->cascadeOnDelete();
-            }
-            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
-                $table->unique(['periode_tabungan_id', 'jenis_nasabah'], 'potongan_periode_nasabah_unique');
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -29,11 +23,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('pengaturan_potongan_tabungans', function (Blueprint $table) {
-            $table->dropUnique('potongan_periode_nasabah_unique');
-            $table->dropForeign(['periode_tabungan_id']);
-            $table->dropColumn('periode_tabungan_id');
-            $table->unique('jenis_nasabah');
-        });
+        if (Schema::hasColumn('pengaturan_potongan_tabungans', 'periode_tabungan_id')) {
+            Schema::table('pengaturan_potongan_tabungans', function (Blueprint $table) {
+                $table->dropForeign(['periode_tabungan_id']);
+                $table->dropColumn('periode_tabungan_id');
+            });
+        }
     }
 };
