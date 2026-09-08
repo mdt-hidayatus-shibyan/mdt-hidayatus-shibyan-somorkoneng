@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tabungan;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tabungan\KategoriPenarikan;
 use App\Models\Tabungan\PengaturanPotonganTabungan;
 use App\Models\Tabungan\PeriodeTabungan;
 use App\Models\TahunPelajaran;
@@ -12,12 +13,13 @@ use Illuminate\Support\Facades\Auth;
 class PengaturanPotonganController extends Controller
 {
     /**
-     * Tampilan Master Periode Tabungan Berjangka
+     * Tampilan Master Periode Tabungan Berjangka & Kategori Penarikan
      */
     public function index(Request $request)
     {
         $periodes = PeriodeTabungan::with(['tahunPelajaran', 'potongans.userPengubah'])->orderBy('id', 'desc')->get();
         $tahunPelajarans = TahunPelajaran::orderBy('id', 'desc')->get();
+        $kategoriPenarikans = KategoriPenarikan::withCount('transaksis')->ordered()->get();
 
         // Inisialisasi otomatis potongan default jika ada periode yang belum memiliki setting potongan
         foreach ($periodes as $p) {
@@ -27,7 +29,7 @@ class PengaturanPotonganController extends Controller
             }
         }
 
-        return view('tabungan.pengaturan.index', compact('periodes', 'tahunPelajarans'));
+        return view('tabungan.pengaturan.index', compact('periodes', 'tahunPelajarans', 'kategoriPenarikans'));
     }
 
     /**
@@ -289,5 +291,152 @@ class PengaturanPotonganController extends Controller
         }
 
         return back()->with('success', "Periode '{$periode->nama_periode}' sekarang aktif!");
+    }
+
+    /**
+     * Modal Form Tambah Kategori Penarikan (AJAX)
+     */
+    public function createKategori(Request $request)
+    {
+        if ($request->ajax()) {
+            return view('tabungan.pengaturan.kategori_form');
+        }
+
+        return redirect()->route('tabungan.pengaturan.index');
+    }
+
+    /**
+     * Modal Form Edit Kategori Penarikan (AJAX)
+     */
+    public function editKategori(Request $request, $id)
+    {
+        $kategori = KategoriPenarikan::findOrFail($id);
+
+        if ($request->ajax()) {
+            return view('tabungan.pengaturan.kategori_form', compact('kategori'));
+        }
+
+        return redirect()->route('tabungan.pengaturan.index');
+    }
+
+    /**
+     * Simpan Kategori Penarikan Baru
+     */
+    public function storeKategori(Request $request)
+    {
+        $request->validate([
+            'nama_kategori' => 'required|string|max:100',
+            'kode_kategori' => 'nullable|string|max:50|unique:kategori_penarikans,kode_kategori',
+            'jenis_tujuan' => 'required|in:Tunai,Tagihan,Kas Ruangan,Lainnya',
+            'keterangan' => 'nullable|string|max:255',
+            'urutan' => 'nullable|integer|min:0',
+        ], [
+            'nama_kategori.required' => 'Nama kategori penarikan wajib diisi.',
+            'kode_kategori.unique' => 'Kode kategori penarikan sudah digunakan.',
+            'jenis_tujuan.required' => 'Jenis tujuan penarikan wajib dipilih.',
+        ]);
+
+        $kategori = KategoriPenarikan::create([
+            'nama_kategori' => $request->nama_kategori,
+            'kode_kategori' => !empty($request->kode_kategori) ? strtoupper(trim($request->kode_kategori)) : null,
+            'jenis_tujuan' => $request->jenis_tujuan,
+            'keterangan' => $request->keterangan,
+            'urutan' => (int) ($request->urutan ?? 0),
+            'is_active' => $request->has('is_active') ? true : false,
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => "Kategori penarikan '{$kategori->nama_kategori}' berhasil ditambahkan!"
+            ], 200);
+        }
+
+        return back()->with('success', "Kategori penarikan '{$kategori->nama_kategori}' berhasil ditambahkan!");
+    }
+
+    /**
+     * Update Data Kategori Penarikan
+     */
+    public function updateKategori(Request $request, $id)
+    {
+        $kategori = KategoriPenarikan::findOrFail($id);
+
+        $request->validate([
+            'nama_kategori' => 'required|string|max:100',
+            'kode_kategori' => 'nullable|string|max:50|unique:kategori_penarikans,kode_kategori,' . $id,
+            'jenis_tujuan' => 'required|in:Tunai,Tagihan,Kas Ruangan,Lainnya',
+            'keterangan' => 'nullable|string|max:255',
+            'urutan' => 'nullable|integer|min:0',
+        ], [
+            'nama_kategori.required' => 'Nama kategori penarikan wajib diisi.',
+            'kode_kategori.unique' => 'Kode kategori penarikan sudah digunakan.',
+            'jenis_tujuan.required' => 'Jenis tujuan penarikan wajib dipilih.',
+        ]);
+
+        $kategori->update([
+            'nama_kategori' => $request->nama_kategori,
+            'kode_kategori' => !empty($request->kode_kategori) ? strtoupper(trim($request->kode_kategori)) : null,
+            'jenis_tujuan' => $request->jenis_tujuan,
+            'keterangan' => $request->keterangan,
+            'urutan' => (int) ($request->urutan ?? 0),
+            'is_active' => $request->has('is_active') ? true : false,
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => "Kategori penarikan '{$kategori->nama_kategori}' berhasil diperbarui!"
+            ], 200);
+        }
+
+        return back()->with('success', "Kategori penarikan '{$kategori->nama_kategori}' berhasil diperbarui!");
+    }
+
+    /**
+     * Hapus Kategori Penarikan
+     */
+    public function destroyKategori($id)
+    {
+        $kategori = KategoriPenarikan::withCount('transaksis')->findOrFail($id);
+
+        if ($kategori->transaksis_count > 0) {
+            $msg = "Kategori '{$kategori->nama_kategori}' tidak dapat dihapus karena telah digunakan pada {$kategori->transaksis_count} transaksi penarikan tabungan. Anda dapat menonaktifkan statusnya.";
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['message' => $msg], 422);
+            }
+            return back()->with('error', $msg);
+        }
+
+        $nama = $kategori->nama_kategori;
+        $kategori->delete();
+
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => "Kategori penarikan '{$nama}' berhasil dihapus!"
+            ], 200);
+        }
+
+        return back()->with('success', "Kategori penarikan '{$nama}' berhasil dihapus!");
+    }
+
+    /**
+     * Toggle Status Aktif/Nonaktif Kategori Penarikan via AJAX
+     */
+    public function toggleStatusKategori(Request $request, $id)
+    {
+        $request->validate([
+            'is_active' => 'required|boolean'
+        ]);
+
+        $kategori = KategoriPenarikan::findOrFail($id);
+        $kategori->is_active = (bool) $request->is_active;
+        $kategori->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Status kategori '{$kategori->nama_kategori}' berhasil diubah menjadi " . ($kategori->is_active ? 'Aktif' : 'Non-Aktif') . "!"
+        ], 200);
     }
 }

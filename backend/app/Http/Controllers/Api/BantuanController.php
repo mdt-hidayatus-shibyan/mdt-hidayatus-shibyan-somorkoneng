@@ -30,16 +30,16 @@ class BantuanController extends Controller
                 'jawab' => 'Gunakan fitur Lupa Password di halaman awal aplikasi dengan memasukkan email akun ustadz atau hubungi Administrator madrasah.'
             ],
             [
-                'tanya' => 'Bagaimana cara input nilai ujian santri?',
-                'jawab' => 'Buka tab Menu Utama > Penilaian > pilih Ujian & Mapel yang diampu > input nilai santri dan klik Simpan Nilai.'
+                'tanya' => 'Bagaimana cara input nilai ujian murid?',
+                'jawab' => 'Buka tab Menu Utama > Penilaian > pilih Ujian & Mapel yang diampu > input nilai murid dan klik Simpan Nilai.'
             ],
             [
-                'tanya' => 'Apakah ustadz bisa mencatat pelanggaran santri dari kelas lain?',
-                'jawab' => 'Ya, ustadz dapat mencatat pelanggaran santri manapun melalui menu Catat Pelanggaran Santri.'
+                'tanya' => 'Apakah ustadz bisa mencatat pelanggaran murid dari kelas lain?',
+                'jawab' => 'Ya, ustadz dapat mencatat pelanggaran murid manapun melalui menu Catat Pelanggaran Murid.'
             ],
             [
-                'tanya' => 'Bagaimana jika nama santri tidak muncul di daftar presensi?',
-                'jawab' => 'Pastikan santri tersebut sudah ditempatkan di ruangan yang bersangkutan pada tahun ajaran aktif melalui admin madrasah.'
+                'tanya' => 'Bagaimana jika nama murid tidak muncul di daftar presensi?',
+                'jawab' => 'Pastikan murid tersebut sudah ditempatkan di ruangan yang bersangkutan pada tahun ajaran aktif melalui admin madrasah.'
             ]
         ];
 

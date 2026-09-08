@@ -117,7 +117,7 @@ class SetoranKasRuanganController extends Controller
                 throw new \Exception('Gagal! Jumlah setoran baru melebihi total uang kas yang ada di Wali Kelas.');
             }
 
-            // Step C: Kunci ulang cicilan santri berdasarkan nominal baru
+            // Step C: Kunci ulang cicilan murid berdasarkan nominal baru
             $this->kunciCicilan($ruangan_id, $request->jumlah_setor);
 
             // Step D: Update data dokumen setoran
@@ -143,7 +143,7 @@ class SetoranKasRuanganController extends Controller
         try {
             $setoran = SetoranKasRuangan::findOrFail($id);
 
-            // Buka kembali semua cicilan santri yang pernah dikunci oleh nominal setoran ini
+            // Buka kembali semua cicilan murid yang pernah dikunci oleh nominal setoran ini
             $this->bukaKunciCicilan($setoran->ruangan_id, $setoran->jumlah_setor);
 
             // Hapus berkas setoran

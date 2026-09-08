@@ -10,7 +10,7 @@
                 Data Murid
             </h2>
             <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-0.5 uppercase tracking-wider">
-                Kelola data induk santri dan pantau status akademik mereka
+                Kelola data induk murid dan pantau status akademik mereka
             </p>
         </div>
 

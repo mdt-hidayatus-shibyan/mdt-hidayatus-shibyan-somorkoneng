@@ -26,11 +26,6 @@ class TransaksiTabungan extends Model
         return $this->belongsTo(Tabungan::class, 'tabungan_id');
     }
 
-    public function pengajuan()
-    {
-        return $this->belongsTo(PengajuanPenarikanTabungan::class, 'pengajuan_id');
-    }
-
     public function ruangan()
     {
         return $this->belongsTo(Ruangan::class, 'ruangan_id');
@@ -39,5 +34,10 @@ class TransaksiTabungan extends Model
     public function petugas()
     {
         return $this->belongsTo(User::class, 'petugas_id');
+    }
+
+    public function kategoriPenarikan()
+    {
+        return $this->belongsTo(KategoriPenarikan::class, 'kategori_penarikan_id');
     }
 }

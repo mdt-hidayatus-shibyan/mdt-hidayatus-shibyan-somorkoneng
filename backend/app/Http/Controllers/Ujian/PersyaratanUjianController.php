@@ -174,6 +174,6 @@ class PersyaratanUjianController extends Controller
             ]
         );
 
-        return redirect()->back()->with('success', 'Akses input nilai santri berhasil dibuka via kebijakan dispensasi administrator!');
+        return redirect()->back()->with('success', 'Akses input nilai murid berhasil dibuka via kebijakan dispensasi administrator!');
     }
 }

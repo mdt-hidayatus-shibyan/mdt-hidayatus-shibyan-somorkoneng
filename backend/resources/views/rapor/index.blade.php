@@ -8,7 +8,7 @@
                 Cetak & Sahkan Rapor
             </h2>
             <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-1 uppercase tracking-wider">
-                Verifikasi kelengkapan nilai, pratinjau, dan bekukan arsip rapor santri
+                Verifikasi kelengkapan nilai, pratinjau, dan bekukan arsip rapor murid
             </p>
         </div>
     </div>
@@ -129,7 +129,7 @@
                                 </th>
                                 <th class="py-3 px-3.5 border-r border-zinc-200/80 dark:border-zinc-800 w-28 text-center">
                                     NISM</th>
-                                <th class="py-3 px-4 border-r border-zinc-200/80 dark:border-zinc-800">Nama Lengkap Santri
+                                <th class="py-3 px-4 border-r border-zinc-200/80 dark:border-zinc-800">Nama Lengkap Murid
                                 </th>
                                 <th class="py-3 px-3.5 text-center border-r border-zinc-200/80 dark:border-zinc-800 w-36">
                                     Status Dokumen</th>
@@ -241,7 +241,7 @@
                     </div>
                 @else
                     <div class="py-12 text-center text-zinc-500 dark:text-zinc-400 font-semibold text-xs">
-                        Belum ada data santri di kelas ini.
+                        Belum ada data murid di kelas ini.
                     </div>
                 @endif
             </form>
@@ -278,7 +278,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: '<span class="text-base font-black text-zinc-900 dark:text-white">Pengesahan Terkunci!</span>',
-                    html: '<p class="text-xs text-zinc-500 dark:text-zinc-400 mt-2 leading-relaxed">Untuk ujian akhir tahun <b>(IMDA 2 / IMNI)</b>, Anda wajib merumuskan dan mengesahkan keputusan status Kenaikan/Kelulusan Santri di menu <b>Kenaikan Kelas</b> terlebih dahulu.</p>',
+                    html: '<p class="text-xs text-zinc-500 dark:text-zinc-400 mt-2 leading-relaxed">Untuk ujian akhir tahun <b>(IMDA 2 / IMNI)</b>, Anda wajib merumuskan dan mengesahkan keputusan status Kenaikan/Kelulusan Murid di menu <b>Kenaikan Kelas</b> terlebih dahulu.</p>',
                     confirmButtonColor: '#e11d48',
                     heightAuto: false,
                     background: isDark ? '#09090b' : '#ffffff',
@@ -299,8 +299,8 @@
                 if (selectedCount === 0) {
                     Swal.fire({
                         icon: 'warning',
-                        title: '<span class="text-base font-black text-zinc-900 dark:text-white">Pilih Santri!</span>',
-                        html: '<p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Silakan centang minimal satu santri yang ingin disahkan rapornya.</p>',
+                        title: '<span class="text-base font-black text-zinc-900 dark:text-white">Pilih Murid!</span>',
+                        html: '<p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Silakan centang minimal satu murid yang ingin disahkan rapornya.</p>',
                         confirmButtonColor: '#059669',
                         heightAuto: false,
                         background: isDark ? '#09090b' : '#ffffff',
@@ -312,7 +312,7 @@
                     return;
                 }
 
-                const titleText = mode === 'individu' ? 'Sahkan Rapor Santri Ini?' : `Sahkan ${selectedCount} Rapor Terpilih?`;
+                const titleText = mode === 'individu' ? 'Sahkan Rapor Murid Ini?' : `Sahkan ${selectedCount} Rapor Terpilih?`;
 
                 Swal.fire({
                     title: `<span class="text-base font-black text-zinc-900 dark:text-white">${titleText}</span>`,
@@ -351,7 +351,7 @@
     @else
         <!-- State Awal -->
         <x-empty-state icon="bi-journal-text" title="Pengesahan Dokumen Rapor"
-            message="Tentukan Ruangan dan Agenda Ujian pada filter di atas untuk memuat daftar santri, melakukan pratinjau, dan mengesahkan dokumen Rapor." />
+            message="Tentukan Ruangan dan Agenda Ujian pada filter di atas untuk memuat daftar murid, melakukan pratinjau, dan mengesahkan dokumen Rapor." />
     @endif
 
 </x-app-layout>

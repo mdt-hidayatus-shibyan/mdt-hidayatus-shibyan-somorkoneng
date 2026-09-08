@@ -273,11 +273,11 @@
             \App\Models\Kepengurusan\Pengurus::getAktifByJabatan('Sekretaris');
 
         $totalWaliSemua = 0;
-        $totalSantriSemua = 0;
+        $totalMuridSemua = 0;
         foreach ($groupedWalis as $group) {
             $totalWaliSemua += $group->count();
             foreach ($group as $w) {
-                $totalSantriSemua += $w->murids->count();
+                $totalMuridSemua += $w->murids->count();
             }
         }
     @endphp
@@ -306,7 +306,7 @@
         <div>
             <span>Total Kepala Keluarga (Wali Aktif): <strong>{{ $totalWaliSemua }} KK</strong></span>
             <span style="margin: 0 8px;">|</span>
-            <span>Total Santri Aktif: <strong>{{ $totalSantriSemua }} Anak</strong></span>
+            <span>Total Murid Aktif: <strong>{{ $totalMuridSemua }} Anak</strong></span>
         </div>
     </div>
 
@@ -321,7 +321,7 @@
 
         <div class="group-header">
             <span><i style="font-style: normal;">&#9654;</i> KAMPUNG: {{ strtoupper($namaGroup) }}</span>
-            <span class="group-badge">{{ $walis->count() }} KK &bull; {{ $totalAnakGroup }} Santri</span>
+            <span class="group-badge">{{ $walis->count() }} KK &bull; {{ $totalAnakGroup }} Murid</span>
         </div>
 
         <table class="data-table">
@@ -373,7 +373,7 @@
                                     @endforeach
                                 </ul>
                             @else
-                                <span style="color: #94a3b8; font-style: italic; font-size: 9px;">Tidak ada santri
+                                <span style="color: #94a3b8; font-style: italic; font-size: 9px;">Tidak ada murid
                                     aktif</span>
                             @endif
                         </td>

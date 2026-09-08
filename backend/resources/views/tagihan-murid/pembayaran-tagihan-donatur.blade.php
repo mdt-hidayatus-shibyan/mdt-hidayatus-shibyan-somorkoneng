@@ -318,7 +318,7 @@
         <!-- State Awal Belum Pilih Bulan -->
         <div class="col-span-full">
             <x-empty-state icon="bi-calendar2-heart" title="Pilih Bulan Tagihan"
-                message="Silakan pilih bulan tagihan di atas untuk melihat daftar santri yatim yang belum terlunasi pada bulan tersebut." />
+                message="Silakan pilih bulan tagihan di atas untuk melihat daftar murid yatim yang belum terlunasi pada bulan tersebut." />
         </div>
     @endif
 

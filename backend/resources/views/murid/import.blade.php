@@ -14,7 +14,7 @@
                 <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight leading-tight">
                     Import Data Murid
                 </h3>
-                <p class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-0.5">Unggah CSV Master Santri</p>
+                <p class="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-0.5">Unggah CSV Master Murid</p>
             </div>
         </div>
 

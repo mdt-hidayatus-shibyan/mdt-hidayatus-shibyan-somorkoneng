@@ -139,7 +139,7 @@
                         <thead>
                             <tr>
                                 <th class="px-4 py-3 w-14 text-center">No</th>
-                                <th class="px-5 py-3 w-64">Nama Santri</th>
+                                <th class="px-5 py-3 w-64">Nama Murid</th>
                                 <th class="px-4 py-3 text-center bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-black">
                                     Hadir (H)
                                 </th>

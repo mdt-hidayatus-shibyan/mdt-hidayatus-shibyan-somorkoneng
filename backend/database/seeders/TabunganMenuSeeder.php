@@ -22,48 +22,67 @@ class TabunganMenuSeeder extends Seeder
         $parentMenu->orders = 35;
         $parentMenu->save();
 
-        // 2. Submenus
+        // 2. Submenus (9 Sub-menu lengkap)
         $submenus = [
             [
-                'name' => 'Dashboard Tabungan',
-                'url' => 'tabungan.dashboard',
-                'icon' => 'bi-speedometer2',
+                'name'   => 'Dashboard Tabungan',
+                'url'    => 'tabungan.dashboard',
+                'icon'   => 'bi-speedometer2',
                 'orders' => 1,
             ],
             [
-                'name' => 'Master Rekening',
-                'url' => 'tabungan.rekening.index',
-                'icon' => 'bi-journal-bookmark-fill',
+                'name'   => 'Master Rekening',
+                'url'    => 'tabungan.rekening.index',
+                'icon'   => 'bi-journal-bookmark-fill',
                 'orders' => 2,
             ],
             [
-                'name' => 'Setor Tunai',
-                'url' => 'tabungan.setor.index',
-                'icon' => 'bi-arrow-down-circle-fill',
+                'name'   => 'Setor Tunai',
+                'url'    => 'tabungan.setor.index',
+                'icon'   => 'bi-arrow-down-circle-fill',
                 'orders' => 3,
             ],
             [
-                'name' => 'Pengajuan Penarikan',
-                'url' => 'tabungan.pengajuan.index',
-                'icon' => 'bi-cash-coin',
+                'name'   => 'Tarik Tunai',
+                'url'    => 'tabungan.tarik.index',
+                'icon'   => 'bi-arrow-up-circle-fill',
                 'orders' => 4,
             ],
             [
-                'name' => 'Pembagian Akhir',
-                'url' => 'tabungan.pembagian.index',
-                'icon' => 'bi-gift-fill',
+                'name'   => 'Cek Mutasi & Buku',
+                'url'    => 'tabungan.cek-mutasi.index',
+                'icon'   => 'bi-file-earmark-check-fill',
                 'orders' => 5,
             ],
             [
-                'name' => 'Pengaturan Tabungan',
-                'url' => 'tabungan.pengaturan.index',
-                'icon' => 'bi-gear-fill',
+                'name'   => 'Rincian & Rekap Kas',
+                'url'    => 'tabungan.rincian.index',
+                'icon'   => 'bi-bar-chart-line-fill',
                 'orders' => 6,
+            ],
+            [
+                'name'   => 'Kalkulator Pecahan',
+                'url'    => 'tabungan.pecahan.index',
+                'icon'   => 'bi-cash-coin',
+                'orders' => 7,
+            ],
+            [
+                'name'   => 'Pembagian Akhir',
+                'url'    => 'tabungan.pembagian.index',
+                'icon'   => 'bi-gift-fill',
+                'orders' => 8,
+            ],
+            [
+                'name'   => 'Pengaturan Tabungan',
+                'url'    => 'tabungan.pengaturan.index',
+                'icon'   => 'bi-gear-fill',
+                'orders' => 9,
             ],
         ];
 
         // URLs to clean up / remove if previously created
         $deletedUrls = [
+            'tabungan.pengajuan.index',
             'tabungan.rekening.create',
             'tabungan.murid.index',
             'tabungan.ustadz.index',

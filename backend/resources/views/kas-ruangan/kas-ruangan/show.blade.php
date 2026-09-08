@@ -15,7 +15,7 @@
                     Kas {{ $ruangan->nama_ruangan }}
                 </h2>
                 <p class="text-xs md:text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    Daftar santri & status pelunasan kas ruangan akhir tahun.
+                    Daftar murid & status pelunasan kas ruangan akhir tahun.
                 </p>
             </div>
         </div>
@@ -38,7 +38,7 @@
             <div
                 class="m3-glass-card p-4 md:p-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4 transition-all shadow-2xs hover:border-primary/40 dark:hover:border-primary-dark/40 group">
 
-                <!-- 1. Identitas Santri -->
+                <!-- 1. Identitas Murid -->
                 <div class="flex items-center gap-3.5 xl:w-[30%] shrink-0">
                     <span
                         class="inline-flex items-center justify-center w-10 h-10 rounded-xl text-xs font-black shadow-2xs shrink-0 {{ $isLaki ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20' }}">

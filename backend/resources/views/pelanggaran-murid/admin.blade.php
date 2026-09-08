@@ -110,7 +110,7 @@
                             <th class="px-3 py-3 border-r border-zinc-200/60 dark:border-zinc-800/80 text-center w-12">No</th>
                             <th class="px-3 py-3 border-r border-zinc-200/60 dark:border-zinc-800/80 text-center w-[130px]">Tanggal</th>
                             <th class="px-4 py-3 border-r border-zinc-200/60 dark:border-zinc-800/80 w-[140px] text-center">NISM</th>
-                            <th class="px-4 py-3 border-r border-zinc-200/60 dark:border-zinc-800/80 min-w-[240px]">Nama Santri</th>
+                            <th class="px-4 py-3 border-r border-zinc-200/60 dark:border-zinc-800/80 min-w-[240px]">Nama Murid</th>
                             <th class="px-4 py-3 border-r border-zinc-200/60 dark:border-zinc-800/80 w-[110px] text-center">Kode Kasus</th>
                             <th class="px-4 py-3 border-r border-zinc-200/60 dark:border-zinc-800/80 min-w-[260px]">Kasus / Skor Poin</th>
                             <th class="px-4 py-3 border-r border-zinc-200/60 dark:border-zinc-800/80 min-w-[180px]">Keterangan</th>

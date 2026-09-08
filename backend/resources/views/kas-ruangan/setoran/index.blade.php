@@ -58,7 +58,7 @@
     <!-- STATISTIK GLOBAL (3 Kartu Atas) -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 relative z-10">
 
-        <!-- Total Uang di Santri -->
+        <!-- Total Uang di Murid -->
         <div
             class="m3-glass-card p-5 flex items-center gap-4 transition-all shadow-2xs group">
             <div
@@ -66,7 +66,7 @@
                 <i class="bi bi-wallet2"></i>
             </div>
             <div>
-                <p class="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-0.5">Total Uang di Santri</p>
+                <p class="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-0.5">Total Uang di Murid</p>
                 <h4 class="text-xl md:text-2xl font-black text-zinc-900 dark:text-white tracking-tight font-mono">
                     Rp {{ number_format($ruangans->sum('total_terkumpul'), 0, ',', '.') }}
                 </h4>

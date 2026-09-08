@@ -97,7 +97,7 @@
                 <th>No. HP / WA</th>
                 <th>Alamat Detail</th>
                 <th>Jml Anak</th>
-                <th>Nama Putra / Putri (Santri)</th>
+                <th>Nama Putra / Putri (Murid)</th>
                 <th>L/P</th>
                 <th>NISM</th>
                 <th>Ruangan / Kelas</th>
@@ -107,7 +107,7 @@
             @php
                 $no = 1;
                 $grandTotalWali = 0;
-                $grandTotalSantri = 0;
+                $grandTotalMurid = 0;
             @endphp
 
             @forelse($groupedWalis as $groupNama => $walis)
@@ -116,13 +116,13 @@
                         return $w->murids->count();
                     });
                     $grandTotalWali += $walis->count();
-                    $grandTotalSantri += $totalAnakGroup;
+                    $grandTotalMurid += $totalAnakGroup;
                 @endphp
 
                 <tr class="group-row">
                     <td colspan="15">
                         KAMPUNG: {{ strtoupper($groupNama) }} (Total: {{ $walis->count() }} KK, {{ $totalAnakGroup }}
-                        Santri Aktif)
+                        Murid Aktif)
                     </td>
                 </tr>
 
@@ -176,7 +176,7 @@
                             <td>{{ $wali->alamat_detail ?: '-' }}</td>
                             <td align="center">0</td>
                             <td colspan="4" align="center" style="color: #94a3b8; font-style: italic;">Tidak ada
-                                santri aktif</td>
+                                murid aktif</td>
                         </tr>
                     @endif
                 @endforeach
@@ -189,8 +189,8 @@
             <tr class="total-row">
                 <td colspan="6" align="right"><b>TOTAL KESELURUHAN:</b></td>
                 <td colspan="4"><b>{{ $grandTotalWali }} Kepala Keluarga (Wali Aktif)</b></td>
-                <td align="center"><b>{{ $grandTotalSantri }}</b></td>
-                <td colspan="4"><b>{{ $grandTotalSantri }} Santri Aktif</b></td>
+                <td align="center"><b>{{ $grandTotalMurid }}</b></td>
+                <td colspan="4"><b>{{ $grandTotalMurid }} Murid Aktif</b></td>
             </tr>
         </tbody>
     </table>

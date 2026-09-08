@@ -15,7 +15,7 @@
                 {{ isset($referensiPelanggaran) ? 'Edit Referensi Pelanggaran' : 'Tambah Referensi Pelanggaran' }}
             </h3>
             <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">
-                Katalog aturan kedisiplinan santri
+                Katalog aturan kedisiplinan murid
             </p>
         </div>
         <button type="button" data-dismiss="modal" command="close" commandfor="dialog"

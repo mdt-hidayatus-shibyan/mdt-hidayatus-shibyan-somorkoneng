@@ -486,7 +486,7 @@ class NilaiUjianController extends Controller
                 ],
                 'kolom_mapel' => $kolomMapel,
                 'statistik' => [
-                    'total_santri' => count($rankedLeger),
+                    'total_murid' => count($rankedLeger),
                     'rata_rata_kelas' => $rataRataKelas,
                     'nilai_tertinggi' => $nilaiTertinggi,
                     'nilai_terendah' => $nilaiTerendah,

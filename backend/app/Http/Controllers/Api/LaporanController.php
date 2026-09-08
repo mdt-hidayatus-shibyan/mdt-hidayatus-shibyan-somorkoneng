@@ -161,7 +161,7 @@ class LaporanController extends Controller
                 'nama_ruangan' => $ruangan->nama_ruangan,
                 'level_nama' => $ruangan->level->nama_level ?? '-',
                 'tahun_pelajaran' => $tahunAktif->nama_lengkap ?? ($tahunAktif->nama_masehi ?? 'Tahun Aktif'),
-                'total_santri' => $murids->count(),
+                'total_murid' => $murids->count(),
                 'total_hari_efektif' => $totalPertemuan,
                 'total_hadir' => $totalHadir,
                 'total_izin' => $totalIzin,
@@ -291,7 +291,7 @@ class LaporanController extends Controller
     }
 
     // =========================================================================
-    // 3. LAPORAN PELANGGARAN SANTRI (BUKU KASUS KELAS)
+    // 3. LAPORAN PELANGGARAN MURID (BUKU KASUS KELAS)
     // =========================================================================
     public function getLaporanPelanggaranMurid(Request $request)
     {
@@ -334,14 +334,14 @@ class LaporanController extends Controller
         $kasusSedang = $pelanggaranList->where('referensiPelanggaran.kategori', 'Sedang')->count();
         $kasusBerat = $pelanggaranList->where('referensiPelanggaran.kategori', 'Berat')->count();
 
-        // Rekap Poin per Santri (Leaderboard Pelanggaran)
-        $rekapSantri = [];
+        // Rekap Poin per Murid (Leaderboard Pelanggaran)
+        $rekapMurid = [];
         foreach ($murids as $m) {
-            $pSantri = $pelanggaranList->where('murid_id', $m->id);
-            $poinSantri = $pSantri->sum(fn($p) => (float)($p->referensiPelanggaran->poin ?? 0));
-            $jmlKasus = $pSantri->count();
+            $pMurid = $pelanggaranList->where('murid_id', $m->id);
+            $poinMurid = $pMurid->sum(fn($p) => (float)($p->referensiPelanggaran->poin ?? 0));
+            $jmlKasus = $pMurid->count();
 
-            $rekapSantri[] = [
+            $rekapMurid[] = [
                 'murid_id' => $m->id,
                 'nama' => $m->nama_lengkap ?? $m->nama,
                 'nism' => $m->nism ?? '',
@@ -349,13 +349,13 @@ class LaporanController extends Controller
                 'foto' => $m->foto ? asset('storage/' . $m->foto) : null,
                 'wali' => $m->nama_ayah ?? $m->waliMurid->nama_kepala_keluarga ?? '-',
                 'total_kasus' => $jmlKasus,
-                'total_poin' => (float)round($poinSantri, 2),
-                'status_kedisiplinan' => $poinSantri == 0 ? 'Disiplin' : ($poinSantri <= 10 ? 'Perhatian' : ($poinSantri <= 25 ? 'Peringatan' : 'Kritis')),
+                'total_poin' => (float)round($poinMurid, 2),
+                'status_kedisiplinan' => $poinMurid == 0 ? 'Disiplin' : ($poinMurid <= 10 ? 'Perhatian' : ($poinMurid <= 25 ? 'Peringatan' : 'Kritis')),
             ];
         }
 
-        // Urutkan santri berdasarkan poin tertinggi
-        usort($rekapSantri, fn($a, $b) => $b['total_poin'] <=> $a['total_poin']);
+        // Urutkan murid berdasarkan poin tertinggi
+        usort($rekapMurid, fn($a, $b) => $b['total_poin'] <=> $a['total_poin']);
 
         $riwayatLog = $pelanggaranList->map(function ($p) {
             $hariTgl = null;
@@ -367,7 +367,7 @@ class LaporanController extends Controller
             return [
                 'id' => $p->id,
                 'murid_id' => $p->murid_id,
-                'nama_santri' => $p->murid->nama_lengkap ?? '-',
+                'nama_murid' => $p->murid->nama_lengkap ?? '-',
                 'nism' => $p->murid->nism ?? '-',
                 'tanggal' => (string)$p->tanggal,
                 'hari_tanggal' => $hariTgl,
@@ -386,7 +386,7 @@ class LaporanController extends Controller
                 'nama_ruangan' => $ruangan->nama_ruangan,
                 'level_nama' => $ruangan->level->nama_level ?? '-',
                 'tahun_pelajaran' => $tahunAktif->nama_lengkap ?? ($tahunAktif->nama_masehi ?? 'Tahun Aktif'),
-                'total_santri' => $murids->count(),
+                'total_murid' => $murids->count(),
                 'total_kasus' => $totalKasus,
                 'total_poin' => (float)round($totalPoin, 2),
                 'kasus_selesai' => $kasusSelesai,
@@ -399,14 +399,14 @@ class LaporanController extends Controller
                     'nama_ruangan' => $r->nama_ruangan,
                     'level_nama' => $r->level->nama_level ?? '-',
                 ]),
-                'rekap_santri' => $rekapSantri,
+                'rekap_murid' => $rekapMurid,
                 'riwayat_log' => $riwayatLog,
             ]
         ], 200);
     }
 
     // =========================================================================
-    // 4. LAPORAN NILAI & UJIAN SANTRI
+    // 4. LAPORAN NILAI & UJIAN MURID
     // =========================================================================
     public function getLaporanUjian(Request $request)
     {
@@ -504,7 +504,7 @@ class LaporanController extends Controller
                     'semester' => $ujian->semester ?? '-',
                 ],
                 'tahun_pelajaran' => $tahunAktif->nama_lengkap ?? ($tahunAktif->nama_masehi ?? 'Tahun Aktif'),
-                'total_santri' => $murids->count(),
+                'total_murid' => $murids->count(),
                 'rata_rata_kelas' => $rataKelas,
                 'nilai_tertinggi' => $nilaiTertinggi,
                 'nilai_terendah' => $nilaiTerendah,
@@ -679,7 +679,7 @@ class LaporanController extends Controller
                 'level_nama' => $ruangan->level->nama_level ?? '-',
                 'is_kelas_akhir' => $isKelasAkhir,
                 'tahun_pelajaran' => $tahunAktif->nama_lengkap ?? ($tahunAktif->nama_masehi ?? 'Tahun Aktif'),
-                'total_santri' => $murids->count(),
+                'total_murid' => $murids->count(),
                 'total_naik_kelas' => $countNaik,
                 'total_lulus' => $countLulus,
                 'total_tinggal_kelas' => $countTinggal,

@@ -181,7 +181,7 @@ class PresensiUjianController extends Controller
 
             $selectedJadwalId = $request->jadwal_ujian_id ? (int) $request->jadwal_ujian_id : ($jadwalList->first()['id'] ?? null);
 
-            // 4. Ambil Data Presensi Santri & Pengawas jika Jadwal Ujian terpilih
+            // 4. Ambil Data Presensi Murid & Pengawas jika Jadwal Ujian terpilih
             if ($selectedJadwalId) {
                 $jadwalTerpilih = $jadwals->firstWhere('id', $selectedJadwalId);
 
@@ -200,7 +200,7 @@ class PresensiUjianController extends Controller
                     'catatan_berita_acara' => $presensiPengawas?->catatan_berita_acara,
                 ];
 
-                // Presensi Santri
+                // Presensi Murid
                 $ujianModel = Ujian::find($selectedUjianId);
                 $murids = $this->muridRuanganRepo->getMuridByRuanganAndTahun($selectedRuanganId, $tahunPelajaranId, 'Aktif');
                 $muridsWithStatus = $this->nilaiUjianService->evaluasiSyaratAdmin($ujianModel, $ruangan, $murids);
@@ -292,7 +292,7 @@ class PresensiUjianController extends Controller
     }
 
     /**
-     * Simpan data presensi santri massal & pengawas ujian
+     * Simpan data presensi murid massal & pengawas ujian
      * POST /api/presensi-ujian/simpan
      */
     public function simpan(Request $request)
@@ -329,7 +329,7 @@ class PresensiUjianController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Berhasil menyimpan {$disimpan} data presensi santri dan kehadiran pengawas ujian!",
+                'message' => "Berhasil menyimpan {$disimpan} data presensi murid dan kehadiran pengawas ujian!",
                 'data' => [
                     'total_tersimpan' => $disimpan,
                 ]

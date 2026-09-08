@@ -9,7 +9,7 @@
                 Data Kampung
             </h2>
             <p class="text-xs md:text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Kelola daftar data kampung atau dusun domisili santri dan wali murid.
+                Kelola daftar data kampung atau dusun domisili murid dan wali murid.
             </p>
         </div>
 

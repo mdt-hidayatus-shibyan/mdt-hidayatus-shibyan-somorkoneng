@@ -78,7 +78,6 @@ class DummySetorTabunganSeeder extends Seeder
                         ];
                         // Murid menabung 2-4 kali per minggu (selain hari libur/Jumat)
                         foreach ($period as $date) {
-                            // Anggap hari Jumat libur kegiatan santri
                             if ($date->isFriday()) {
                                 continue;
                             }
@@ -132,7 +131,6 @@ class DummySetorTabunganSeeder extends Seeder
                         ];
                         // Ustadz menabung 1-2 kali seminggu
                         foreach ($period as $date) {
-                            // Menabung tiap hari Sabtu atau Ahad (sekitar 25% peluang per minggu)
                             if (($date->isSaturday() || $date->isSunday()) && mt_rand(1, 100) <= 60) {
                                 $nominal = $nominalChoices[array_rand($nominalChoices)];
                                 $keterangan = $keteranganChoices[array_rand($keteranganChoices)];

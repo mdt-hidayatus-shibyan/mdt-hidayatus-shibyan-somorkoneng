@@ -26,7 +26,7 @@ class PresensiMuridController extends Controller
     }
 
     /**
-     * Ambil daftar sesi KBM santri untuk presensi kelas harian
+     * Ambil daftar sesi KBM murid untuk presensi kelas harian
      */
     public function getSesi(Request $request)
     {
@@ -181,7 +181,7 @@ class PresensiMuridController extends Controller
     }
 
     /**
-     * Ambil daftar santri pada sesi KBM untuk diisi presensinya
+     * Ambil daftar murid pada sesi KBM untuk diisi presensinya
      */
     public function getMurid(Request $request)
     {
@@ -232,7 +232,7 @@ class PresensiMuridController extends Controller
             return response()->json([
                 'success' => false,
                 'is_libur' => true,
-                'message' => 'Hari ini adalah hari libur (' . $ket . '). Presensi santri ditiadakan.',
+                'message' => 'Hari ini adalah hari libur (' . $ket . '). Presensi murid ditiadakan.',
                 'data' => []
             ], 422);
         }
@@ -257,7 +257,7 @@ class PresensiMuridController extends Controller
         if (!$isGuruPengajar && !$isWaliRuangan) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki wewenang untuk mengakses presensi santri pada jadwal ini.'
+                'message' => 'Anda tidak memiliki wewenang untuk mengakses presensi murid pada jadwal ini.'
             ], 403);
         }
 
@@ -302,7 +302,7 @@ class PresensiMuridController extends Controller
     }
 
     /**
-     * Simpan / Perbarui Presensi Santri KBM
+     * Simpan / Perbarui Presensi Murid KBM
      */
     public function simpan(Request $request)
     {
@@ -379,7 +379,7 @@ class PresensiMuridController extends Controller
         if (!$isGuruPengajar && !$isWaliRuangan) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki wewenang untuk menyimpan presensi santri pada jadwal ini.'
+                'message' => 'Anda tidak memiliki wewenang untuk menyimpan presensi murid pada jadwal ini.'
             ], 403);
         }
 
@@ -422,7 +422,7 @@ class PresensiMuridController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Presensi santri berhasil disimpan ke sistem!'
+                'message' => 'Presensi murid berhasil disimpan ke sistem!'
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();

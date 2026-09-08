@@ -128,7 +128,7 @@ class WaliMuridApiController extends Controller
     }
 
     /**
-     * Detail Profil & Biodata Santri
+     * Detail Profil & Biodata Murid
      */
     public function getDetailAnak($id, Request $request)
     {
@@ -161,7 +161,7 @@ class WaliMuridApiController extends Controller
     }
 
     /**
-     * Detail Tagihan & Riwayat Pembayaran Santri
+     * Detail Tagihan & Riwayat Pembayaran Murid
      */
     public function getTagihanAnak($id, Request $request)
     {
@@ -208,7 +208,7 @@ class WaliMuridApiController extends Controller
         return response()->json([
             'success' => true,
             'data'    => [
-                'santri' => [
+                'murid' => [
                     'id'           => $murid->id,
                     'nama_lengkap' => $murid->nama_lengkap,
                     'nism'         => $murid->nism,
@@ -225,7 +225,7 @@ class WaliMuridApiController extends Controller
     }
 
     /**
-     * Rekap Presensi / Kehadiran Santri
+     * Rekap Presensi / Kehadiran Murid
      */
     public function getPresensiAnak($id, Request $request)
     {
@@ -261,7 +261,7 @@ class WaliMuridApiController extends Controller
         return response()->json([
             'success' => true,
             'data'    => [
-                'santri' => [
+                'murid' => [
                     'id'           => $murid->id,
                     'nama_lengkap' => $murid->nama_lengkap,
                     'nism'         => $murid->nism,
@@ -277,7 +277,7 @@ class WaliMuridApiController extends Controller
     }
 
     /**
-     * Catatan Pelanggaran & Poin Santri
+     * Catatan Pelanggaran & Poin Murid
      */
     public function getPelanggaranAnak($id, Request $request)
     {
@@ -304,7 +304,7 @@ class WaliMuridApiController extends Controller
         return response()->json([
             'success' => true,
             'data'    => [
-                'santri' => [
+                'murid' => [
                     'id'           => $murid->id,
                     'nama_lengkap' => $murid->nama_lengkap,
                     'nism'         => $murid->nism,
@@ -317,7 +317,7 @@ class WaliMuridApiController extends Controller
     }
 
     /**
-     * Rapor Nilai & Hasil Ujian Santri
+     * Rapor Nilai & Hasil Ujian Murid
      */
     public function getNilaiAnak($id, Request $request)
     {
@@ -373,7 +373,7 @@ class WaliMuridApiController extends Controller
         return response()->json([
             'success' => true,
             'data'    => [
-                'santri' => [
+                'murid' => [
                     'id'           => $murid->id,
                     'nama_lengkap' => $murid->nama_lengkap,
                     'nism'         => $murid->nism,
@@ -385,7 +385,7 @@ class WaliMuridApiController extends Controller
     }
 
     /**
-     * Jadwal Pelajaran Santri di Ruangan Aktif
+     * Jadwal Pelajaran Murid di Ruangan Aktif
      */
     public function getJadwalAnak($id, Request $request)
     {
@@ -401,7 +401,7 @@ class WaliMuridApiController extends Controller
             return response()->json([
                 'success' => true,
                 'data'    => [
-                    'santri' => [
+                    'murid' => [
                         'id'           => $murid->id,
                         'nama_lengkap' => $murid->nama_lengkap,
                         'nism'         => $murid->nism,
@@ -434,7 +434,7 @@ class WaliMuridApiController extends Controller
         return response()->json([
             'success' => true,
             'data'    => [
-                'santri' => [
+                'murid' => [
                     'id'           => $murid->id,
                     'nama_lengkap' => $murid->nama_lengkap,
                     'nism'         => $murid->nism,
@@ -446,7 +446,7 @@ class WaliMuridApiController extends Controller
     }
 
     /**
-     * Dokumen Arsip Santri: Rapor (IMDA 1 & IMDA 2 / IMNI), SK Kelulusan, dan Ijazah
+     * Dokumen Arsip Murid: Rapor (IMDA 1 & IMDA 2 / IMNI), SK Kelulusan, dan Ijazah
      */
     public function getDokumenAnak($id, Request $request)
     {
@@ -461,7 +461,7 @@ class WaliMuridApiController extends Controller
         $levelNama = $ruanganAktif?->level?->nama_level ?? '';
         $isKelasAkhir = in_array($levelNama, ['3 TPQ', '6 IBT', '3 TSA']);
 
-        // Ambil semua arsip dokumen santri ini
+        // Ambil semua arsip dokumen murid ini
         $arsips = \App\Models\Arsip\ArsipDokumen::where('referensi_id', $murid->id)
             ->where('referensi_tipe', Murid::class)
             ->orderBy('created_at', 'desc')
@@ -519,7 +519,7 @@ class WaliMuridApiController extends Controller
         return response()->json([
             'success' => true,
             'data'    => [
-                'santri' => [
+                'murid' => [
                     'id'             => $murid->id,
                     'nama_lengkap'   => $murid->nama_lengkap,
                     'nism'           => $murid->nism,

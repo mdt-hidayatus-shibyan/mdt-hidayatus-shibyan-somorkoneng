@@ -23,7 +23,7 @@
                     <i class="bi bi-search text-xs"></i>
                 </div>
                 <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="Cari Nama Santri, NISM, atau Nomor Rapor..."
+                    placeholder="Cari Nama Murid, NISM, atau Nomor Rapor..."
                     class="m3-input-glass w-full !pl-9 text-xs font-bold">
             </div>
 

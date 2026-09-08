@@ -65,7 +65,7 @@ class ArsipDokumenController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($viewName, compact('data', 'arsip'))
             ->setPaper('a4', $paper);
 
-        $namaSantri = \Illuminate\Support\Str::slug($data['nama_murid'] ?? $data['nama_santri'] ?? 'santri');
+        $namaMurid = \Illuminate\Support\Str::slug($data['nama_murid'] ?? $data['nama_murid'] ?? 'murid');
         $namaDok = match ($arsip->tipe_dokumen) {
             'rapor_murid' => 'Rapor-' . \Illuminate\Support\Str::slug($data['nama_ujian'] ?? 'ujian'),
             'sk_keputusan' => 'SK-Kelulusan',
@@ -73,7 +73,7 @@ class ArsipDokumenController extends Controller
             default => 'Dokumen',
         };
 
-        $filename = "{$namaDok}-{$namaSantri}.pdf";
+        $filename = "{$namaDok}-{$namaMurid}.pdf";
         return $pdf->download($filename);
     }
 }

@@ -14,9 +14,15 @@
 
         <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0">
             <a href="{{ route('tabungan.setor.index') }}"
-                class="h-10 inline-flex items-center justify-center px-4 rounded-xl md:rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-black transition-all shadow-2xs active:scale-95">
+                class="h-10 inline-flex items-center justify-center px-4 rounded-xl md:rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-black transition-all shadow-2xs active:scale-95">
                 <i class="bi bi-arrow-down-circle-fill mr-1.5 text-sm"></i>
                 <span>Setor Tunai</span>
+            </a>
+
+            <a href="{{ route('tabungan.tarik.index') }}"
+                class="h-10 inline-flex items-center justify-center px-4 rounded-xl md:rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-xs font-black transition-all shadow-2xs active:scale-95">
+                <i class="bi bi-arrow-up-circle-fill mr-1.5 text-sm"></i>
+                <span>Tarik Tunai</span>
             </a>
 
             <a href="{{ route('tabungan.barcode.generator') }}"
@@ -67,7 +73,7 @@
                     </div>
                     <select name="jenis" id="filterJenis" onchange="handleJenisChange(this)"
                         class="m3-input-glass w-full !pl-8.5 !pr-8 text-xs font-bold appearance-none cursor-pointer">
-                        {{-- <option value="">Semua Kategori</option> --}}
+                        <option value="">Semua Kategori</option>
                         @foreach (['Murid', 'Ustadz', 'Kas Ruangan', 'Umum'] as $j)
                             <option value="{{ $j }}" {{ request('jenis') == $j ? 'selected' : '' }}>
                                 {{ $j }}
@@ -87,7 +93,7 @@
                         </div>
                         <select name="ruangan_id" onchange="this.form.submit()"
                             class="m3-input-glass w-full !pl-8.5 !pr-8 text-xs font-bold appearance-none cursor-pointer">
-                            {{-- <option value="">Semua Ruangan</option> --}}
+                            <option value="">Semua Ruangan</option>
                             @foreach ($daftarRuangan as $r)
                                 <option value="{{ $r->id }}"
                                     {{ request('ruangan_id') == $r->id ? 'selected' : '' }}>

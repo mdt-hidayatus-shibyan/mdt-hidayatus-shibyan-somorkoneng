@@ -88,7 +88,7 @@
 
             <!-- HEADER PRINT -->
             <div class="text-center mb-4 pt-6 hidden print:block">
-                <h2 class="text-xl font-black uppercase tracking-wider text-black">Buku Leger Nilai Santri</h2>
+                <h2 class="text-xl font-black uppercase tracking-wider text-black">Buku Leger Nilai Murid</h2>
                 <p class="text-xs font-bold text-zinc-700 mt-1">Ruangan:
                     {{ $ruanganTerpilih->nama_ruangan ?? '-' }}
                     | {{ $ujianTerpilih->nama_ujian ?? '-' }}</p>
@@ -221,7 +221,7 @@
     @else
         <!-- STATE AWAL PANDUAN PENGGUNAAN -->
         <x-empty-state icon="bi-grid-3x3-gap" title="Kalkulator Leger & Ranking"
-            message="Pilih Ruangan Kelas dan Pelaksanaan Ujian pada filter di atas untuk menghasilkan matriks nilai (leger) beserta peringkat santri secara otomatis." />
+            message="Pilih Ruangan Kelas dan Pelaksanaan Ujian pada filter di atas untuk menghasilkan matriks nilai (leger) beserta peringkat murid secara otomatis." />
     @endif
 
 </x-app-layout>

@@ -212,7 +212,7 @@
             <tr>
                 <th class="w-1">No</th>
                 <th class="w-3">NISM</th>
-                <th style="text-align: left; padding-left: 10px;">Nama Santri</th>
+                <th style="text-align: left; padding-left: 10px;">Nama Murid</th>
                 <th class="w-1">L/P</th>
                 @if ($mode === 'kosong')
                     <th style="width: 30%;">Tanda Tangan</th>
@@ -271,7 +271,7 @@
             @empty
                 <tr>
                     <td colspan="6" style="padding: 20px; text-align: center; color: #64748b;">
-                        Belum ada santri terdaftar di kelas ini.
+                        Belum ada murid terdaftar di kelas ini.
                     </td>
                 </tr>
             @endforelse

@@ -97,7 +97,7 @@
     @if ($ruanganTerpilih && request('ujian_id') && $jadwalTerpilih)
         @if ($muridsWithStatus->isEmpty())
             <x-empty-state icon="bi-people" title="Ruangan Kosong"
-                message="Belum ada santri aktif yang terdaftar di ruangan {{ $ruanganTerpilih->nama_ruangan }}." />
+                message="Belum ada murid aktif yang terdaftar di ruangan {{ $ruanganTerpilih->nama_ruangan }}." />
         @else
             @php
                 $mapelNama = $jadwalTerpilih->mata_pelajaran_id
@@ -245,20 +245,20 @@
                                 Catatan Berita Acara Ujian:
                             </label>
                             <textarea name="pengawas[catatan_berita_acara]" rows="3"
-                                placeholder="Contoh: Ujian berjalan tertib dan lancar. 1 santri izin karena sakit..."
+                                placeholder="Contoh: Ujian berjalan tertib dan lancar. 1 murid izin karena sakit..."
                                 class="m3-input-glass w-full text-xs font-semibold resize-none">{{ $catatanBeritaAcara }}</textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- CARD LIST SANTRI (DENSE / COMPACT) -->
+                <!-- CARD LIST MURID (DENSE / COMPACT) -->
                 <div class="m3-glass-card overflow-hidden">
                     <div
                         class="px-5 py-3.5 bg-zinc-50/80 dark:bg-zinc-950/70 border-b border-zinc-200/80 dark:border-zinc-800 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                         <span
                             class="font-black text-xs text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                             <i class="bi bi-people-fill text-primary dark:text-primary-dark text-sm"></i>
-                            Daftar Peserta Ujian ({{ $muridsWithStatus->count() }} Santri)
+                            Daftar Peserta Ujian ({{ $muridsWithStatus->count() }} Murid)
                         </span>
                         <div class="flex items-center gap-3 flex-wrap justify-between sm:justify-end">
                             <div class="flex items-center gap-2">
@@ -302,7 +302,7 @@
 
                             <li
                                 class="p-4 sm:px-5 sm:py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3.5 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                <!-- Info Identitas Santri -->
+                                <!-- Info Identitas Murid -->
                                 <div class="flex items-center gap-3.5 flex-1 min-w-0">
                                     <div
                                         class="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-bold text-zinc-500 dark:text-zinc-400 shrink-0 text-xs">
@@ -375,7 +375,7 @@
                                         @endforeach
                                     </div>
 
-                                    <!-- Catatan Santri (Opsional) -->
+                                    <!-- Catatan Murid (Opsional) -->
                                     <div class="w-full sm:w-44">
                                         <input type="text" name="presensi[{{ $murid->id }}][catatan]"
                                             value="{{ $catatanSekarang }}" placeholder="Catatan..."
@@ -390,7 +390,7 @@
                     <div
                         class="px-5 py-4 bg-zinc-50/90 dark:bg-zinc-950/80 border-t border-zinc-200/80 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-center gap-3 sticky bottom-0 z-30 backdrop-blur-md">
                         <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400">
-                            Pastikan data kehadiran pengawas dan santri telah diperiksa sebelum disimpan.
+                            Pastikan data kehadiran pengawas dan murid telah diperiksa sebelum disimpan.
                         </span>
                         <button type="submit"
                             class="m3-btn-primary w-full sm:w-auto h-10 px-6 text-xs group/btn shrink-0">

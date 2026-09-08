@@ -289,9 +289,9 @@ class RiwayatKenaikanController extends Controller
             DB::commit();
 
             // Buat pesan dinamis
-            $pesan = "$jumlahDiproses status kelulusan/kenaikan santri berhasil dikunci.";
+            $pesan = "$jumlahDiproses status kelulusan/kenaikan murid berhasil dikunci.";
             if ($jumlahLulus > 0) {
-                $pesan .= " (Berhasil menerbitkan arsip E-Document untuk $jumlahLulus santri lulus).";
+                $pesan .= " (Berhasil menerbitkan arsip E-Document untuk $jumlahLulus murid lulus).";
             }
 
             return redirect()->back()->with('success', $pesan);
@@ -330,7 +330,7 @@ class RiwayatKenaikanController extends Controller
             ->first();
 
         if (!$arsip) {
-            return back()->with('error', 'Dokumen Ijazah belum disahkan atau santri tidak dinyatakan Lulus.');
+            return back()->with('error', 'Dokumen Ijazah belum disahkan atau murid tidak dinyatakan Lulus.');
         }
 
         $data = $arsip->snapshot_data;

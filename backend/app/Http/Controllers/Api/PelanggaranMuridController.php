@@ -196,7 +196,7 @@ class PelanggaranMuridController extends Controller
         $totalPoin = $records->sum(function ($r) {
             return (float) ($r->referensiPelanggaran->poin ?? 0);
         });
-        $totalSantri = $records->pluck('murid_id')->unique()->count();
+        $totalMurid = $records->pluck('murid_id')->unique()->count();
 
         $list = $records->map(function ($r) {
             return [
@@ -223,7 +223,7 @@ class PelanggaranMuridController extends Controller
                 'tanggal' => $tanggal,
                 'total_kasus' => $totalKasus,
                 'total_poin' => round((float) $totalPoin, 2),
-                'total_santri' => $totalSantri,
+                'total_murid' => $totalMurid,
                 'list' => $list,
             ]
         ], 200);
@@ -335,7 +335,7 @@ class PelanggaranMuridController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pelanggaran santri berhasil dicatat ke Buku Kasus.',
+                'message' => 'Pelanggaran murid berhasil dicatat ke Buku Kasus.',
                 'data' => [
                     'id' => $record->id,
                 ]
@@ -395,7 +395,7 @@ class PelanggaranMuridController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Berhasil mencatat pelanggaran untuk {$createdCount} santri.",
+                'message' => "Berhasil mencatat pelanggaran untuk {$createdCount} murid.",
                 'total_dicatat' => $createdCount,
             ], 200);
         } catch (\Exception $e) {

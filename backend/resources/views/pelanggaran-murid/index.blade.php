@@ -74,7 +74,7 @@
                                 Input Kasus
                             </h3>
                             <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
-                                Catat pelanggaran santri
+                                Catat pelanggaran murid
                             </p>
                         </div>
                     </div>
@@ -91,7 +91,7 @@
                             <div>
                                 <label
                                     class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">
-                                    NISM Santri <span class="text-rose-500">*</span>
+                                    NISM Murid <span class="text-rose-500">*</span>
                                 </label>
                                 <select name="murid_id" id="cariNism" class="w-full select2-custom" required>
                                     <option value=""></option>
@@ -162,7 +162,7 @@
                                 Riwayat Hari Ini
                             </h3>
                             <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
-                                Daftar catatan pelanggaran santri terinput
+                                Daftar catatan pelanggaran murid terinput
                             </p>
                         </div>
 
@@ -339,7 +339,7 @@
             </div>
             <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight mb-0.5">Pilih Ruangan/Kelas</h3>
             <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
-                Tentukan ruangan di filter atas untuk memunculkan daftar santri yang akan ditandai.
+                Tentukan ruangan di filter atas untuk memunculkan daftar murid yang akan ditandai.
             </p>
         </div>
     @endif

@@ -126,7 +126,7 @@
                         <div>
                             <h3
                                 class="font-black text-zinc-900 dark:text-white text-base tracking-tight leading-snug">
-                                Lembar Koreksi Nilai Santri
+                                Lembar Koreksi Nilai Murid
                             </h3>
                             @php
                                 $jadwalTerpilih = $jadwals->firstWhere('id', request('jadwal_ujian_id'));
@@ -153,7 +153,7 @@
                     <!-- HEADER BARIS (Desktop) -->
                     <div
                         class="hidden lg:grid grid-cols-[1fr_120px_250px] gap-6 px-5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                        <div>Data Santri</div>
+                        <div>Data Murid</div>
                         <div class="text-center">Nilai Angka</div>
                         <div>Status & Syarat Admin</div>
                     </div>
@@ -303,7 +303,7 @@
     @else
         <!-- STATE AWAL / KOSONG -->
         <x-empty-state icon="bi-people" title="Pilih Ruangan/Kelas dan Mata Pelajaran"
-            message="Tentukan ruangan, ujian, dan mata pelajaran pada filter di atas untuk memunculkan lembar input nilai santri." />
+            message="Tentukan ruangan, ujian, dan mata pelajaran pada filter di atas untuk memunculkan lembar input nilai murid." />
     @endif
 
 </x-app-layout>

@@ -73,7 +73,7 @@ class TagihanController extends Controller
         $nominalSpp = $masterSpp->nominal ?? 25000;
 
         $murids = $this->muridRuanganRepo->getMuridByRuanganAndTahun($ruangan->id, $tahunId, 'Aktif');
-        $totalSantri = $murids->count();
+        $totalMurid = $murids->count();
         $totalBulan = $bulanHijriyah->count() > 0 ? $bulanHijriyah->count() : 11;
 
         // Ambil data tagihan SPP di ruangan ini
@@ -89,14 +89,14 @@ class TagihanController extends Controller
             ->get();
 
         $totalLunasNominal = $tagihans->where('status_bayar', 'Lunas')->sum('nominal_tagihan');
-        $totalTargetNominal = $totalSantri * $totalBulan * $nominalSpp;
+        $totalTargetNominal = $totalMurid * $totalBulan * $nominalSpp;
         $totalTunggakanNominal = max(0, $totalTargetNominal - $totalLunasNominal);
 
-        // Hitung per santri
+        // Hitung per murid
         $grouped = $tagihans->groupBy('murid_id');
-        $santriLunasSemua = 0;
-        $santriBelumLunas = 0;
-        $santriBebasDonatur = 0;
+        $muridLunasSemua = 0;
+        $muridBelumLunas = 0;
+        $muridBebasDonatur = 0;
 
         foreach ($murids as $m) {
             $mTags = $grouped->get($m->id, collect());
@@ -104,11 +104,11 @@ class TagihanController extends Controller
             $donaturCount = $mTags->whereIn('status_bayar', ['Ditanggung Donatur', 'Bebas SPP', 'Gratis'])->count();
 
             if ($donaturCount >= $totalBulan && $totalBulan > 0) {
-                $santriBebasDonatur++;
+                $muridBebasDonatur++;
             } elseif ($lunasCount >= $totalBulan && $totalBulan > 0) {
-                $santriLunasSemua++;
+                $muridLunasSemua++;
             } else {
-                $santriBelumLunas++;
+                $muridBelumLunas++;
             }
         }
 
@@ -132,14 +132,14 @@ class TagihanController extends Controller
                 'nama_ruangan' => $ruangan->nama_ruangan,
                 'level_nama' => $ruangan->level->nama_level ?? '-',
                 'nominal_spp_bulanan' => (int) $nominalSpp,
-                'total_santri' => $totalSantri,
+                'total_murid' => $totalMurid,
                 'total_bulan' => $totalBulan,
                 'total_target_spp' => (int) $totalTargetNominal,
                 'total_lunas_nominal' => (int) $totalLunasNominal,
                 'total_tunggakan_nominal' => (int) $totalTunggakanNominal,
-                'total_santri_lunas_semua' => $santriLunasSemua,
-                'total_santri_belum_lunas' => $santriBelumLunas,
-                'total_santri_bebas_donatur' => $santriBebasDonatur,
+                'total_murid_lunas_semua' => $muridLunasSemua,
+                'total_murid_belum_lunas' => $muridBelumLunas,
+                'total_murid_bebas_donatur' => $muridBebasDonatur,
                 'ruangan_list' => $ruanganList,
                 'bulan_list' => $bulanList,
             ]
@@ -147,7 +147,7 @@ class TagihanController extends Controller
     }
 
     /**
-     * Daftar Santri dan Status SPP (11 Bulan Hijriyah)
+     * Daftar Murid dan Status SPP (11 Bulan Hijriyah)
      */
     public function getSppMuridList(Request $request)
     {
@@ -250,8 +250,8 @@ class TagihanController extends Controller
                 ];
             }
 
-            $targetSantri = $totalBulan * $nominalSpp;
-            $sisaTunggakan = max(0, $targetSantri - $totalDibayar);
+            $targetMurid = $totalBulan * $nominalSpp;
+            $sisaTunggakan = max(0, $targetMurid - $totalDibayar);
 
             $statusKeseluruhan = 'Belum Lunas';
             if ($donaturCount >= $totalBulan && $totalBulan > 0) {
@@ -291,7 +291,7 @@ class TagihanController extends Controller
                 'bulan_lunas_count' => $lunasCount,
                 'bulan_belum_lunas_count' => $belumLunasCount,
                 'bulan_bebas_count' => $donaturCount,
-                'total_target' => $targetSantri,
+                'total_target' => $targetMurid,
                 'total_dibayar' => $totalDibayar,
                 'sisa_tunggakan' => $sisaTunggakan,
                 'status_keseluruhan' => $statusKeseluruhan,
@@ -306,7 +306,7 @@ class TagihanController extends Controller
     }
 
     /**
-     * Detail Kartu SPP Santri (11 Bulan Hijriyah Lengkap)
+     * Detail Kartu SPP Murid (11 Bulan Hijriyah Lengkap)
      */
     public function getKartuSppMurid(Request $request, $muridId)
     {
@@ -385,8 +385,8 @@ class TagihanController extends Controller
             ];
         }
 
-        $targetSantri = $totalBulan * $nominalSpp;
-        $sisaTunggakan = max(0, $targetSantri - $totalDibayar);
+        $targetMurid = $totalBulan * $nominalSpp;
+        $sisaTunggakan = max(0, $targetMurid - $totalDibayar);
 
         $statusKeseluruhan = 'Belum Lunas';
         if ($donaturCount >= $totalBulan && $totalBulan > 0) {
@@ -412,7 +412,7 @@ class TagihanController extends Controller
                 'bulan_lunas_count' => $lunasCount,
                 'bulan_belum_lunas_count' => $belumLunasCount,
                 'bulan_bebas_count' => $donaturCount,
-                'total_target' => $targetSantri,
+                'total_target' => $targetMurid,
                 'total_dibayar' => $totalDibayar,
                 'sisa_tunggakan' => $sisaTunggakan,
                 'status_keseluruhan' => $statusKeseluruhan,
@@ -499,7 +499,7 @@ class TagihanController extends Controller
         $selectedMaster = $masters->firstWhere('id', $selectedMasterId) ?? $masters->first();
 
         $murids = $this->muridRuanganRepo->getMuridByRuanganAndTahun($ruangan->id, $tahunId, 'Aktif');
-        $totalSantri = $murids->count();
+        $totalMurid = $murids->count();
 
         $tagihans = collect();
         if ($selectedMaster) {
@@ -508,12 +508,12 @@ class TagihanController extends Controller
                 ->get();
         }
 
-        $nominalPerSantri = $selectedMaster->nominal ?? 0;
-        $totalTarget = $totalSantri * $nominalPerSantri;
+        $nominalPerMurid = $selectedMaster->nominal ?? 0;
+        $totalTarget = $totalMurid * $nominalPerMurid;
         $totalLunas = $tagihans->where('status_bayar', 'Lunas')->sum('nominal_tagihan');
         $totalTunggakan = max(0, $totalTarget - $totalLunas);
-        $totalSantriLunas = $tagihans->where('status_bayar', 'Lunas')->count();
-        $totalSantriBelumLunas = max(0, $totalSantri - $totalSantriLunas);
+        $totalMuridLunas = $tagihans->where('status_bayar', 'Lunas')->count();
+        $totalMuridBelumLunas = max(0, $totalMurid - $totalMuridLunas);
 
         return response()->json([
             'success' => true,
@@ -525,13 +525,13 @@ class TagihanController extends Controller
                 'nama_tagihan' => $selectedMaster->nama_tagihan ?? '-',
                 'kode_tagihan' => $selectedMaster->kode_tagihan ?? '-',
                 'tipe_tagihan' => $selectedMaster->tipe ?? '-',
-                'nominal' => (int) $nominalPerSantri,
-                'total_santri' => $totalSantri,
+                'nominal' => (int) $nominalPerMurid,
+                'total_murid' => $totalMurid,
                 'total_target_nominal' => (int) $totalTarget,
                 'total_lunas_nominal' => (int) $totalLunas,
                 'total_tunggakan_nominal' => (int) $totalTunggakan,
-                'total_santri_lunas' => $totalSantriLunas,
-                'total_santri_belum_lunas' => $totalSantriBelumLunas,
+                'total_murid_lunas' => $totalMuridLunas,
+                'total_murid_belum_lunas' => $totalMuridBelumLunas,
                 'ruangan_list' => $accessibleRuangans->map(fn($r) => [
                     'id' => $r->id,
                     'nama_ruangan' => $r->nama_ruangan,
@@ -549,7 +549,7 @@ class TagihanController extends Controller
     }
 
     /**
-     * Daftar Santri dan Status Tagihan Non-SPP Tertentu
+     * Daftar Murid dan Status Tagihan Non-SPP Tertentu
      */
     public function getNonSppMuridList(Request $request)
     {
@@ -688,7 +688,7 @@ class TagihanController extends Controller
             }
 
             $catatanFinal = $catatanInput ?? ($tagihans->count() > 1
-                ? "Pembayaran Tagihan {$firstMaster->nama_tagihan} ({$tagihans->count()} Santri)"
+                ? "Pembayaran Tagihan {$firstMaster->nama_tagihan} ({$tagihans->count()} Murid)"
                 : "Pembayaran Tagihan {$firstMaster->nama_tagihan} a.n. {$firstMurid->nama_lengkap} ({$firstMurid->nism})");
 
             $pembayaran = PembayaranTagihan::create([
@@ -718,7 +718,7 @@ class TagihanController extends Controller
                     'no_transaksi' => $noKwitansi,
                     'total_nominal' => $totalNominal,
                     'tanggal_bayar' => (string) $tanggalBayar,
-                    'total_santri_terbayar' => $tagihans->count(),
+                    'total_murid_terbayar' => $tagihans->count(),
                 ]
             ], 200);
         } catch (\Exception $e) {

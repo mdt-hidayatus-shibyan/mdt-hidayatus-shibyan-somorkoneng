@@ -64,7 +64,7 @@
                         <span>Bintang Madrasah (Best of The Best)</span>
                     </h3>
                     <p class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 mt-1">Dianugerahkan kepada
-                        santri teladan dengan kriteria seleksi komprehensif sepanjang tahun ajaran.</p>
+                        murid teladan dengan kriteria seleksi komprehensif sepanjang tahun ajaran.</p>
                 </div>
                 <div
                     class="flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300">

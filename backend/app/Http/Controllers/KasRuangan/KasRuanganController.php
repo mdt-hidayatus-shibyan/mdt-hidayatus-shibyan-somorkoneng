@@ -82,7 +82,7 @@ class KasRuanganController extends Controller
     }
 
     /**
-     * Menampilkan Halaman Riwayat Cicilan Santri Tertentu
+     * Menampilkan Halaman Riwayat Cicilan Murid Tertentu
      */
     public function riwayat($ruangan_id, $murid_id)
     {

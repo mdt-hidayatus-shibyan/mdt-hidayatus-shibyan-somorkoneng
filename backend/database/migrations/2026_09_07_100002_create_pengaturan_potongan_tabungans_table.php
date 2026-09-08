@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('pengaturan_potongan_tabungans', function (Blueprint $table) {
             $table->id();
-            $table->enum('jenis_nasabah', ['Murid', 'Ustadz', 'Kas Ruangan', 'Umum'])->unique();
+            $table->enum('jenis_nasabah', ['Murid', 'Ustadz', 'Kas Ruangan', 'Umum']);
             $table->decimal('persentase_potongan', 5, 2)->default(0.00);
             $table->string('dasar_musyawarah', 255)->nullable();
             $table->foreignId('diubah_oleh')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+
+            $table->unique(['jenis_nasabah'], 'pengaturan_potongan_tabungans_jenis_nasabah_unique');
         });
     }
 

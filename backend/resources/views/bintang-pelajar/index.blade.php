@@ -88,7 +88,7 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                @foreach ($bintangLevel as $namaLevel => $santris)
+                @foreach ($bintangLevel as $namaLevel => $murids)
                     <div
                         class="m3-glass-card overflow-hidden flex flex-col">
                         <div
@@ -100,7 +100,7 @@
                                 3</span>
                         </div>
                         <div class="p-3 flex-1 flex flex-col gap-2">
-                            @foreach ($santris as $i => $s)
+                            @foreach ($murids as $i => $s)
                                 <div
                                     class="flex items-center gap-2.5 p-2 rounded-xl transition-colors {{ $i == 0 ? 'bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/40' : 'bg-zinc-50/40 dark:bg-zinc-900/40' }}">
                                     <div
@@ -145,7 +145,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                @foreach ($bintangRuangan as $namaRuangan => $santris)
+                @foreach ($bintangRuangan as $namaRuangan => $murids)
                     <div
                         class="m3-glass-card overflow-hidden flex flex-col">
                         <div
@@ -155,7 +155,7 @@
                                 {{ $namaRuangan }}</h4>
                         </div>
                         <div class="p-3 flex-1 flex flex-col gap-1.5">
-                            @foreach ($santris as $i => $s)
+                            @foreach ($murids as $i => $s)
                                 <div
                                     class="flex items-center justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800/60 last:border-0 pb-1.5 last:pb-0">
                                     <div class="flex items-center gap-2 min-w-0">

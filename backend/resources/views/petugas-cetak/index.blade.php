@@ -13,7 +13,7 @@
                 Loket Cetak Cepat
             </h2>
             <p class="text-xs md:text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-1">
-                Arahkan kursor ke kolom di bawah, lalu scan barcode NISM santri.
+                Arahkan kursor ke kolom di bawah, lalu scan barcode NISM murid.
             </p>
         </div>
 
@@ -59,7 +59,7 @@
                 <!-- Daftar Dokumen (Dikelompokkan per Tahun & Ruang) -->
                 @if (empty($arsipDikelompokkan))
                     <x-empty-state icon="bi-folder-x" title="Belum Ada Dokumen"
-                        message="Santri ini belum memiliki satupun arsip dokumen yang disahkan. Silakan hubungi Administrator Madrasah." />
+                        message="Murid ini belum memiliki satupun arsip dokumen yang disahkan. Silakan hubungi Administrator Madrasah." />
                 @else
                     <div class="space-y-4">
                         @foreach ($arsipDikelompokkan as $tahun => $ruangans)
@@ -160,7 +160,7 @@
                         class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center text-xl mx-auto mb-3">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                     </div>
-                    <h3 class="text-base font-black text-rose-600 dark:text-rose-400">Santri Tidak Ditemukan</h3>
+                    <h3 class="text-base font-black text-rose-600 dark:text-rose-400">Murid Tidak Ditemukan</h3>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Pastikan barcode yang di-scan benar atau
                         NISM telah terdaftar di database sistem.</p>
                 </div>

@@ -8,7 +8,7 @@
                 Persyaratan Ujian
             </h2>
             <p class="text-[13px] font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5 transition-colors duration-300">
-                Verifikasi kelayakan dan status administrasi santri sebelum ujian.
+                Verifikasi kelayakan dan status administrasi murid sebelum ujian.
             </p>
         </div>
 
@@ -97,7 +97,7 @@
                             Status Verifikasi Persyaratan Ujian
                         </h3>
                         <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 flex items-center mt-0.5">
-                            <span class="text-primary dark:text-primary-dark font-extrabold">{{ count($muridsWithStatus) }} Santri Terdata</span>
+                            <span class="text-primary dark:text-primary-dark font-extrabold">{{ count($muridsWithStatus) }} Murid Terdata</span>
                         </p>
                     </div>
                 </div>
@@ -202,7 +202,7 @@
                 const isDark = document.documentElement.classList.contains('dark');
                 Swal.fire({
                     title: '<span class="text-base font-black text-zinc-900 dark:text-white">Buka Izin Akses?</span>',
-                    html: `<p class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-3">Ketikkan alasan pemberian dispensasi darurat input nilai untuk santri <b class="text-amber-500">${namaMurid}</b>:</p>`,
+                    html: `<p class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-3">Ketikkan alasan pemberian dispensasi darurat input nilai untuk murid <b class="text-amber-500">${namaMurid}</b>:</p>`,
                     input: 'text',
                     inputPlaceholder: 'Contoh: Wali murid minta tempo...',
                     icon: 'question',
@@ -246,7 +246,7 @@
     @else
         <!-- STATE AWAL / KOSONG -->
         <x-empty-state icon="bi-people" title="Pilih Ruangan/Kelas dan Tipe Ujian"
-            message="Tentukan ruangan dan ujian pada filter di atas untuk memunculkan data persyaratan santri." />
+            message="Tentukan ruangan dan ujian pada filter di atas untuk memunculkan data persyaratan murid." />
     @endif
 
 </x-app-layout>

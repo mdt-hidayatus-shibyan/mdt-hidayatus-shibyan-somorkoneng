@@ -164,7 +164,7 @@
                 ? $presensiPengawas->ustadzPengganti
                 : $jadwal->pengawas;
 
-        $totalSantri = $murids->count();
+        $totalMurid = $murids->count();
         $totalL = $murids->where('jenis_kelamin', 'L')->count();
         $totalP = $murids->where('jenis_kelamin', 'P')->count();
 
@@ -173,7 +173,7 @@
         $izin = 0;
         $alpha = 0;
         $dispensasi = 0;
-        $santriTidakHadir = [];
+        $muridTidakHadir = [];
 
         foreach ($murids as $m) {
             $p = $presensiTersimpan->get($m->id);
@@ -182,22 +182,22 @@
                 $hadir++;
             } elseif ($st === 'Sakit') {
                 $sakit++;
-                $santriTidakHadir[] = [
+                $muridTidakHadir[] = [
                     'nama' => $m->nama_lengkap,
                     'alasan' => 'Sakit ' . ($p->catatan ? "({$p->catatan})" : ''),
                 ];
             } elseif ($st === 'Izin') {
                 $izin++;
-                $santriTidakHadir[] = [
+                $muridTidakHadir[] = [
                     'nama' => $m->nama_lengkap,
                     'alasan' => 'Izin ' . ($p->catatan ? "({$p->catatan})" : ''),
                 ];
             } elseif ($st === 'Alpha') {
                 $alpha++;
-                $santriTidakHadir[] = ['nama' => $m->nama_lengkap, 'alasan' => 'Tanpa Keterangan'];
+                $muridTidakHadir[] = ['nama' => $m->nama_lengkap, 'alasan' => 'Tanpa Keterangan'];
             } elseif ($st === 'Dispensasi') {
                 $dispensasi++;
-                $santriTidakHadir[] = ['nama' => $m->nama_lengkap, 'alasan' => 'Dispensasi'];
+                $muridTidakHadir[] = ['nama' => $m->nama_lengkap, 'alasan' => 'Dispensasi'];
             }
         }
 
@@ -289,7 +289,7 @@
         </thead>
         <tbody>
             <tr style="font-weight: bold;">
-                <td>{{ $totalSantri }} (L: {{ $totalL }}, P: {{ $totalP }})</td>
+                <td>{{ $totalMurid }} (L: {{ $totalL }}, P: {{ $totalP }})</td>
                 <td style="color: #059669; font-size: 13px;">{{ $hadir }}</td>
                 <td>{{ $sakit }}</td>
                 <td>{{ $izin }}</td>
@@ -301,10 +301,10 @@
         </tbody>
     </table>
 
-    @if (count($santriTidakHadir) > 0)
+    @if (count($muridTidakHadir) > 0)
         <p style="font-size: 11px; margin-top: -10px; margin-bottom: 15px;">
-            <strong>Santri yang Tidak Hadir:</strong>
-            @foreach ($santriTidakHadir as $sth)
+            <strong>Murid yang Tidak Hadir:</strong>
+            @foreach ($muridTidakHadir as $sth)
                 {{ $sth['nama'] }} <em>({{ $sth['alasan'] }})</em>{{ !$loop->last ? ', ' : '.' }}
             @endforeach
         </p>

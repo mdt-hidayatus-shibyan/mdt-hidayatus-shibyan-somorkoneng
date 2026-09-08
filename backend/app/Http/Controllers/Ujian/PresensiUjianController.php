@@ -111,7 +111,7 @@ class PresensiUjianController extends Controller
                             ->orderBy('waktu_mulai', 'asc')
                             ->get();
 
-                        // Evaluasi syarat administrasi santri (Lunas / Terkunci / Dispensasi)
+                        // Evaluasi syarat administrasi murid (Lunas / Terkunci / Dispensasi)
                         $murids = $ruanganTerpilih->murids;
                         $muridsWithStatus = $this->nilaiUjianService->evaluasiSyaratAdmin($ujian, $ruanganTerpilih, $murids);
 
@@ -150,7 +150,7 @@ class PresensiUjianController extends Controller
     }
 
     /**
-     * Menyimpan data presensi santri dan pengawas ujian
+     * Menyimpan data presensi murid dan pengawas ujian
      */
     public function store(Request $request)
     {
@@ -174,7 +174,7 @@ class PresensiUjianController extends Controller
                 Auth::id()
             );
 
-            return back()->with('success', "Berhasil menyimpan {$disimpan} data presensi santri dan kehadiran pengawas ujian!");
+            return back()->with('success', "Berhasil menyimpan {$disimpan} data presensi murid dan kehadiran pengawas ujian!");
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memproses presensi ujian: ' . $e->getMessage());
         }

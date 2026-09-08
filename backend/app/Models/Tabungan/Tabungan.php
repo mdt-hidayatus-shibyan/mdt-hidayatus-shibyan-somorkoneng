@@ -18,7 +18,15 @@ class Tabungan extends Model
         'total_setor' => 'float',
         'total_tarik' => 'float',
         'total_potongan' => 'float',
+        'saldo_buku_fisik' => 'float',
+        'buku_tabungan_ada' => 'boolean',
+        'diverifikasi_pada' => 'datetime',
     ];
+
+    public function diverifikasiOleh()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'diverifikasi_oleh');
+    }
 
     public function murid()
     {
@@ -45,9 +53,9 @@ class Tabungan extends Model
         return $this->hasMany(TransaksiTabungan::class, 'tabungan_id')->orderBy('tanggal', 'desc')->orderBy('id', 'desc');
     }
 
-    public function pengajuans()
+    public function riwayatBukus()
     {
-        return $this->hasMany(PengajuanPenarikanTabungan::class, 'tabungan_id')->orderBy('id', 'desc');
+        return $this->hasMany(RiwayatBukuTabungan::class, 'tabungan_id')->orderBy('id', 'desc');
     }
 
     /**

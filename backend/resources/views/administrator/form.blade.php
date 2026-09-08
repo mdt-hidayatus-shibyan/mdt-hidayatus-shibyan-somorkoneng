@@ -10,12 +10,10 @@
                 <i class="bi bi-arrow-left text-base font-bold"></i>
             </a>
             <div>
-                <h2
-                    class="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+                <h2 class="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
                     {{ isset($administrator) ? 'Edit Administrator' : 'Tambah Administrator' }}
                 </h2>
-                <p
-                    class="text-xs md:text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
+                <p class="text-xs md:text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
                     Lengkapi formulir di bawah ini dengan data yang valid.
                 </p>
             </div>
@@ -166,12 +164,12 @@
                     </div>
                 </div>
 
-                <!-- Row 4: Alamat & Tingkat -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Row 4: Alamat, Peran & Tingkat -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label
                             class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">
-                            Alamat Domisili
+                            Alamat Domisili <span class="text-rose-500">*</span>
                         </label>
                         <textarea name="alamat" rows="2" placeholder="Alamat lengkap saat ini..."
                             class="m3-input-glass w-full text-xs font-bold custom-scrollbar resize-none !p-3 {{ $errors->has('alamat') ? '!border-rose-500' : '' }}">{{ old('alamat', $administrator->alamat ?? '') }}</textarea>
@@ -182,35 +180,82 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label
-                            class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">
-                            Tingkat <span class="text-rose-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <select name="tingkat_id"
-                                class="m3-input-glass w-full text-xs font-bold appearance-none cursor-pointer {{ $errors->has('tingkat_id') ? '!border-rose-500' : '' }}">
-                                <option value="" disabled
-                                    {{ !isset($administrator->tingkat_id) ? 'selected' : '' }}>
-                                    -- Pilih Area Tingkat --
-                                </option>
-                                @foreach ($tingkats as $tingkat)
-                                    <option value="{{ $tingkat->id }}"
-                                        {{ (isset($administrator) && $administrator->tingkat_id == $tingkat->id) || old('tingkat_id') == $tingkat->id ? 'selected' : '' }}>
-                                        {{ $tingkat->kode_tingkat }} - {{ $tingkat->nama_tingkat }}
+                    <div class="space-y-4">
+                        <div>
+                            <label
+                                class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">
+                                Peran / Role Akses <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <select name="role" id="role_select"
+                                    class="m3-input-glass w-full text-xs font-bold appearance-none cursor-pointer {{ $errors->has('role') ? '!border-rose-500' : '' }}">
+                                    <option value="administrator"
+                                        {{ old('role', $currentRole ?? 'administrator') === 'administrator' ? 'selected' : '' }}>
+                                        Administrator (Akses Penuh / Semua Tingkat)
                                     </option>
-                                @endforeach
-                            </select>
-                            <div
-                                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-zinc-400">
-                                <i class="bi bi-chevron-down text-xs"></i>
+                                    <option value="petugas-tabungan"
+                                        {{ old('role', $currentRole ?? '') === 'petugas-tabungan' ? 'selected' : '' }}>
+                                        Petugas Tabungan (Semua Tingkat)
+                                    </option>
+                                    <option value="staff"
+                                        {{ old('role', $currentRole ?? '') === 'staff' ? 'selected' : '' }}>
+                                        Staff / Admin Tingkat (Perlu Pilih Tingkat)
+                                    </option>
+                                </select>
+                                <div
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-zinc-400">
+                                    <i class="bi bi-chevron-down text-xs"></i>
+                                </div>
                             </div>
+                            @error('role')
+                                <p class="text-[10px] font-bold text-rose-500 mt-1 ml-1 flex items-center gap-1">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ $message }}
+                                </p>
+                            @enderror
                         </div>
-                        @error('tingkat_id')
-                            <p class="text-[10px] font-bold text-rose-500 mt-1 ml-1 flex items-center gap-1">
-                                <i class="bi bi-exclamation-circle-fill"></i> {{ $message }}
+
+                        <!-- Tingkat Wrapper (Kondisional: Muncul hanya jika Role = staff) -->
+                        <div id="tingkat_wrapper"
+                            class="{{ old('role', $currentRole ?? 'administrator') === 'staff' ? '' : 'hidden' }}">
+                            <label
+                                class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">
+                                Tingkat <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <select name="tingkat_id" id="tingkat_select"
+                                    class="m3-input-glass w-full text-xs font-bold appearance-none cursor-pointer {{ $errors->has('tingkat_id') ? '!border-rose-500' : '' }}">
+                                    <option value="" disabled
+                                        {{ !old('tingkat_id', $administrator->tingkat_id ?? null) ? 'selected' : '' }}>
+                                        -- Pilih Area Tingkat --
+                                    </option>
+                                    @foreach ($tingkats as $tingkat)
+                                        <option value="{{ $tingkat->id }}"
+                                            {{ old('tingkat_id', $administrator->tingkat_id ?? '') == $tingkat->id ? 'selected' : '' }}>
+                                            {{ $tingkat->kode_tingkat }} - {{ $tingkat->nama_tingkat }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-zinc-400">
+                                    <i class="bi bi-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                            @error('tingkat_id')
+                                <p class="text-[10px] font-bold text-rose-500 mt-1 ml-1 flex items-center gap-1">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <!-- Helper note info when administrator / petugas-tabungan selected -->
+                        <div id="tingkat_info_note"
+                            class="p-2.5 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 {{ old('role', $currentRole ?? 'administrator') === 'staff' ? 'hidden' : '' }}">
+                            <p
+                                class="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                                <i class="bi bi-info-circle-fill text-primary dark:text-primary-dark"></i>
+                                <span>Peran ini memiliki hak akses global (seluruh tingkat madrasah).</span>
                             </p>
-                        @enderror
+                        </div>
                     </div>
                 </div>
 
@@ -230,8 +275,7 @@
                                 class="w-12 h-12 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center flex-shrink-0 shadow-2xs">
                                 <img id="fotoPreview"
                                     src="{{ $administrator->foto ?? false ? asset('storage/' . $administrator->foto) : asset(old('jenis_kelamin', $administrator->jenis_kelamin ?? 'L') === 'L' ? 'assets/laki-default.png' : 'assets/perempuan-default.png') }}"
-                                    alt="Preview"
-                                    class="w-full h-full object-cover rounded-lg">
+                                    alt="Preview" class="w-full h-full object-cover rounded-lg">
                             </div>
                             <div class="flex-1">
                                 <input type="file" name="foto" id="fotoInput"
@@ -367,7 +411,8 @@
                             </p>
                             <p class="text-[11px] font-medium text-blue-700 dark:text-blue-400/80 leading-relaxed">
                                 Kosongkan <span class="font-bold text-blue-900 dark:text-blue-200">Username &
-                                    Email</span> jika ustadz/administrator ini belum membutuhkan akses login. Default Password jika diisi: <span
+                                    Email</span> jika ustadz/administrator ini belum membutuhkan akses login. Default
+                                Password jika diisi: <span
                                     class="font-mono font-bold text-blue-900 dark:text-blue-200 border-b border-blue-400/50 pb-0.5">madrasah123</span>
                             </p>
                         </div>
@@ -378,8 +423,7 @@
                 <div
                     class="w-full lg:w-1/3 flex flex-col justify-center bg-zinc-50/70 dark:bg-zinc-900/40 p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
                     <div class="mb-3.5">
-                        <span
-                            class="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider block">
+                        <span class="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider block">
                             Status Akun
                         </span>
                         <span
@@ -494,6 +538,32 @@
                 btnDeletePermanen.disabled = !this.checked;
             });
         }
+
+        // 4. Role & Tingkat Visibility Toggle
+        const roleSelect = document.getElementById('role_select');
+        const tingkatWrapper = document.getElementById('tingkat_wrapper');
+        const tingkatSelect = document.getElementById('tingkat_select');
+        const tingkatInfoNote = document.getElementById('tingkat_info_note');
+
+        function updateTingkatVisibility() {
+            if (!roleSelect) return;
+            const role = roleSelect.value;
+            if (role === 'staff') {
+                tingkatWrapper?.classList.remove('hidden');
+                tingkatInfoNote?.classList.add('hidden');
+            } else {
+                tingkatWrapper?.classList.add('hidden');
+                tingkatInfoNote?.classList.remove('hidden');
+                if (tingkatSelect) {
+                    tingkatSelect.value = '';
+                }
+            }
+        }
+
+        if (roleSelect) {
+            roleSelect.addEventListener('change', updateTingkatVisibility);
+            // Run on initial load
+            updateTingkatVisibility();
+        }
     </script>
 </x-app-layout>
-

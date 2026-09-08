@@ -28,7 +28,7 @@
                 $isPiatu = $murid->status_ibu == 'Meninggal' && $umur < 15;
             @endphp
 
-            <!-- Baris Tabel Santri -->
+            <!-- Baris Tabel Murid -->
             <tr class="{{ $murid->status !== 'Aktif' ? 'opacity-65 grayscale-[35%]' : '' }} group/tr">
 
                 <!-- KOLOM NO -->

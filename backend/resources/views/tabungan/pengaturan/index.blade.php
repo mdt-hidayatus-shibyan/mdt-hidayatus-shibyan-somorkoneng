@@ -198,6 +198,135 @@
 
         </div>
 
+        <!-- ========================================== -->
+        <!-- KARTU 2: MASTER KATEGORI PENARIKAN TABUNGAN -->
+        <!-- ========================================== -->
+        <div class="m3-glass-card rounded-2xl p-6 shadow-2xs">
+
+            <!-- Card Header Section -->
+            <div
+                class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-5 border-b border-zinc-200/80 dark:border-zinc-800">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-lg shrink-0">
+                        <i class="bi bi-tags-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-zinc-900 dark:text-white uppercase tracking-wider">
+                            Kategori Penarikan Tabungan
+                        </h3>
+                        <p class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            Kelola kategori peruntukan penarikan saldo (Tarik Tunai, Bayar Tagihan, Bayar Kas Ruangan,
+                            dll)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tombol Tambah Kategori Baru AJAX Modal -->
+                <a href="{{ route('tabungan.pengaturan.kategori.create') }}"
+                    class="action-modal m3-btn-primary !bg-amber-600 hover:!bg-amber-700 px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 shrink-0">
+                    <i class="bi bi-plus-lg text-sm"></i>
+                    <span>Tambah Kategori Penarikan</span>
+                </a>
+            </div>
+
+            <!-- Tabel Daftar Kategori Penarikan -->
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr
+                            class="border-b border-zinc-200/80 dark:border-zinc-800 text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-50/40 dark:bg-zinc-900/40">
+                            <th class="py-3 px-4 w-12 text-center">Urutan</th>
+                            <th class="py-3 px-3">Nama Kategori</th>
+                            <th class="py-3 px-3">Kode</th>
+                            <th class="py-3 px-3">Jenis Tujuan</th>
+                            <th class="py-3 px-3">Keterangan</th>
+                            <th class="py-3 px-3 text-center">Penggunaan</th>
+                            <th class="py-3 px-3 text-center">Status</th>
+                            <th class="py-3 px-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody
+                        class="divide-y divide-zinc-100 dark:divide-zinc-800/60 font-medium text-zinc-700 dark:text-zinc-300">
+                        @php
+                            $badgeTujuan = [
+                                'Tunai' =>
+                                    'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+                                'Tagihan' => 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+                                'Kas Ruangan' => 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
+                                'Lainnya' =>
+                                    'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+                            ];
+                        @endphp
+
+                        @forelse ($kategoriPenarikans as $kat)
+                            <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
+                                <td class="py-3 px-4 text-center font-mono font-bold text-zinc-400">
+                                    {{ $kat->urutan }}
+                                </td>
+                                <td class="py-3 px-3 font-bold text-zinc-900 dark:text-white">
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ $kat->nama_kategori }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-3 font-mono text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+                                    {{ $kat->kode_kategori ?? '-' }}
+                                </td>
+                                <td class="py-3 px-3">
+                                    <span
+                                        class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border {{ $badgeTujuan[$kat->jenis_tujuan] ?? 'bg-zinc-100 text-zinc-600 border-zinc-200' }}">
+                                        {{ $kat->jenis_tujuan }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-[11px] text-zinc-500 dark:text-zinc-400 max-w-xs truncate">
+                                    {{ $kat->keterangan ?? '-' }}
+                                </td>
+                                <td class="py-3 px-3 text-center">
+                                    <span
+                                        class="px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-[11px] font-mono font-bold text-zinc-600 dark:text-zinc-400">
+                                        {{ $kat->transaksis_count }} Transaksi
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-center">
+                                    <x-toggle-status :is-active="$kat->is_active" :url="route('tabungan.pengaturan.kategori.toggle-status', $kat->id)" />
+                                </td>
+                                <td class="py-3 px-4 text-center">
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        <!-- Edit Modal AJAX -->
+                                        <a href="{{ route('tabungan.pengaturan.kategori.edit', $kat->id) }}"
+                                            class="action-modal p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200/60 dark:border-blue-800/40 transition-all outline-none"
+                                            title="Edit Kategori">
+                                            <i class="bi bi-pencil-fill text-xs"></i>
+                                        </a>
+
+                                        <!-- Hapus AJAX SweetAlert -->
+                                        <form action="{{ route('tabungan.pengaturan.kategori.destroy', $kat->id) }}"
+                                            method="POST" class="delete-ajax inline m-0 p-0"
+                                            data-refresh-target="#data-grid-container">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 border border-rose-200/60 dark:border-rose-800/40 transition-all outline-none cursor-pointer"
+                                                title="Hapus Kategori">
+                                                <i class="bi bi-trash-fill text-xs"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="py-8 text-center text-zinc-400 text-xs">
+                                    Belum ada kategori penarikan. Silakan buat dengan tombol di atas.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
     </div>
 
 </x-app-layout>

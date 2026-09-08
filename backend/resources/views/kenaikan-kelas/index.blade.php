@@ -144,7 +144,7 @@
                                 </th>
                                 <th
                                     class="py-3 px-4 border-r border-zinc-200/80 dark:border-zinc-800 sticky left-12 z-30 bg-zinc-100/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-[2px_0_5px_rgba(0,0,0,0.03)] w-52">
-                                    Nama Santri</th>
+                                    Nama Murid</th>
                                 <th class="py-3 px-3 border-r border-zinc-200/80 dark:border-zinc-800 text-center w-24">
                                     Tot. Sem 1<br><span class="text-[9px] opacity-70">(IMDA 1)</span></th>
                                 <th class="py-3 px-3 border-r border-zinc-200/80 dark:border-zinc-800 text-center w-24">
@@ -391,7 +391,7 @@
                     Swal.fire({
                         icon: 'warning',
                         title: '<span class="text-base font-black text-zinc-900 dark:text-white">Pilih Data!</span>',
-                        html: '<p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Silakan centang minimal satu santri yang ingin disahkan.</p>',
+                        html: '<p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Silakan centang minimal satu murid yang ingin disahkan.</p>',
                         confirmButtonColor: '#059669',
                         heightAuto: false,
                         background: isDark ? '#09090b' : '#ffffff',
@@ -403,12 +403,12 @@
                     return;
                 }
 
-                const titleText = mode === 'individu' ? 'Sahkan Keputusan Santri Ini?' :
+                const titleText = mode === 'individu' ? 'Sahkan Keputusan Murid Ini?' :
                     `Sahkan ${selectedCount} Keputusan Terpilih?`;
 
                 Swal.fire({
                     title: `<span class="text-base font-black text-zinc-900 dark:text-white">${titleText}</span>`,
-                    html: '<p class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mt-1 mb-2 leading-relaxed">Pastikan pilihan <b class="text-emerald-500">Lulus / Naik</b> atau <b class="text-rose-500">Tinggal Kelas</b> sudah tepat.<br><br>Data ini akan dikunci sebagai riwayat akademik permanen santri.</p>',
+                    html: '<p class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mt-1 mb-2 leading-relaxed">Pastikan pilihan <b class="text-emerald-500">Lulus / Naik</b> atau <b class="text-rose-500">Tinggal Kelas</b> sudah tepat.<br><br>Data ini akan dikunci sebagai riwayat akademik permanen murid.</p>',
                     icon: 'warning',
                     showCancelButton: true,
                     heightAuto: false,
@@ -456,7 +456,7 @@
     @else
         <!-- STATE AWAL PANDUAN PENGGUNAAN -->
         <x-empty-state icon="bi-mortarboard" title="Keputusan Akhir Tahun"
-            message="Tentukan Tahun Pelajaran dan Ruangan Kelas pada filter di atas untuk meninjau kalkulasi rekomendasi sistem dan mengesahkan keputusan kenaikan/kelulusan santri." />
+            message="Tentukan Tahun Pelajaran dan Ruangan Kelas pada filter di atas untuk meninjau kalkulasi rekomendasi sistem dan mengesahkan keputusan kenaikan/kelulusan murid." />
     @endif
 
 </x-app-layout>

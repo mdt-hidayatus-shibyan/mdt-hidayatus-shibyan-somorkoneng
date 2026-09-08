@@ -44,7 +44,7 @@ class MuridRuanganRepository
 
     /**
      * Mengambil data wali murid aktif dikelompokkan berdasarkan kode kampung,
-     * beserta data santri/murid aktif dan ruangan mereka di tahun ajaran tertentu.
+     * beserta data murid/murid aktif dan ruangan mereka di tahun ajaran tertentu.
      *
      * @param int|string|null $tahun_pelajaran_id
      * @param int|string|null $kampung_id

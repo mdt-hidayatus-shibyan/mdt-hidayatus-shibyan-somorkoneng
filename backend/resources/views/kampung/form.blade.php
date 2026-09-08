@@ -13,7 +13,7 @@
                 {{ isset($kampung) ? 'Edit Data Kampung' : 'Tambah Kampung Baru' }}
             </h3>
             <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">
-                Wilayah domisili santri & wali
+                Wilayah domisili murid & wali
             </p>
         </div>
         <button type="button" data-dismiss="modal" command="close" commandfor="dialog"

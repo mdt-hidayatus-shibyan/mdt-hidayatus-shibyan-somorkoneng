@@ -8,7 +8,7 @@
                 Referensi Pelanggaran
             </h2>
             <p class="text-xs md:text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-1">
-                Kelola daftar pelanggaran kedisiplinan santri beserta skor poinnya.
+                Kelola daftar pelanggaran kedisiplinan murid beserta skor poinnya.
             </p>
         </div>
 
@@ -166,7 +166,7 @@
                                     Belum ada referensi pelanggaran
                                 </h3>
                                 <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                    Tambahkan daftar pelanggaran kedisiplinan santri pertama Anda.
+                                    Tambahkan daftar pelanggaran kedisiplinan murid pertama Anda.
                                 </p>
                             </div>
                         </td>

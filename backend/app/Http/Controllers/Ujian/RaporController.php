@@ -123,7 +123,7 @@ class RaporController extends Controller
                 $berhasil++;
             }
 
-            return back()->with('success', "Berhasil mengesahkan $berhasil dokumen rapor santri secara permanen!");
+            return back()->with('success', "Berhasil mengesahkan $berhasil dokumen rapor murid secara permanen!");
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }

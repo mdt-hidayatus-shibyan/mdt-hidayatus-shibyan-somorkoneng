@@ -74,7 +74,7 @@
     @if ($ruanganTerpilih && $ujianTerpilih)
         @if ($dataRekap->isEmpty())
             <x-empty-state icon="bi-people" title="Data Tidak Ditemukan"
-                message="Belum ada santri aktif di kelas {{ $ruanganTerpilih->nama_ruangan }}." />
+                message="Belum ada murid aktif di kelas {{ $ruanganTerpilih->nama_ruangan }}." />
         @else
             <!-- CARD UTAMA REKAPITULASI -->
             <div class="m3-glass-card overflow-hidden">
@@ -139,7 +139,7 @@
                                 class="bg-zinc-100/80 dark:bg-zinc-900/80 text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border-b border-zinc-200 dark:border-zinc-800">
                                 <th class="py-3 px-3.5 text-center w-12 shrink-0">No</th>
                                 <th class="py-3 px-3.5 w-24">NISM</th>
-                                <th class="py-3 px-3.5 min-w-[180px]">Nama Santri</th>
+                                <th class="py-3 px-3.5 min-w-[180px]">Nama Murid</th>
 
                                 <!-- Looping Kolom Mapel Ujian -->
                                 @foreach ($jadwals as $jdw)
@@ -252,6 +252,6 @@
         @endif
     @else
         <x-empty-state icon="bi-file-spreadsheet" title="Pilih Ruangan & Pelaksanaan Ujian"
-            message="Silakan tentukan Ruangan dan Pelaksanaan Ujian di atas untuk melihat matriks rekapitulasi presensi santri." />
+            message="Silakan tentukan Ruangan dan Pelaksanaan Ujian di atas untuk melihat matriks rekapitulasi presensi murid." />
     @endif
 </x-app-layout>

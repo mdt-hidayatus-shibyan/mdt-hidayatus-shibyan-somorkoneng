@@ -118,7 +118,7 @@
                         </h3>
                         <p
                             class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">
-                            Menampilkan santri dengan akumulasi skor poin tertinggi
+                            Menampilkan murid dengan akumulasi skor poin tertinggi
                         </p>
                     </div>
                 </div>
@@ -134,7 +134,7 @@
                                 Peringkat</th>
                             <th class="py-3 px-4 w-32 border-r border-zinc-200/60 dark:border-zinc-800/80 text-center">NISM
                             </th>
-                            <th class="py-3 px-5 border-r border-zinc-200/60 dark:border-zinc-800/80">Nama Santri</th>
+                            <th class="py-3 px-5 border-r border-zinc-200/60 dark:border-zinc-800/80">Nama Murid</th>
                             <th
                                 class="py-3 px-5 text-center text-amber-600 dark:text-amber-400 border-r border-zinc-200/60 dark:border-zinc-800/80 w-40">
                                 Total Kasus</th>
@@ -242,7 +242,7 @@
             </div>
             <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight mb-0.5">Papan Peringkat Kedisiplinan</h3>
             <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
-                Silakan pilih Ruangan dan Semester pada filter di atas untuk melihat akumulasi poin pelanggaran santri yang otomatis diurutkan dari yang tertinggi.
+                Silakan pilih Ruangan dan Semester pada filter di atas untuk melihat akumulasi poin pelanggaran murid yang otomatis diurutkan dari yang tertinggi.
             </p>
         </div>
     @endif

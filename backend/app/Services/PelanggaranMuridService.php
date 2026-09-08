@@ -20,7 +20,7 @@ class PelanggaranMuridService
     }
 
     /**
-     * Hitung Rekapitulasi Pelanggaran Santri
+     * Hitung Rekapitulasi Pelanggaran Murid
      */
     public function hitungRekapPelanggaran($ruanganId, $semesterId, $bulanId = null)
     {

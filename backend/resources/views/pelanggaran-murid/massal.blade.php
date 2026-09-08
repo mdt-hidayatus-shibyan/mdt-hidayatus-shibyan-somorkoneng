@@ -129,10 +129,10 @@
                                     class="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-black shadow-2xs">2</span>
                                 <div>
                                     <h3 class="font-black text-zinc-900 dark:text-white text-base tracking-tight leading-tight">
-                                        Tandai Santri Pelaku
+                                        Tandai Murid Pelaku
                                     </h3>
                                     <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
-                                        Pilih santri yang terlibat
+                                        Pilih murid yang terlibat
                                     </p>
                                 </div>
                             </div>
@@ -157,7 +157,7 @@
                                 <i class="bi bi-search text-xs"></i>
                             </div>
                             <input type="text" id="liveSearch" onkeyup="filterCards()"
-                                placeholder="Cari Nama / NISM santri dalam daftar ini..."
+                                placeholder="Cari Nama / NISM murid dalam daftar ini..."
                                 class="m3-input-glass w-full !pl-9 !pr-3 !py-2 text-xs font-bold">
                         </div>
                     </div>
@@ -201,7 +201,7 @@
                             <div
                                 class="text-[11px] font-black text-zinc-600 dark:text-zinc-400 uppercase tracking-wider text-center sm:text-left">
                                 Total dipilih: <span id="counterPilihan"
-                                    class="text-lg font-black text-rose-600 dark:text-rose-400 px-1">0</span> Santri
+                                    class="text-lg font-black text-rose-600 dark:text-rose-400 px-1">0</span> Murid
                             </div>
                             <button type="submit"
                                 class="w-full sm:w-auto h-11 px-6 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-2xs hover:shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2 outline-none">
@@ -282,7 +282,7 @@
                     Swal.fire({
                         icon: 'warning',
                         title: '<span class="text-lg font-bold text-zinc-900 dark:text-white">Tunggu Dulu!</span>',
-                        html: '<p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-1">Pilih minimal 1 santri pelaku pada daftar di Kolom Kanan.</p>',
+                        html: '<p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-1">Pilih minimal 1 murid pelaku pada daftar di Kolom Kanan.</p>',
                         background: isDark ? '#121215' : '#ffffff',
                         confirmButtonColor: '#e11d48',
                         customClass: {
@@ -295,7 +295,7 @@
 
                 Swal.fire({
                     title: '<span class="text-lg font-bold text-zinc-900 dark:text-white">Jatuhkan Sanksi?</span>',
-                    html: `<p class="text-xs font-medium text-zinc-600 dark:text-zinc-300 mt-1">Anda akan menjatuhkan <b class="text-rose-500">${totalKasus} pelanggaran</b> kepada <b class="text-rose-500">${totalMurid} santri</b> secara bersamaan.<br><br>Data tidak dapat dibatalkan secara massal setelah disimpan.</p>`,
+                    html: `<p class="text-xs font-medium text-zinc-600 dark:text-zinc-300 mt-1">Anda akan menjatuhkan <b class="text-rose-500">${totalKasus} pelanggaran</b> kepada <b class="text-rose-500">${totalMurid} murid</b> secara bersamaan.<br><br>Data tidak dapat dibatalkan secara massal setelah disimpan.</p>`,
                     icon: 'question',
                     showCancelButton: true,
                     heightAuto: false,
@@ -335,7 +335,7 @@
             </div>
             <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight mb-0.5">Pilih Ruangan/Kelas</h3>
             <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
-                Tentukan ruangan di filter atas untuk memunculkan daftar santri yang akan ditandai.
+                Tentukan ruangan di filter atas untuk memunculkan daftar murid yang akan ditandai.
             </p>
         </div>
     @endif

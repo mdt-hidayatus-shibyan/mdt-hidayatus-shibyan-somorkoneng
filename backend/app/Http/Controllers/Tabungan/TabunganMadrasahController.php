@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tabungan;
 use App\Http\Controllers\Controller;
 use App\Models\Murid;
 use App\Models\Ruangan;
+use App\Models\Tabungan\KategoriPenarikan;
 use App\Models\Tabungan\PeriodeTabungan;
 use App\Models\Tabungan\Tabungan;
 use App\Models\Tabungan\TransaksiTabungan;
@@ -248,23 +249,15 @@ class TabunganMadrasahController extends Controller
     /**
      * Halaman Generator Barcode Buku Tabungan (7 Angka Prefix Tahun Hijriyah)
      */
+    /**
+     * Generator Barcode Buku Tabungan (500 Baris Seri Universal / Siap Cetak)
+     */
     public function generatorBarcode(Request $request)
     {
-        $daftarTahun = \App\Models\TahunPelajaran::orderBy('id', 'desc')->get();
-        $tahunAktif = \App\Models\TahunPelajaran::where('is_active', true)->first() ?? $daftarTahun->first();
-        $tahunId = $request->tahun_id ?? ($tahunAktif?->id);
-
-        $selectedTahun = $daftarTahun->firstWhere('id', $tahunId) ?? $tahunAktif;
-
-        // Ekstrak prefix dari nama hijriyah (mis. "1447-1448" -> "4748")
-        $rawHijri = $selectedTahun?->nama_hijriyah ?? '1447-1448';
-        preg_match_all('/\d{2,4}/', $rawHijri, $matches);
-        if (!empty($matches[0]) && count($matches[0]) >= 2) {
-            $prefix = substr($matches[0][0], -2) . substr($matches[0][1], -2);
-        } elseif (!empty($matches[0])) {
-            $prefix = substr($matches[0][0], -4);
-        } else {
-            $prefix = '4748';
+        // Prefix Seri Universal (Default '1000' untuk menghasilkan format 7 digit: 1000001 s.d. 1000500)
+        $prefix = trim($request->prefix ?? '1000');
+        if (!ctype_digit($prefix) || strlen($prefix) < 1) {
+            $prefix = '1000';
         }
 
         $mulaiDari = (int) ($request->mulai ?? 1);
@@ -282,7 +275,7 @@ class TabunganMadrasahController extends Controller
             ];
         }
 
-        return view('tabungan.barcode.generator', compact('daftarTahun', 'selectedTahun', 'prefix', 'mulaiDari', 'jumlah', 'barcodes'));
+        return view('tabungan.barcode.generator', compact('prefix', 'mulaiDari', 'jumlah', 'barcodes'));
     }
 
     /**
@@ -290,11 +283,15 @@ class TabunganMadrasahController extends Controller
      */
     public function exportBarcode(Request $request)
     {
-        $prefix = $request->prefix ?? '4748';
+        $prefix = trim($request->prefix ?? '1000');
+        if (!ctype_digit($prefix) || strlen($prefix) < 1) {
+            $prefix = '1000';
+        }
+
         $mulaiDari = (int) ($request->mulai ?? 1);
         $jumlah = (int) ($request->jumlah ?? 500);
 
-        $filename = "barcode_buku_tabungan_{$prefix}_{$mulaiDari}_sd_" . ($mulaiDari + $jumlah - 1) . ".csv";
+        $filename = "barcode_buku_tabungan_seri_{$prefix}_{$mulaiDari}_sd_" . ($mulaiDari + $jumlah - 1) . ".csv";
 
         $headers = [
             'Content-Type' => 'text/csv',
@@ -303,12 +300,12 @@ class TabunganMadrasahController extends Controller
 
         $callback = function () use ($prefix, $mulaiDari, $jumlah) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['No', 'Nomor_Barcode', 'Format', 'Status_Database']);
+            fputcsv($file, ['No', 'Nomor_Barcode', 'Digit', 'Status_Database']);
 
             for ($i = $mulaiDari; $i < ($mulaiDari + $jumlah); $i++) {
                 $barcode = $prefix . str_pad($i, 3, '0', STR_PAD_LEFT);
-                $isRegistered = Tabungan::where('nomor_rekening', $barcode)->exists() ? 'Sudah Dipakai' : 'Tersedia';
-                fputcsv($file, [$i, $barcode, '7 Digit (Prefix: ' . $prefix . ')', $isRegistered]);
+                $isRegistered = Tabungan::where('nomor_rekening', $barcode)->exists() ? 'Sudah Terdaftar' : 'Tersedia';
+                fputcsv($file, [$i, $barcode, strlen($barcode) . ' Digit', $isRegistered]);
             }
 
             fclose($file);
@@ -392,11 +389,79 @@ class TabunganMadrasahController extends Controller
      */
     public function detailRekening($id)
     {
-        $tabungan = Tabungan::with(['murid', 'ustadz', 'ruangan', 'periodeTabungan'])->findOrFail($id);
-        $transaksis = $tabungan->transaksis()->with('petugas')->paginate(25);
-        $kalkulasiPenarikan = $this->tabunganService->hitungPotongan($tabungan, (float) $tabungan->saldo);
+        $tabungan = Tabungan::with(['murid.ruangans', 'ustadz', 'ruangan', 'periodeTabungan', 'riwayatBukus.petugas'])->findOrFail($id);
+        $transaksis = $tabungan->transaksis()->with(['petugas', 'kategoriPenarikan'])->paginate(25);
+        $kalkulasiPenarikan = $this->tabunganService->hitungPotongan($tabungan);
+        $kategoriPenarikans = KategoriPenarikan::aktif()->ordered()->get();
 
-        return view('tabungan.rekening.detail', compact('tabungan', 'transaksis', 'kalkulasiPenarikan'));
+        return view('tabungan.rekening.detail', compact('tabungan', 'transaksis', 'kalkulasiPenarikan', 'kategoriPenarikans'));
+    }
+
+    /**
+     * Modal Form Ganti Buku Tabungan Fisik (AJAX)
+     */
+    public function modalGantiBuku(Request $request, $id)
+    {
+        $tabungan = Tabungan::with(['murid.ruangans', 'ustadz', 'ruangan', 'periodeTabungan'])->findOrFail($id);
+
+        if ($request->ajax()) {
+            return view('tabungan.rekening.modal_ganti_buku', compact('tabungan'));
+        }
+
+        return redirect()->route('tabungan.rekening.detail', $id);
+    }
+
+    /**
+     * Proses Penggantian Buku Tabungan Fisik
+     */
+    public function prosesGantiBuku(Request $request, $id)
+    {
+        $request->validate([
+            'nomor_rekening_baru' => 'required|string|max:50',
+            'alasan' => 'required|in:Buku Hilang,Buku Rusak,Halaman Penuh,Lainnya',
+            'catatan' => 'nullable|string|max:255',
+        ], [
+            'nomor_rekening_baru.required' => 'Nomor rekening / barcode baru wajib diisi atau discan.',
+            'alasan.required' => 'Silakan pilih alasan penggantian buku.',
+            'alasan.in' => 'Alasan penggantian buku tidak valid.',
+        ]);
+
+        try {
+            $result = $this->tabunganService->gantiBukuTabungan(
+                (int) $id,
+                $request->nomor_rekening_baru,
+                $request->alasan,
+                $request->catatan,
+                Auth::id()
+            );
+
+            $pesan = "Alhamdulillah! Buku tabungan berhasil diganti ke barcode baru ({$result['nomor_baru']}). Seluruh saldo dan riwayat mutasi tetap aman.";
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => $pesan,
+                    'data' => [
+                        'nomor_lama' => $result['nomor_lama'],
+                        'nomor_baru' => $result['nomor_baru'],
+                    ]
+                ], 200);
+            }
+
+            return redirect()->route('tabungan.rekening.detail', $id)->with('success', $pesan);
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $e->getMessage(),
+                    'errors' => [
+                        'nomor_rekening_baru' => [$e->getMessage()]
+                    ]
+                ], 422);
+            }
+
+            return back()->withInput()->with('error', 'Gagal mengganti buku: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -407,15 +472,12 @@ class TabunganMadrasahController extends Controller
         $daftarTahun = \App\Models\TahunPelajaran::orderBy('id', 'desc')->get();
         $tahunAktif = \App\Models\TahunPelajaran::where('is_active', true)->first() ?? $daftarTahun->first();
 
-        // Ekstrak prefix dari nama hijriyah (mis. "1447-1448" -> "4748")
-        $rawHijri = $tahunAktif?->nama_hijriyah ?? '1447-1448';
-        preg_match_all('/\d{2,4}/', $rawHijri, $matches);
-        if (!empty($matches[0]) && count($matches[0]) >= 2) {
-            $prefix = substr($matches[0][0], -2) . substr($matches[0][1], -2);
-        } elseif (!empty($matches[0])) {
-            $prefix = substr($matches[0][0], -4);
+        // Cari prefix aktif dari rekening yang sudah terdaftar, default '1000'
+        $sampleRekening = Tabungan::whereRaw('LENGTH(nomor_rekening) = 7')->whereRaw('nomor_rekening REGEXP "^[0-9]+$"')->latest('id')->first();
+        if ($sampleRekening && strlen($sampleRekening->nomor_rekening) === 7) {
+            $prefix = substr($sampleRekening->nomor_rekening, 0, 4);
         } else {
-            $prefix = '4748';
+            $prefix = '1000';
         }
 
         // Riwayat Setoran Terkini (10 transaksi terakhir)
@@ -441,16 +503,12 @@ class TabunganMadrasahController extends Controller
             ]);
         }
 
-        $daftarTahun = \App\Models\TahunPelajaran::orderBy('id', 'desc')->get();
-        $tahunAktif = \App\Models\TahunPelajaran::where('is_active', true)->first() ?? $daftarTahun->first();
-        $rawHijri = $tahunAktif?->nama_hijriyah ?? '1447-1448';
-        preg_match_all('/\d{2,4}/', $rawHijri, $matches);
-        if (!empty($matches[0]) && count($matches[0]) >= 2) {
-            $prefix = substr($matches[0][0], -2) . substr($matches[0][1], -2);
-        } elseif (!empty($matches[0])) {
-            $prefix = substr($matches[0][0], -4);
+        // Cari prefix aktif dari rekening yang sudah terdaftar, default '1000'
+        $sampleRekening = Tabungan::whereRaw('LENGTH(nomor_rekening) = 7')->whereRaw('nomor_rekening REGEXP "^[0-9]+$"')->latest('id')->first();
+        if ($sampleRekening && strlen($sampleRekening->nomor_rekening) === 7) {
+            $prefix = substr($sampleRekening->nomor_rekening, 0, 4);
         } else {
-            $prefix = '4748';
+            $prefix = '1000';
         }
 
         // 1. Coba exact match nomor_rekening
@@ -458,12 +516,19 @@ class TabunganMadrasahController extends Controller
             ->with(['murid.ruangans.level', 'murid.ruanganMasuk.level', 'ustadz', 'ruangan', 'periodeTabungan'])
             ->first();
 
-        // 2. Jika input berupa 1 - 3 digit (contoh: '001' atau '1' atau '25'), coba kombinasi dengan prefix tahun (contoh: '4748' + '001' -> '4748001')
+        // 2. Jika input berupa 1 - 4 digit angka (contoh: '001' atau '1' atau '25'), coba kombinasi dengan prefix nomor seri (contoh: '1000' + '001' -> '1000001')
         if (!$tabungan && ctype_digit($q) && strlen($q) <= 4) {
             $padded = $prefix . str_pad($q, 3, '0', STR_PAD_LEFT);
             $tabungan = Tabungan::where('nomor_rekening', $padded)
                 ->with(['murid.ruangans.level', 'murid.ruanganMasuk.level', 'ustadz', 'ruangan', 'periodeTabungan'])
                 ->first();
+
+            // Jika masih belum ketemu dengan prefix aktif, cari rekening berakhiran nomor urut tersebut
+            if (!$tabungan) {
+                $tabungan = Tabungan::where('nomor_rekening', 'like', '%' . str_pad($q, 3, '0', STR_PAD_LEFT))
+                    ->with(['murid.ruangans.level', 'murid.ruanganMasuk.level', 'ustadz', 'ruangan', 'periodeTabungan'])
+                    ->first();
+            }
         }
 
         // 3. Jika belum ketemu, coba cari berdasarkan NISM murid atau NIGM ustadz
@@ -496,6 +561,8 @@ class TabunganMadrasahController extends Controller
             $identitasTambahan = "Kontak: " . ($tabungan->kontak_umum ?? '-');
         }
 
+        $kalkulasi = $this->tabunganService->hitungPotongan($tabungan);
+
         return response()->json([
             'status' => 'found',
             'data' => [
@@ -509,9 +576,50 @@ class TabunganMadrasahController extends Controller
                 'periode_nama' => $tabungan->periodeTabungan?->nama_periode ?? 'Tabungan Bebas',
                 'saldo' => (float) $tabungan->saldo,
                 'formatted_saldo' => 'Rp ' . number_format($tabungan->saldo, 0, ',', '.'),
+                'total_tabungan' => (float) $kalkulasi['total_tabungan'],
+                'formatted_total_tabungan' => 'Rp ' . number_format($kalkulasi['total_tabungan'], 0, ',', '.'),
+                'total_tarik' => (float) $kalkulasi['total_tarik'],
+                'formatted_total_tarik' => 'Rp ' . number_format($kalkulasi['total_tarik'], 0, ',', '.'),
+                'persentase_potongan' => (float) $kalkulasi['persentase_potongan'],
+                'nominal_potongan' => (float) $kalkulasi['nominal_potongan'],
+                'formatted_potongan' => 'Rp ' . number_format($kalkulasi['nominal_potongan'], 0, ',', '.'),
+                'saldo_bersih_total' => (float) $kalkulasi['saldo_bersih_total'],
+                'formatted_saldo_bersih_total' => 'Rp ' . number_format($kalkulasi['saldo_bersih_total'], 0, ',', '.'),
+                'saldo_dapat_ditarik' => (float) $kalkulasi['saldo_dapat_ditarik'],
+                'formatted_saldo_dapat_ditarik' => 'Rp ' . number_format($kalkulasi['saldo_dapat_ditarik'], 0, ',', '.'),
+                'saldo_bersih_maks' => (float) $kalkulasi['saldo_dapat_ditarik'],
+                'formatted_saldo_bersih_maks' => 'Rp ' . number_format($kalkulasi['saldo_dapat_ditarik'], 0, ',', '.'),
                 'status' => $tabungan->status,
             ]
         ]);
+    }
+
+    /**
+     * Halaman Utama Tarik Tunai Tabungan (Scan Barcode / 3 Digit Manual)
+     */
+    public function formTarikTunai(Request $request)
+    {
+        $daftarTahun = \App\Models\TahunPelajaran::orderBy('id', 'desc')->get();
+        $tahunAktif = \App\Models\TahunPelajaran::where('is_active', true)->first() ?? $daftarTahun->first();
+
+        // Cari prefix aktif dari rekening yang sudah terdaftar, default '1000'
+        $sampleRekening = Tabungan::whereRaw('LENGTH(nomor_rekening) = 7')->whereRaw('nomor_rekening REGEXP "^[0-9]+$"')->latest('id')->first();
+        if ($sampleRekening && strlen($sampleRekening->nomor_rekening) === 7) {
+            $prefix = substr($sampleRekening->nomor_rekening, 0, 4);
+        } else {
+            $prefix = '1000';
+        }
+
+        // Riwayat Penarikan Terkini (10 transaksi penarikan terakhir)
+        $riwayatPenarikan = TransaksiTabungan::where('jenis_transaksi', 'Tarik')
+            ->with(['tabungan.murid.ruangans', 'tabungan.ustadz', 'tabungan.ruangan', 'petugas', 'kategoriPenarikan'])
+            ->orderBy('id', 'desc')
+            ->limit(10)
+            ->get();
+
+        $kategoriPenarikans = KategoriPenarikan::aktif()->ordered()->get();
+
+        return view('tabungan.tarik.index', compact('daftarTahun', 'tahunAktif', 'prefix', 'riwayatPenarikan', 'kategoriPenarikans'));
     }
 
     /**
@@ -550,8 +658,13 @@ class TabunganMadrasahController extends Controller
         $request->validate([
             'tabungan_id' => 'required|exists:tabungans,id',
             'nominal' => 'required|numeric|min:1000',
+            'kategori_penarikan_id' => 'nullable|exists:kategori_penarikans,id',
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string|max:255',
+        ], [
+            'nominal.required' => 'Nominal penarikan wajib diisi.',
+            'nominal.min' => 'Nominal penarikan minimal Rp 1.000.',
+            'tanggal.required' => 'Tanggal penarikan wajib diisi.',
         ]);
 
         try {
@@ -560,16 +673,114 @@ class TabunganMadrasahController extends Controller
                 (float) $request->nominal,
                 Auth::id(),
                 $request->tanggal,
-                $request->keterangan
+                $request->keterangan,
+                'Tunai',
+                $request->kategori_penarikan_id ? (int) $request->kategori_penarikan_id : null
             );
 
-            $pesan = "Penarikan sebesar Rp " . number_format($trx->nominal_kotor, 0, ',', '.') .
-                " berhasil! (Potongan: Rp " . number_format($trx->nominal_potongan, 0, ',', '.') .
-                ", Bersih diserahkan: Rp " . number_format($trx->nominal_bersih, 0, ',', '.') . ")";
+            $pesan = "Alhamdulillah! Penarikan tunai sebesar Rp " . number_format($trx->nominal_bersih, 0, ',', '.') .
+                " untuk rekening {$trx->tabungan->nomor_rekening} ({$trx->tabungan->nama_nasabah}) berhasil diproses!";
+
+            if ($request->routeIs('tabungan.tarik') || $request->is('tabungan/tarik*')) {
+                return redirect()->route('tabungan.tarik.index')->with('success', $pesan);
+            }
 
             return back()->with('success', $pesan);
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memproses penarikan: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Gagal memproses penarikan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Modal Form Edit Transaksi Penarikan Tunai (AJAX)
+     */
+    public function editTransaksiTarik(Request $request, $id)
+    {
+        $transaksi = TransaksiTabungan::with(['tabungan.murid', 'tabungan.ustadz', 'tabungan.ruangan', 'kategoriPenarikan'])->findOrFail($id);
+        $kategoriPenarikans = KategoriPenarikan::aktif()->ordered()->get();
+
+        if ($request->ajax()) {
+            return view('tabungan.tarik.modal_edit', compact('transaksi', 'kategoriPenarikans'));
+        }
+
+        return redirect()->route('tabungan.tarik.index');
+    }
+
+    /**
+     * Update Transaksi Penarikan Tunai
+     */
+    public function updateTransaksiTarik(Request $request, $id)
+    {
+        $request->validate([
+            'nominal' => 'required|numeric|min:1000',
+            'kategori_penarikan_id' => 'nullable|exists:kategori_penarikans,id',
+            'tanggal' => 'required|date',
+            'keterangan' => 'nullable|string|max:255',
+        ], [
+            'nominal.required' => 'Nominal penarikan wajib diisi.',
+            'nominal.min' => 'Nominal penarikan minimal Rp 1.000.',
+            'tanggal.required' => 'Tanggal penarikan wajib diisi.',
+        ]);
+
+        try {
+            $trx = $this->tabunganService->updateTarikTunai(
+                (int) $id,
+                (float) $request->nominal,
+                $request->tanggal,
+                $request->keterangan,
+                Auth::id(),
+                $request->kategori_penarikan_id ? (int) $request->kategori_penarikan_id : null
+            );
+
+            $pesan = "Alhamdulillah! Penarikan ({$trx->kode_transaksi}) berhasil diperbarui menjadi Rp " . number_format($trx->nominal_bersih, 0, ',', '.') . "!";
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => $pesan,
+                ], 200);
+            }
+
+            return back()->with('success', $pesan);
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Gagal memperbarui penarikan: ' . $e->getMessage(),
+                ], 422);
+            }
+
+            return back()->with('error', 'Gagal memperbarui penarikan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Hapus Transaksi Penarikan Tunai
+     */
+    public function destroyTransaksiTarik(Request $request, $id)
+    {
+        try {
+            $result = $this->tabunganService->hapusTarikTunai((int) $id);
+
+            $pesan = "Penarikan ({$result['kode_transaksi']}) sebesar Rp " . number_format($result['nominal_kotor'], 0, ',', '.') . " untuk rekening {$result['tabungan']->nomor_rekening} berhasil dihapus. Saldo telah dikembalikan ke rekening nasabah.";
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => $pesan,
+                ], 200);
+            }
+
+            return back()->with('success', $pesan);
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Gagal menghapus penarikan: ' . $e->getMessage(),
+                ], 422);
+            }
+
+            return back()->with('error', 'Gagal menghapus penarikan: ' . $e->getMessage());
         }
     }
 
@@ -669,7 +880,11 @@ class TabunganMadrasahController extends Controller
     public function cetakBukuTabungan($id)
     {
         $tabungan = Tabungan::with(['murid', 'ustadz', 'ruangan', 'periodeTabungan'])->findOrFail($id);
-        $transaksis = $tabungan->transaksis()->with('petugas')->orderBy('tanggal', 'asc')->orderBy('id', 'asc')->get();
+        $transaksis = TransaksiTabungan::where('tabungan_id', $tabungan->id)
+            ->with('petugas')
+            ->orderBy('tanggal', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
 
         return view('tabungan.rekening.cetak_buku', compact('tabungan', 'transaksis'));
     }

@@ -10,7 +10,7 @@
                 Cetak Kartu Pelajar
             </h2>
             <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-0.5 uppercase tracking-wider">
-                Generate ID Card santri berstandar CR80 dengan QR Code terverifikasi
+                Generate ID Card murid berstandar CR80 dengan QR Code terverifikasi
             </p>
         </div>
 
@@ -87,7 +87,7 @@
                             <i class="bi bi-check text-white dark:text-zinc-900 opacity-0 peer-checked:opacity-100 text-sm font-black leading-none"></i>
                         </div>
                     </label>
-                    <span class="text-xs font-black text-zinc-700 dark:text-zinc-300">Pilih Semua Santri</span>
+                    <span class="text-xs font-black text-zinc-700 dark:text-zinc-300">Pilih Semua Murid</span>
                 </div>
 
                 <button type="submit" id="btnCetak" disabled
@@ -105,7 +105,7 @@
                             <th class="py-3 px-4 w-12 text-center">#</th>
                             <th class="py-3 px-3 text-center w-14">No</th>
                             <th class="py-3 px-4 w-32 text-center">NISM</th>
-                            <th class="py-3 px-5">Nama Lengkap Santri</th>
+                            <th class="py-3 px-5">Nama Lengkap Murid</th>
                             <th class="py-3 px-4 text-center w-32">Status Foto</th>
                         </tr>
                     </thead>
@@ -160,7 +160,7 @@
                 <i class="bi bi-people-fill"></i>
             </div>
             <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight mb-0.5">Kelas Masih Kosong</h3>
-            <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">Belum ada data santri yang terdaftar di kelas ini.</p>
+            <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">Belum ada data murid yang terdaftar di kelas ini.</p>
         </div>
     @else
         <!-- State Awal -->
@@ -171,7 +171,7 @@
             </div>
             <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight mb-0.5">Pilih Ruangan Kelas</h3>
             <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
-                Tentukan Tahun Pelajaran dan Ruangan Kelas pada filter di atas untuk menampilkan daftar santri dan mencetak Kartu Pelajar.
+                Tentukan Tahun Pelajaran dan Ruangan Kelas pada filter di atas untuk menampilkan daftar murid dan mencetak Kartu Pelajar.
             </p>
         </div>
     @endif

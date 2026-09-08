@@ -16,7 +16,7 @@
                     {{ isset($murid) ? 'Edit Data Murid' : 'Tambah Murid Baru' }}
                 </h2>
                 <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-0.5 uppercase tracking-wider">
-                    Lengkapi identitas pribadi santri dan hubungkan dengan Kartu Keluarga
+                    Lengkapi identitas pribadi murid dan hubungkan dengan Kartu Keluarga
                 </p>
             </div>
         </div>
@@ -136,7 +136,7 @@
                         <div class="w-7 h-7 rounded-lg bg-primary/10 dark:bg-primary-dark/20 text-primary dark:text-primary-dark flex items-center justify-center border border-primary/20 shrink-0">
                             <i class="bi bi-person-vcard text-xs"></i>
                         </div>
-                        <span>Identitas Utama Santri</span>
+                        <span>Identitas Utama Murid</span>
                     </h3>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
@@ -653,7 +653,7 @@
 
                 Swal.fire({
                     title: '<span class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Ubah Status Keaktifan?</span>',
-                    html: '<p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-1">Status santri ini dan akses akun Keluarga (jika anak terakhir) akan diperbarui oleh sistem.</p>',
+                    html: '<p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-1">Status murid ini dan akses akun Keluarga (jika anak terakhir) akan diperbarui oleh sistem.</p>',
                     icon: 'warning',
                     heightAuto: false,
                     showCancelButton: true,

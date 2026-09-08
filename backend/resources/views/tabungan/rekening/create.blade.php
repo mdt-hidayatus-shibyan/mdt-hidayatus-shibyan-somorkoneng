@@ -33,7 +33,7 @@
     @endif
 
     <!-- Alert Validation Errors -->
-    @if ($errors->any())
+    @if (isset($errors) && $errors->any())
         <div
             class="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-400 text-xs font-bold space-y-1 relative z-10">
             <div class="flex items-center gap-2 font-black">

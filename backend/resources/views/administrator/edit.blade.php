@@ -35,10 +35,12 @@
                         <i class="bi bi-person-vcard-fill text-lg"></i>
                     </div>
                     <div>
-                        <h3 class="text-base md:text-lg font-black text-zinc-900 dark:text-white tracking-tight leading-tight">
+                        <h3
+                            class="text-base md:text-lg font-black text-zinc-900 dark:text-white tracking-tight leading-tight">
                             Informasi Pribadi & Berkas
                         </h3>
-                        <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">
+                        <p
+                            class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">
                             Data personal dan dokumen tanda tangan
                         </p>
                     </div>
@@ -53,7 +55,8 @@
                                 Nama Lengkap <span class="text-rose-500">*</span>
                             </label>
                             <input type="text" name="nama_lengkap"
-                                value="{{ old('nama_lengkap', $administrator->nama_lengkap) }}" class="m3-input-glass w-full text-xs font-bold">
+                                value="{{ old('nama_lengkap', $administrator->nama_lengkap) }}"
+                                class="m3-input-glass w-full text-xs font-bold">
                         </div>
 
                         <div>
@@ -67,16 +70,14 @@
                                     <input type="radio" name="jenis_kelamin" id="jk_l" value="L"
                                         class="w-4 h-4 accent-primary dark:accent-primary-dark cursor-pointer"
                                         {{ old('jenis_kelamin', $administrator->jenis_kelamin) == 'L' ? 'checked' : '' }}>
-                                    <span
-                                        class="text-xs font-black text-zinc-800 dark:text-zinc-200">Laki-laki</span>
+                                    <span class="text-xs font-black text-zinc-800 dark:text-zinc-200">Laki-laki</span>
                                 </label>
                                 <label for="jk_p"
                                     class="flex items-center gap-2.5 min-h-[40px] px-4 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/80 has-[:checked]:border-primary dark:has-[:checked]:border-primary-dark has-[:checked]:bg-primary/5 dark:has-[:checked]:bg-primary-dark/10 transition-all shadow-2xs">
                                     <input type="radio" name="jenis_kelamin" id="jk_p" value="P"
                                         class="w-4 h-4 accent-primary dark:accent-primary-dark cursor-pointer"
                                         {{ old('jenis_kelamin', $administrator->jenis_kelamin) == 'P' ? 'checked' : '' }}>
-                                    <span
-                                        class="text-xs font-black text-zinc-800 dark:text-zinc-200">Perempuan</span>
+                                    <span class="text-xs font-black text-zinc-800 dark:text-zinc-200">Perempuan</span>
                                 </label>
                             </div>
                         </div>
@@ -120,34 +121,80 @@
                         </div>
                     </div>
 
-                    <!-- Row 4: Alamat & Tingkat -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Row 4: Alamat, Peran & Tingkat -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label
                                 class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">Alamat
                                 Domisili</label>
-                            <textarea name="alamat" rows="2" class="m3-input-glass w-full text-xs font-bold custom-scrollbar resize-none !p-3">{{ old('alamat', $administrator->alamat) }}</textarea>
+                            <textarea name="alamat" rows="2"
+                                class="m3-input-glass w-full text-xs font-bold custom-scrollbar resize-none !p-3">{{ old('alamat', $administrator->alamat) }}</textarea>
                         </div>
-                        <div>
-                            <label
-                                class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">Tingkat
-                                <span class="text-rose-500">*</span></label>
-                            <div class="relative">
-                                <select name="tingkat_id" class="m3-input-glass w-full text-xs font-bold appearance-none cursor-pointer">
-                                    <option value="" disabled
-                                        {{ !isset($administrator->tingkat_id) ? 'selected' : '' }}>
-                                        -- Pilih Area Tingkat --
-                                    </option>
-                                    @foreach ($tingkats as $tingkat)
-                                        <option value="{{ $tingkat->id }}"
-                                            {{ old('tingkat_id', $administrator->tingkat_id) == $tingkat->id ? 'selected' : '' }}>
-                                            {{ $tingkat->kode_tingkat }} - {{ $tingkat->nama_tingkat }}
+
+                        <div class="space-y-4">
+                            <div>
+                                <label
+                                    class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">
+                                    Peran / Role Akses <span class="text-rose-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <select name="role" id="role_select_edit"
+                                        class="m3-input-glass w-full text-xs font-bold appearance-none cursor-pointer">
+                                        <option value="administrator"
+                                            {{ old('role', $currentRole) === 'administrator' ? 'selected' : '' }}>
+                                            Administrator (Akses Penuh / Semua Tingkat)
                                         </option>
-                                    @endforeach
-                                </select>
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-zinc-400">
-                                    <i class="bi bi-chevron-down text-xs"></i>
+                                        <option value="petugas-tabungan"
+                                            {{ old('role', $currentRole) === 'petugas-tabungan' ? 'selected' : '' }}>
+                                            Petugas Tabungan (Semua Tingkat)
+                                        </option>
+                                        <option value="staff"
+                                            {{ old('role', $currentRole) === 'staff' ? 'selected' : '' }}>
+                                            Staff / Admin Tingkat (Perlu Pilih Tingkat)
+                                        </option>
+                                    </select>
+                                    <div
+                                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-zinc-400">
+                                        <i class="bi bi-chevron-down text-xs"></i>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <!-- Tingkat Wrapper (Kondisional: Muncul hanya jika Role = staff) -->
+                            <div id="tingkat_wrapper_edit"
+                                class="{{ old('role', $currentRole) === 'staff' ? '' : 'hidden' }}">
+                                <label
+                                    class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">Tingkat
+                                    <span class="text-rose-500">*</span></label>
+                                <div class="relative">
+                                    <select name="tingkat_id" id="tingkat_select_edit"
+                                        class="m3-input-glass w-full text-xs font-bold appearance-none cursor-pointer">
+                                        <option value="" disabled
+                                            {{ !old('tingkat_id', $administrator->tingkat_id) ? 'selected' : '' }}>
+                                            -- Pilih Area Tingkat --
+                                        </option>
+                                        @foreach ($tingkats as $tingkat)
+                                            <option value="{{ $tingkat->id }}"
+                                                {{ old('tingkat_id', $administrator->tingkat_id) == $tingkat->id ? 'selected' : '' }}>
+                                                {{ $tingkat->kode_tingkat }} - {{ $tingkat->nama_tingkat }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div
+                                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-zinc-400">
+                                        <i class="bi bi-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Helper note info when administrator / petugas-tabungan selected -->
+                            <div id="tingkat_info_note_edit"
+                                class="p-2.5 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 {{ old('role', $currentRole) === 'staff' ? 'hidden' : '' }}">
+                                <p
+                                    class="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                                    <i class="bi bi-info-circle-fill text-primary dark:text-primary-dark"></i>
+                                    <span>Peran ini memiliki hak akses global (seluruh tingkat madrasah).</span>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -190,7 +237,8 @@
                             <div class="flex items-center gap-3">
                                 <div
                                     class="relative w-12 h-12 rounded-xl overflow-hidden border border-dashed border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center flex-shrink-0 shadow-2xs">
-                                    <i class="bi bi-pen text-base text-zinc-300 dark:text-zinc-600 absolute z-0" id="ttd-placeholder-icon"
+                                    <i class="bi bi-pen text-base text-zinc-300 dark:text-zinc-600 absolute z-0"
+                                        id="ttd-placeholder-icon"
                                         class="{{ $administrator->tanda_tangan ? 'hidden' : '' }}"></i>
                                     <img id="preview-ttd"
                                         src="{{ $administrator->tanda_tangan ? asset('storage/' . $administrator->tanda_tangan) : '' }}"
@@ -235,10 +283,12 @@
                         <i class="bi bi-shield-lock-fill text-lg"></i>
                     </div>
                     <div>
-                        <h3 class="text-base md:text-lg font-black text-zinc-900 dark:text-white tracking-tight leading-tight">
+                        <h3
+                            class="text-base md:text-lg font-black text-zinc-900 dark:text-white tracking-tight leading-tight">
                             Pengaturan Akun & Akses Login
                         </h3>
-                        <p class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">
+                        <p
+                            class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">
                             Kredensial akses aplikasi sistem
                         </p>
                     </div>
@@ -317,12 +367,10 @@
                         <i class="bi bi-exclamation-triangle-fill text-lg"></i>
                     </div>
                     <div class="flex-1">
-                        <h3
-                            class="text-base md:text-lg font-black text-rose-600 dark:text-rose-400 tracking-tight">
+                        <h3 class="text-base md:text-lg font-black text-rose-600 dark:text-rose-400 tracking-tight">
                             Hapus Data Administrator
                         </h3>
-                        <p
-                            class="text-xs font-medium text-rose-700/80 dark:text-rose-300/70 mt-1 max-w-md mb-3">
+                        <p class="text-xs font-medium text-rose-700/80 dark:text-rose-300/70 mt-1 max-w-md mb-3">
                             Tindakan ini tidak dapat dibatalkan. Semua data terkait ustadz ini (termasuk akun login)
                             akan dihapus permanen dari sistem.
                         </p>
@@ -437,6 +485,31 @@
                 btnDeletePermanen.disabled = !this.checked;
             });
         }
+
+        // 4. Role & Tingkat Visibility Toggle for Edit
+        const roleSelectEdit = document.getElementById('role_select_edit');
+        const tingkatWrapperEdit = document.getElementById('tingkat_wrapper_edit');
+        const tingkatSelectEdit = document.getElementById('tingkat_select_edit');
+        const tingkatInfoNoteEdit = document.getElementById('tingkat_info_note_edit');
+
+        function updateTingkatVisibilityEdit() {
+            if (!roleSelectEdit) return;
+            const role = roleSelectEdit.value;
+            if (role === 'staff') {
+                tingkatWrapperEdit?.classList.remove('hidden');
+                tingkatInfoNoteEdit?.classList.add('hidden');
+            } else {
+                tingkatWrapperEdit?.classList.add('hidden');
+                tingkatInfoNoteEdit?.classList.remove('hidden');
+                if (tingkatSelectEdit) {
+                    tingkatSelectEdit.value = '';
+                }
+            }
+        }
+
+        if (roleSelectEdit) {
+            roleSelectEdit.addEventListener('change', updateTingkatVisibilityEdit);
+            updateTingkatVisibilityEdit();
+        }
     </script>
 </x-app-layout>
-

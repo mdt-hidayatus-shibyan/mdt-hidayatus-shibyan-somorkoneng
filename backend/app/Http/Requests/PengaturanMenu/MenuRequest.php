@@ -17,10 +17,20 @@ class MenuRequest extends FormRequest
         return true;
     }
 
+    public function prepareForValidation()
+    {
+        $this->merge([
+            'name'     => trim($this->name ?? ''),
+            'url'      => trim($this->url ?? ''),
+            'category' => $this->category ? trim(strtoupper($this->category)) : null,
+            'icon'     => $this->icon ? trim($this->icon) : 'bi-circle',
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -32,18 +42,36 @@ class MenuRequest extends FormRequest
             'orders'       => ['nullable', 'integer', 'min:0'],
             'is_active'    => ['nullable', 'boolean'],
             'main_menu_id' => ['nullable', 'exists:menus,id'],
-
-            // Validasi untuk array permissions (Select2 Multiple)
             'permissions'   => ['nullable', 'array'],
-            'permissions.*' => ['string'], // Memastikan setiap ID permission yang dipilih valid di database
+            'permissions.*' => ['string'],
+        ];
+    }
+
+    /**
+     * Custom message validation
+     */
+    public function messages(): array
+    {
+        return [
+            'name.required'        => 'Nama menu wajib diisi.',
+            'name.max'             => 'Nama menu maksimal 100 karakter.',
+            'url.required'         => 'URL / Route menu wajib diisi.',
+            'url.max'              => 'URL / Route maksimal 255 karakter.',
+            'main_menu_id.exists'  => 'Induk menu yang dipilih tidak valid.',
+            'orders.integer'       => 'Nomor urutan harus berupa angka bulat.',
         ];
     }
 
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(response()->json([
-            'message' => 'Data tidak valid',
-            'errors'  => $validator->errors()
-        ], 422));
+        if ($this->expectsJson() || $this->ajax()) {
+            throw new HttpResponseException(response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal, silakan periksa inputan Anda.',
+                'errors'  => $validator->errors()
+            ], 422));
+        }
+
+        parent::failedValidation($validator);
     }
 }

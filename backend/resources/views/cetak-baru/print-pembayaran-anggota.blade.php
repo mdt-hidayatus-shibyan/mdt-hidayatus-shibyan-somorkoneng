@@ -217,7 +217,7 @@
 
     <!-- Keterangan & Catatan Singkat -->
     <div style="font-size: 9px; color: #64748b; font-style: italic; margin-top: -5px;">
-        *Catatan: Berikan paraf / tanggal pembayaran dan nominal pada kolom bulan yang bersangkutan saat santri
+        *Catatan: Berikan paraf / tanggal pembayaran dan nominal pada kolom bulan yang bersangkutan saat murid
         melakukan pelunasan.
     </div>
 

@@ -82,7 +82,7 @@ class Ruangan extends Model
         return $this->hasOne(PengaturanKasRuangan::class);
     }
 
-    // 1 Ruangan mencatat banyak cicilan pembayaran dari santri
+    // 1 Ruangan mencatat banyak cicilan pembayaran dari murid
     public function pembayaranKas()
     {
         return $this->hasMany(PembayaranKasRuangan::class);

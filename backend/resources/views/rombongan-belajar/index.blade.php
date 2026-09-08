@@ -9,7 +9,7 @@
                 Rombongan Belajar
             </h2>
             <p class="text-[13px] font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5 transition-colors duration-300">
-                Kelola data rombongan belajar, pembagian kelas, dan anggota santri.
+                Kelola data rombongan belajar, pembagian kelas, dan anggota murid.
             </p>
         </div>
 

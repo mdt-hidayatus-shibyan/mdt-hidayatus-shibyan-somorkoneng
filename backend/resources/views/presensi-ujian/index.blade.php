@@ -155,6 +155,6 @@
     @else
         <!-- STATE AWAL PANDUAN -->
         <x-empty-state icon="bi-speedometer" title="Dashboard Pemantauan Presensi Ujian"
-            message="Pilih pelaksanaan ujian di atas untuk memantau progres kelengkapan presensi santri dari seluruh ruangan kelas secara real-time." />
+            message="Pilih pelaksanaan ujian di atas untuk memantau progres kelengkapan presensi murid dari seluruh ruangan kelas secara real-time." />
     @endif
 </x-app-layout>

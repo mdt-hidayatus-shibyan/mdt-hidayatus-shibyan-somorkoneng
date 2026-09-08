@@ -9,7 +9,7 @@
                 Data Ujian Madrasah
             </h2>
             <p class="text-[13px] font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5 transition-colors duration-300">
-                Kelola agenda evaluasi dan pelaksanaan ujian santri.
+                Kelola agenda evaluasi dan pelaksanaan ujian murid.
             </p>
         </div>
 

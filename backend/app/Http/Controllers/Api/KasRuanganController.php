@@ -162,7 +162,7 @@ class KasRuanganController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pembayaran kas santri berhasil dicatat.'
+                'message' => 'Pembayaran kas murid berhasil dicatat.'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -459,7 +459,7 @@ class KasRuanganController extends Controller
                 throw new \Exception('Jumlah setoran baru melebihi total uang kas yang ada di tangan Wali Kelas.');
             }
 
-            // Kunci ulang cicilan santri berdasarkan nominal baru
+            // Kunci ulang cicilan murid berdasarkan nominal baru
             $this->kunciCicilan($ruanganId, $request->jumlah_setor);
 
             // Update berkas setoran
@@ -491,7 +491,7 @@ class KasRuanganController extends Controller
         try {
             $setoran = SetoranKasRuangan::findOrFail($id);
 
-            // Buka kembali semua cicilan santri yang pernah dikunci oleh nominal setoran ini
+            // Buka kembali semua cicilan murid yang pernah dikunci oleh nominal setoran ini
             $this->bukaKunciCicilan($setoran->ruangan_id, $setoran->jumlah_setor);
 
             // Hapus berkas setoran
@@ -611,8 +611,8 @@ class KasRuanganController extends Controller
             'nominal_laki' => 'required|integer|min:0',
             'nominal_perempuan' => 'required|integer|min:0',
         ], [
-            'nominal_laki.required' => 'Nominal santri putra wajib diisi.',
-            'nominal_perempuan.required' => 'Nominal santri putri wajib diisi.',
+            'nominal_laki.required' => 'Nominal murid putra wajib diisi.',
+            'nominal_perempuan.required' => 'Nominal murid putri wajib diisi.',
         ]);
 
         if ($validator->fails()) {

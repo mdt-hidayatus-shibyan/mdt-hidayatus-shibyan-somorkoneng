@@ -518,7 +518,7 @@
                         <p
                             class="text-[10px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-0.5">
                             Pindahkan Murid:</p>
-                        <h4 id="teks_nama_santri"
+                        <h4 id="teks_nama_murid"
                             class="text-sm font-black text-zinc-900 dark:text-white tracking-tight leading-tight">
                             Nama Murid</h4>
                     </div>
@@ -763,9 +763,9 @@
             });
 
             // === FUNGSI MODAL MUTASI RUANGAN ===
-            function bukaModalPindah(muridId, namaSantri) {
+            function bukaModalPindah(muridId, namaMurid) {
                 document.getElementById('input_pindah_murid_id').value = muridId;
-                document.getElementById('teks_nama_santri').innerText = namaSantri;
+                document.getElementById('teks_nama_murid').innerText = namaMurid;
                 document.getElementById('modalPindahRuangan').classList.remove('hidden');
             }
 
@@ -799,8 +799,8 @@
             // === FUNGSI KONFIRMASI HAPUS ANGGOTA (SWEETALERT) ===
             function confirmDetach(muridId, namaMurid) {
                 Swal.fire({
-                    title: 'Keluarkan Santri?',
-                    html: `Anda yakin ingin mengeluarkan <b class="text-red-500">${namaMurid}</b> dari ruangan ini?<br><span class="text-xs text-zinc-400 mt-2 block">Santri akan dikembalikan ke daftar antrean kelas kosong.</span>`,
+                    title: 'Keluarkan Murid?',
+                    html: `Anda yakin ingin mengeluarkan <b class="text-red-500">${namaMurid}</b> dari ruangan ini?<br><span class="text-xs text-zinc-400 mt-2 block">Murid akan dikembalikan ke daftar antrean kelas kosong.</span>`,
                     icon: 'warning',
                     showCancelButton: true,
                     buttonsStyling: false,

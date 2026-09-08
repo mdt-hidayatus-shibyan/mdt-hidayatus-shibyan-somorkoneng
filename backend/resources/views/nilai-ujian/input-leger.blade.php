@@ -77,7 +77,7 @@
                 <h3 class="text-base font-black text-rose-700 dark:text-rose-400 tracking-tight">Data Tidak Memenuhi Syarat</h3>
                 <p class="text-xs font-bold text-rose-600/80 dark:text-rose-400/80 mt-1 max-w-md mx-auto">
                     @if ($murids->isEmpty())
-                        Tidak ada data santri aktif di ruangan kelas ini.
+                        Tidak ada data murid aktif di ruangan kelas ini.
                     @elseif ($jadwals->isEmpty())
                         Jadwal mata pelajaran untuk ujian ini belum diatur.
                     @endif
@@ -139,7 +139,7 @@
                                         <!-- Sticky Nama Murid -->
                                         <th
                                             class="px-3 py-3 align-middle text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-wider sticky top-0 left-12 md:left-16 bg-zinc-50/95 dark:bg-zinc-950/95 backdrop-blur-md border-r border-b border-zinc-200/80 dark:border-zinc-800 z-40 w-[180px] min-w-[180px] max-w-[180px] md:w-[260px] md:min-w-[260px] md:max-w-[260px]">
-                                            Nama Santri
+                                            Nama Murid
                                         </th>
 
                                         <!-- Iterasi Header Kolom Mapel -->

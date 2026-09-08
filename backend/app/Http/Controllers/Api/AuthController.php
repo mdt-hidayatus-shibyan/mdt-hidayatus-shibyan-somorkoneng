@@ -126,8 +126,8 @@ class AuthController extends Controller
     }
 
     /**
-     * Login Khusus Aplikasi Santri / Wali Murid (app_murid)
-     * Autentikasi via No. Registrasi / No. KK / NISM Santri
+     * Login Khusus Aplikasi Murid / Wali Murid (app_murid)
+     * Autentikasi via No. Registrasi / No. KK / NISM Murid
      */
     public function loginWali(Request $request)
     {
@@ -154,7 +154,7 @@ class AuthController extends Controller
             ->where('is_active', true)
             ->first();
 
-        // 2. Jika tidak ketemu, cari berdasarkan NISM / NISN / NIK Santri
+        // 2. Jika tidak ketemu, cari berdasarkan NISM / NISN / NIK Murid
         if (!$wali) {
             $murid = \App\Models\Murid::where('nism', $idInput)
                 ->orWhere('nisn', $idInput)
@@ -172,7 +172,7 @@ class AuthController extends Controller
         if (!$wali) {
             return response()->json([
                 'success' => false,
-                'message' => 'Data Wali/Santri tidak ditemukan atau status sedang nonaktif. Pastikan No. KK / No. Registrasi / NISM sudah benar.'
+                'message' => 'Data Wali/Murid tidak ditemukan atau status sedang nonaktif. Pastikan No. KK / No. Registrasi / NISM sudah benar.'
             ], 404);
         }
 

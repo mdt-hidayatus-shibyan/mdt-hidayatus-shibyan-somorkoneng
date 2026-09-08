@@ -23,7 +23,7 @@
                     <i class="bi bi-search text-xs"></i>
                 </div>
                 <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="Cari Nama Santri, NISM, atau Nomor SK..."
+                    placeholder="Cari Nama Murid, NISM, atau Nomor SK..."
                     class="m3-input-glass w-full !pl-9 text-xs font-bold">
             </div>
 
@@ -113,7 +113,7 @@
                             <!-- Informasi Dokumen -->
                             <td class="py-3 px-5 border-r border-zinc-200/60 dark:border-zinc-800/60 align-top">
                                 <p class="font-black text-sm text-zinc-900 dark:text-white mb-0.5 uppercase tracking-tight">
-                                    {{ $data['nama_murid'] ?? ($data['nama_santri'] ?? 'Tidak Diketahui') }}
+                                    {{ $data['nama_murid'] ?? ($data['nama_murid'] ?? 'Tidak Diketahui') }}
                                 </p>
                                 <p class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
                                     Kelas Asal: {{ $data['nama_ruangan'] ?? '-' }} &bull; Keputusan: <span

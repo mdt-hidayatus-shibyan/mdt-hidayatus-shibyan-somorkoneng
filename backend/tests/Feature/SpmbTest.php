@@ -35,9 +35,13 @@ class SpmbTest extends TestCase
         ]);
 
         $this->tingkat = Tingkat::create([
-            'nama_tingkat' => 'TPQ',
-            'kode_tingkat' => 'TPQ',
-            'urutan'       => 1
+            'kode_tingkat'     => 'TPQ',
+            'urutan_tingkat'   => 1,
+            'nama_tingkat'     => 'TAMAN PENDIDIKAN ALQURAN',
+            'kode_mdt_tingkat' => 'RA',
+            'nama_mdt_tingkat' => 'RAUDLATUL ATHFAL',
+            'kode_warna'       => '#10B981',
+            'is_active'        => 1
         ]);
 
         $this->level = Level::create([
@@ -67,7 +71,7 @@ class SpmbTest extends TestCase
     {
         $response = $this->get(route('spmb.form'));
         $response->assertStatus(200);
-        $response->assertSee('Penerimaan Santri Baru');
+        $response->assertSee('Penerimaan Murid Baru');
     }
 
     public function test_pencarian_kk_berfungsi()
@@ -92,35 +96,45 @@ class SpmbTest extends TestCase
 
     public function test_wali_murid_bisa_mendaftar_dan_mendapatkan_nomor_registrasi()
     {
+        $wali = WaliMurid::create([
+            'no_kk'                => '3526110000000099',
+            'kepala_keluarga'      => 'Ayah',
+            'nama_kepala_keluarga' => 'BAPAK TEST MURID',
+            'no_hp'                => '081299998888',
+            'kampung_id'           => $this->kampung->id,
+            'is_active'            => true
+        ]);
+
         $postData = [
             'tahun_pelajaran_id'   => $this->tahun->id,
             'level_id'             => $this->level->id,
+            'wali_murid_id'        => $wali->id,
             'no_kk'                => '3526110000000099',
             'kepala_keluarga'      => 'Ayah',
-            'nama_kepala_keluarga' => 'BAPAK TEST SANTRI',
+            'nama_kepala_keluarga' => 'BAPAK TEST MURID',
             'no_hp'                => '081299998888',
             'kampung_id'           => $this->kampung->id,
-            'nama_lengkap'         => 'SANTRI BARU TEST',
-            'nama_panggilan'       => 'Santri',
+            'nama_lengkap'         => 'MURID BARU TEST',
+            'nama_panggilan'       => 'Murid',
             'jenis_kelamin'        => 'L',
             'nik'                  => '3526110000000088',
             'tempat_lahir'         => 'BANGKALAN',
             'tanggal_lahir'        => '2018-05-10',
             'anak_ke'              => 1,
             'hub_kel'              => 'Anak Kandung',
-            'nama_ayah'            => 'BAPAK TEST SANTRI',
+            'nama_ayah'            => 'BAPAK TEST MURID',
             'status_ayah'          => 'Hidup',
-            'nama_ibu'             => 'IBU TEST SANTRI',
+            'nama_ibu'             => 'IBU TEST MURID',
             'status_ibu'           => 'Hidup',
         ];
 
         $response = $this->post(route('spmb.store'), $postData);
         $this->assertDatabaseHas('pendaftaran_spmbs', [
-            'nama_lengkap' => 'SANTRI BARU TEST',
+            'nama_lengkap' => 'MURID BARU TEST',
             'status_pendaftaran' => 'Menunggu Verifikasi'
         ]);
 
-        $pendaftaran = PendaftaranSpmb::where('nama_lengkap', 'SANTRI BARU TEST')->first();
+        $pendaftaran = PendaftaranSpmb::where('nama_lengkap', 'MURID BARU TEST')->first();
         $response->assertRedirect(route('spmb.bukti', $pendaftaran->nomor_pendaftaran));
 
         $resBukti = $this->get(route('spmb.bukti', $pendaftaran->nomor_pendaftaran));
@@ -134,7 +148,7 @@ class SpmbTest extends TestCase
             'nomor_pendaftaran'  => 'SPMB-2026-0001',
             'tahun_pelajaran_id' => $this->tahun->id,
             'level_id'           => $this->level->id,
-            'nama_lengkap'       => 'CALON SANTRI VERIFIKASI',
+            'nama_lengkap'       => 'CALON MURID VERIFIKASI',
             'jenis_kelamin'      => 'L',
             'hub_kel'            => 'Anak Kandung',
             'status_ayah'        => 'Hidup',
@@ -155,7 +169,7 @@ class SpmbTest extends TestCase
 
         $this->assertDatabaseHas('murids', [
             'nism' => '999901',
-            'nama_lengkap' => 'CALON SANTRI VERIFIKASI',
+            'nama_lengkap' => 'CALON MURID VERIFIKASI',
             'status' => 'Aktif'
         ]);
     }

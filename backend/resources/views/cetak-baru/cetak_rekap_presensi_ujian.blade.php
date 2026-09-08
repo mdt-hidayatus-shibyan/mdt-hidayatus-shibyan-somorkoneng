@@ -190,7 +190,7 @@
             <tr>
                 <th class="w-1">No</th>
                 <th class="w-3">NISM</th>
-                <th style="text-align: left; padding-left: 10px;">Nama Santri</th>
+                <th style="text-align: left; padding-left: 10px;">Nama Murid</th>
 
                 @foreach ($jadwals as $jdw)
                     @php
@@ -258,7 +258,7 @@
             @empty
                 <tr>
                     <td colspan="{{ count($jadwals) + 9 }}" style="padding: 20px; text-align: center; color: #64748b;">
-                        Belum ada santri atau presensi tercatat di kelas ini.
+                        Belum ada murid atau presensi tercatat di kelas ini.
                     </td>
                 </tr>
             @endforelse

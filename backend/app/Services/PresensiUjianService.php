@@ -80,14 +80,14 @@ class PresensiUjianService
     }
 
     /**
-     * Menyimpan data presensi santri dan pengawas secara massal
+     * Menyimpan data presensi murid dan pengawas secara massal
      */
     public function simpanPresensiMassal(array $dataPresensi, $ujianId, $jadwalId, $ruanganId, array $pengawasData = [], $userId = null)
     {
         return DB::transaction(function () use ($dataPresensi, $ujianId, $jadwalId, $ruanganId, $pengawasData, $userId) {
             $jumlahDisimpan = 0;
 
-            // 1. Simpan Presensi Santri
+            // 1. Simpan Presensi Murid
             foreach ($dataPresensi as $muridId => $item) {
                 $status = is_array($item) ? ($item['status'] ?? null) : $item;
                 $catatan = is_array($item) ? ($item['catatan'] ?? null) : null;

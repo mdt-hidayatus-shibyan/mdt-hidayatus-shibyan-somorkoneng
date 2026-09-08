@@ -17,7 +17,7 @@
                     Data Murid Yatim <span class="text-primary dark:text-primary-dark font-black">({{ $tahunAktif->nama_hijriyah ?? 'Semua Tahun' }})</span>
                 </h2>
                 <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-0.5 uppercase tracking-wider">
-                    Santri aktif dengan status ayah meninggal & usia di bawah 16 tahun
+                    Murid aktif dengan status ayah meninggal & usia di bawah 16 tahun
                 </p>
             </div>
         </div>

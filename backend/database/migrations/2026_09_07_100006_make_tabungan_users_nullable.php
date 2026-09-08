@@ -8,9 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('pengajuan_penarikan_tabungans', function (Blueprint $table) {
-            $table->unsignedBigInteger('diajukan_oleh')->nullable()->change();
-        });
+        if (Schema::hasTable('pengajuan_penarikan_tabungans')) {
+            Schema::table('pengajuan_penarikan_tabungans', function (Blueprint $table) {
+                $table->unsignedBigInteger('diajukan_oleh')->nullable()->change();
+            });
+        }
 
         Schema::table('transaksi_tabungans', function (Blueprint $table) {
             $table->unsignedBigInteger('petugas_id')->nullable()->change();
@@ -19,9 +21,11 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('pengajuan_penarikan_tabungans', function (Blueprint $table) {
-            $table->unsignedBigInteger('diajukan_oleh')->nullable(false)->change();
-        });
+        if (Schema::hasTable('pengajuan_penarikan_tabungans')) {
+            Schema::table('pengajuan_penarikan_tabungans', function (Blueprint $table) {
+                $table->unsignedBigInteger('diajukan_oleh')->nullable(false)->change();
+            });
+        }
 
         Schema::table('transaksi_tabungans', function (Blueprint $table) {
             $table->unsignedBigInteger('petugas_id')->nullable(false)->change();

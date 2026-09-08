@@ -79,7 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/ujian/simpan-nilai', [NilaiUjianController::class, 'simpanNilai']);
     Route::get('/ujian/leger', [NilaiUjianController::class, 'getLeger']);
 
-    // 2.7 Presensi Ujian Santri & Pengawas
+    // 2.7 Presensi Ujian Murid & Pengawas
     Route::get('/presensi-ujian/data', [PresensiUjianController::class, 'getData']);
     Route::post('/presensi-ujian/simpan', [PresensiUjianController::class, 'simpan']);
 
@@ -126,7 +126,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bantuan/riwayat', [\App\Http\Controllers\Api\BantuanController::class, 'getRiwayat']);
 
     // =========================================================================
-    // 3. APLIKASI SANTRI & WALI MURID (app_murid)
+    // 3. APLIKASI MURID & WALI MURID (app_murid)
     // =========================================================================
     Route::prefix('wali')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getDashboard']);

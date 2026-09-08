@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('kode_transaksi', 50)->unique();
             $table->foreignId('tabungan_id')->constrained('tabungans')->cascadeOnDelete();
-            $table->foreignId('pengajuan_id')->nullable()->constrained('pengajuan_penarikan_tabungans')->nullOnDelete();
             $table->enum('jenis_transaksi', ['Setor', 'Tarik', 'Potongan', 'Pembagian_Akhir', 'Koreksi']);
 
             $table->decimal('nominal_kotor', 14, 2);

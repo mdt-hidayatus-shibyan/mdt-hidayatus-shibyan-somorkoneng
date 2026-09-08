@@ -243,7 +243,7 @@ class NilaiUjianController extends Controller
             DB::commit();
 
             $pesan = $isPublished
-                ? "Berhasil mempublikasikan $jumlahDisimpan nilai santri ke lembar rapor resmi!"
+                ? "Berhasil mempublikasikan $jumlahDisimpan nilai murid ke lembar rapor resmi!"
                 : "Berhasil menyimpan $jumlahDisimpan data nilai ke dalam lembaran Draft sementara.";
 
             return redirect()->back()->with('success', $pesan);

@@ -89,7 +89,7 @@
 
             <!-- HEADER PRINT -->
             <div class="text-center mb-4 pt-8 hidden print:block">
-                <h2 class="text-2xl font-black uppercase tracking-widest text-black">Buku Leger Nilai Santri</h2>
+                <h2 class="text-2xl font-black uppercase tracking-widest text-black">Buku Leger Nilai Murid</h2>
                 <p class="text-xs font-bold text-zinc-700 mt-1">Ruangan:
                     {{ $ruanganTerpilih->nama_ruangan ?? '-' }}
                     | {{ $ujianTerpilih->nama_ujian ?? '-' }}</p>
@@ -127,7 +127,7 @@
                                 <!-- Kolom Nama -->
                                 <th
                                     class="py-3 px-3.5 border-r border-b border-zinc-200/80 dark:border-zinc-800 sticky left-12 md:left-16 z-40 bg-zinc-50/95 dark:bg-zinc-950/95 backdrop-blur-md w-[180px] min-w-[180px] max-w-[180px] md:w-[260px] md:min-w-[260px] md:max-w-[260px] align-middle">
-                                    Nama Santri
+                                    Nama Murid
                                 </th>
 
                                 <!-- Kolom Dinamis Mapel -->
@@ -239,7 +239,7 @@
     @else
         <!-- STATE AWAL PANDUAN PENGGUNAAN -->
         <x-empty-state icon="bi-calculator" title="Kalkulator Leger & Ranking"
-            message="Pilih Ruangan Kelas dan Pelaksanaan Ujian pada filter di atas untuk menghasilkan matriks nilai (leger) beserta peringkat santri secara otomatis." />
+            message="Pilih Ruangan Kelas dan Pelaksanaan Ujian pada filter di atas untuk menghasilkan matriks nilai (leger) beserta peringkat murid secara otomatis." />
     @endif
 
 </x-app-layout>

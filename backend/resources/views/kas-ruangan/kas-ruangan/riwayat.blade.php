@@ -114,7 +114,7 @@
                 </div>
             </div>
         @empty
-            <x-empty-state icon="bi-receipt" title="Belum Ada Transaksi" message="Catatan pembayaran kas dari santri ini akan muncul di sini." />
+            <x-empty-state icon="bi-receipt" title="Belum Ada Transaksi" message="Catatan pembayaran kas dari murid ini akan muncul di sini." />
         @endforelse
     </div>
 

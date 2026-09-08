@@ -34,7 +34,7 @@ class PetugasCetakController extends Controller
                     $tipe = $arsip->tipe_dokumen;
 
                     // PENGECUALIAN KHUSUS RAPOR: Pisahkan antara Semester 1 dan Semester 2
-                    if ($tipe === 'rapor_santri' || $tipe === 'rapor_murid') {
+                    if ($tipe === 'rapor_murid' || $tipe === 'rapor_murid') {
                         // Cek string semester (misal: "Semester 1 (Ganjil)")
                         $semester = strtolower($data['semester'] ?? $data['nama_semester'] ?? '');
 

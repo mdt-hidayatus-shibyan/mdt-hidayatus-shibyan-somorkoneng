@@ -69,7 +69,7 @@ class NilaiUjianService
     }
 
     /**
-     * Evaluasi syarat administrasi (tunggakan & dispensasi) untuk santri
+     * Evaluasi syarat administrasi (tunggakan & dispensasi) untuk murid
      */
     public function evaluasiSyaratAdmin($ujianTerpilih, $ruanganTerpilih, $murids)
     {

@@ -35,7 +35,7 @@ class ArsipIjazahController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('snapshot_data->nama_murid', 'LIKE', "%{$search}%")
-                    ->orWhere('snapshot_data->nama_santri', 'LIKE', "%{$search}%") // Berjaga-jaga jika key-nya nama_santri
+                    ->orWhere('snapshot_data->nama_murid', 'LIKE', "%{$search}%") // Berjaga-jaga jika key-nya nama_murid
                     ->orWhere('snapshot_data->nomor_dokumen', 'LIKE', "%{$search}%")
                     ->orWhere('snapshot_data->nism', 'LIKE', "%{$search}%");
             });

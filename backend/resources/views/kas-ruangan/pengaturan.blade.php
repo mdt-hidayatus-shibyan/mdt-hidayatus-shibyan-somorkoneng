@@ -9,7 +9,7 @@
                 Pengaturan Kas Ruangan
             </h2>
             <p class="text-xs md:text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Konfigurasi besaran iuran kas per santri (Laki-laki & Perempuan) per ruangan.
+                Konfigurasi besaran iuran kas per murid (Laki-laki & Perempuan) per ruangan.
             </p>
         </div>
 
@@ -98,7 +98,7 @@
                         <div>
                             <label
                                 class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">
-                                Nominal Santri Putra (L)
+                                Nominal Murid Putra (L)
                             </label>
                             <div class="relative flex items-center group/input">
                                 <div
@@ -115,7 +115,7 @@
                         <div>
                             <label
                                 class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">
-                                Nominal Santri Putri (P)
+                                Nominal Murid Putri (P)
                             </label>
                             <div class="relative flex items-center group/input">
                                 <div

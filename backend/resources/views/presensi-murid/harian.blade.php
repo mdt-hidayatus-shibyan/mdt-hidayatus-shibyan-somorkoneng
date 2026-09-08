@@ -99,7 +99,7 @@
                         Tanggal ini bertepatan dengan {{ $namaUjian ?? 'Ujian Madrasah' }}
                     </h4>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                        Presensi KBM reguler dialihkan ke Presensi Ujian santri dan pengawas ruangan.
+                        Presensi KBM reguler dialihkan ke Presensi Ujian murid dan pengawas ruangan.
                     </p>
                 </div>
             </div>
@@ -148,7 +148,7 @@
                 </div>
                 <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 mt-3 max-w-md mx-auto">
                     Presensi KBM reguler dinonaktifkan pada tanggal pelaksanaan ujian. Silakan gunakan modul Presensi
-                    Ujian untuk mendata kehadiran santri.
+                    Ujian untuk mendata kehadiran murid.
                 </p>
                 <div class="mt-6">
                     <a href="{{ route('presensi-ujian.input', ['ruangan_id' => $ruangan_id, 'ujian_id' => $ujianId]) }}"
@@ -316,7 +316,7 @@
                         <div
                             class="px-5 py-3.5 bg-zinc-50/80 dark:bg-zinc-950/70 border-t border-zinc-200/80 dark:border-zinc-800 flex flex-col sm:flex-row justify-between sm:items-center gap-3 z-20 sticky bottom-0">
                             <div class="text-xs font-bold text-zinc-500 dark:text-zinc-400">
-                                Total: {{ $murids->count() }} Santri
+                                Total: {{ $murids->count() }} Murid
                             </div>
                             <button type="submit" class="m3-btn-primary w-full md:w-auto h-10 px-6 text-xs group/btn">
                                 <i class="bi bi-check2-circle text-sm mr-1"></i>

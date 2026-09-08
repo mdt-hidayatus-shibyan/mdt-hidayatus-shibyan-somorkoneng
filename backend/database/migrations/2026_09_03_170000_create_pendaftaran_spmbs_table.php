@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('level_id')->constrained('levels')->cascadeOnDelete();
             $table->foreignId('wali_murid_id')->nullable()->constrained('wali_murids')->nullOnDelete();
 
-            // Data Pribadi Calon Santri
+            // Data Pribadi Calon Murid
             $table->string('nama_lengkap', 100);
             $table->string('nama_panggilan', 50)->nullable();
             $table->enum('jenis_kelamin', ['L', 'P']);

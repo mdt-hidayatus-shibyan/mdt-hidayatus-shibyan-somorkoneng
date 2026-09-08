@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Tabel Presensi Santri dalam Ujian
+        // 1. Tabel Presensi Murid dalam Ujian
         Schema::create('presensi_ujians', function (Blueprint $table) {
             $table->id();
             $table->foreignId('ujian_id')->constrained('ujians')->cascadeOnDelete();
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignId('diinput_oleh')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            // Cegah duplikasi presensi santri pada jadwal dan ruangan yang sama
+            // Cegah duplikasi presensi murid pada jadwal dan ruangan yang sama
             $table->unique(['jadwal_ujian_id', 'ruangan_id', 'murid_id'], 'presensi_ujian_santri_unique');
         });
 

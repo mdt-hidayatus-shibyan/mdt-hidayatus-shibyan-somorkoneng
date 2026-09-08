@@ -12,18 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tagihan_murids', function (Blueprint $table) {
-            $table->foreignId('bulan_hijriyah_id')
-                ->nullable()
-                ->after('pengaturan_tagihan_id')
-                ->constrained('bulan_hijriyahs')
-                ->nullOnDelete(); // Jika bulan dihapus, tagihan tidak hilang, tapi status bulannya jadi NULL
+            if (!Schema::hasColumn('tagihan_murids', 'bulan_hijriyah_id')) {
+                $table->foreignId('bulan_hijriyah_id')
+                    ->nullable()
+                    ->after('pengaturan_tagihan_id')
+                    ->constrained('bulan_hijriyahs')
+                    ->nullOnDelete();
+            }
 
-            // Tambahkan relasi ke semester (Untuk Uang Ujian / Buku / dll)
-            $table->foreignId('semester_id')
-                ->nullable()
-                ->after('bulan_hijriyah_id')
-                ->constrained('semesters')
-                ->nullOnDelete();
+            if (!Schema::hasColumn('tagihan_murids', 'semester_id')) {
+                $table->foreignId('semester_id')
+                    ->nullable()
+                    ->after('bulan_hijriyah_id')
+                    ->constrained('semesters')
+                    ->nullOnDelete();
+            }
         });
     }
 

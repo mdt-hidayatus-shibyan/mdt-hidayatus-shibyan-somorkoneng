@@ -11,34 +11,21 @@
                 Scan barcode buku fisik atau ketik 3 angka nomor rekening untuk pencatatan setoran cepat.
             </p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
             <x-button :href="route('tabungan.rekening.index')" variant="secondary" size="sm" icon="bi-journal-bookmark-fill">
                 Master Rekening
             </x-button>
+            <a href="{{ route('tabungan.tarik.index') }}"
+                class="inline-flex items-center justify-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-bold rounded-xl md:rounded-2xl min-h-[40px] px-3.5 py-2 text-xs shadow-2xs active:scale-95 transition-all">
+                <i class="bi bi-arrow-up-circle-fill text-sm"></i>
+                <span>Tarik Tunai</span>
+            </a>
             <x-button :href="route('tabungan.rekening.create')" variant="secondary" size="sm" icon="bi-plus-circle">
                 Buka Rekening
             </x-button>
         </div>
     </div>
 
-
-
-    <!-- Alert Success -->
-    @if (session('success'))
-        <div
-            class="mb-6 p-4 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold space-y-1 relative z-10 flex items-start gap-3 shadow-2xs">
-            <div
-                class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base shrink-0 font-black border border-emerald-500/30">
-                <i class="bi bi-check-circle-fill"></i>
-            </div>
-            <div class="flex-1">
-                <div class="font-black text-sm text-emerald-700 dark:text-emerald-300">Berhasil</div>
-                <p class="text-xs font-semibold text-emerald-700/90 dark:text-emerald-300/90 mt-0.5">
-                    {{ session('success') }}
-                </p>
-            </div>
-        </div>
-    @endif
 
     <!-- Alert Error -->
     @if (session('error'))
@@ -78,7 +65,7 @@
         <!-- ========================================== -->
         <!-- KOLOM KIRI: FORMULIR SETOR TUNAI           -->
         <!-- ========================================== -->
-        <div class="lg:col-span-7 space-y-6">
+        <div class="lg:col-span-5 space-y-6">
             <form action="{{ route('tabungan.setor') }}" method="POST"
                 class="m3-glass-card p-6 sm:p-7 rounded-3xl space-y-6 shadow-2xs relative z-10">
                 @csrf
@@ -127,7 +114,7 @@
                             <div
                                 class="h-12 px-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex flex-col justify-center items-center shrink-0">
                                 <span class="text-[9px] font-black uppercase text-zinc-400 leading-none">Prefix
-                                    Tahun</span>
+                                    Seri</span>
                                 <span
                                     class="text-base font-mono font-black text-zinc-800 dark:text-zinc-200 tracking-wider"
                                     x-text="prefix"></span>
@@ -150,8 +137,8 @@
                             </div>
                         </div>
                         <p class="text-[11px] text-zinc-500 dark:text-zinc-400">
-                            *Cukup ketik nomor urut buku (1 s/d 500), sistem otomatis melengkapi prefix tahun <strong
-                                class="text-emerald-600 dark:text-emerald-400" x-text="prefix"></strong>.
+                            *Cukup ketik nomor urut buku (1 s/d 500), sistem otomatis melengkapi prefix nomor seri
+                            <strong class="text-emerald-600 dark:text-emerald-400" x-text="prefix"></strong>.
                         </p>
                     </div>
 
@@ -282,22 +269,7 @@
                         </template>
                     </div>
 
-                    <!-- Quick Nominal Buttons -->
-                    <div class="space-y-1.5">
-                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 block">Pilihan
-                            Nominal Cepat:</span>
-                        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                            @php
-                                $quickNominals = [5000, 10000, 20000, 50000, 100000, 200000];
-                            @endphp
-                            @foreach ($quickNominals as $qNom)
-                                <button type="button" @click="setNominal({{ $qNom }})"
-                                    class="px-2.5 py-2 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-800/40 hover:bg-emerald-50 hover:border-emerald-300 dark:hover:bg-emerald-950/30 text-xs font-mono font-bold text-zinc-800 dark:text-zinc-200 transition-all text-center cursor-pointer">
-                                    {{ number_format($qNom / 1000, 0) }}k
-                                </button>
-                            @endforeach
-                        </div>
-                    </div>
+
                 </div>
 
                 <!-- ========================================== -->
@@ -343,7 +315,7 @@
         <!-- ========================================== -->
         <!-- KOLOM KANAN: RIWAYAT SETORAN TERKINI       -->
         <!-- ========================================== -->
-        <div class="lg:col-span-5 space-y-4">
+        <div class="lg:col-span-7 space-y-4">
             <div class="m3-glass-card p-5 sm:p-6 rounded-3xl space-y-4 shadow-2xs">
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-200/80 dark:border-zinc-800">
                     <div class="flex items-center gap-2.5">

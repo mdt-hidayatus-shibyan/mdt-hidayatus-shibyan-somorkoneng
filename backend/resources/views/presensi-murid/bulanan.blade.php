@@ -183,7 +183,7 @@
                                     </th>
                                     <th
                                         class="p-2.5 text-[11px] font-black text-zinc-600 dark:text-zinc-400 uppercase tracking-wider sticky top-0 left-12 bg-zinc-100 dark:bg-zinc-900 border-r border-b border-zinc-200 dark:border-zinc-800 w-56 md:w-64 shadow-2xs z-30">
-                                        Nama Santri
+                                        Nama Murid
                                     </th>
 
                                     <!-- Iterasi Tanggal -->

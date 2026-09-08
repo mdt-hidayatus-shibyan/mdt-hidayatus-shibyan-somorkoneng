@@ -127,7 +127,7 @@ class AkademikController extends Controller
     }
 
     /**
-     * Ambil Master Referensi Pelanggaran Santri
+     * Ambil Master Referensi Pelanggaran Murid
      */
     public function getReferensiPelanggaran(Request $request)
     {
