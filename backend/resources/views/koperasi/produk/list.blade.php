@@ -1,4 +1,4 @@
-﻿<!-- TABEL DATA PRODUK -->
+<!-- TABEL DATA PRODUK -->
 <div class="overflow-x-auto custom-scrollbar">
     <table class="m3-table w-full">
         <thead>
@@ -17,7 +17,17 @@
             @forelse ($produks as $p)
                 <tr>
                     <td class="font-mono font-bold text-zinc-900 dark:text-white text-xs">
-                        {{ $p->kode_produk }}
+                        <div class="flex items-center gap-1.5">
+                            <span
+                                class="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
+                                {{ $p->kode_produk }}
+                            </span>
+                            <a href="{{ route('koperasi.produk.barcode-single', $p->id) }}"
+                                class="action-modal text-purple-600 hover:text-purple-700 text-xs"
+                                title="Cetak Barcode Stiker">
+                                <i class="bi bi-upc-scan"></i>
+                            </a>
+                        </div>
                     </td>
                     <td>
                         <div class="flex items-center gap-3">
@@ -63,6 +73,11 @@
                     </td>
                     <td class="text-center">
                         <div class="inline-flex items-center gap-1.5">
+                            <a href="{{ route('koperasi.produk.barcode-single', $p->id) }}"
+                                class="action-modal w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-600 hover:text-white flex items-center justify-center transition-all border border-purple-500/20 shadow-2xs"
+                                title="Cetak Barcode SKU">
+                                <i class="bi bi-upc-scan text-xs"></i>
+                            </a>
                             <a href="{{ route('koperasi.produk.edit', $p->id) }}"
                                 class="action-modal w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-primary hover:text-white flex items-center justify-center transition-all border border-zinc-200/60 dark:border-zinc-700/60 shadow-2xs"
                                 title="Edit Produk">

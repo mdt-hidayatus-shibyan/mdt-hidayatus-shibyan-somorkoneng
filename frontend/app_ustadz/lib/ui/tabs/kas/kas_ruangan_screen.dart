@@ -22,6 +22,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
   String _filterStatus = 'Semua';
   String _searchQuery = '';
   int? _selectedRuanganId;
+  int _riwayatTabType = 0;
 
   @override
   void initState() {
@@ -912,7 +913,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
   }
 
   // =========================================================================
-  // 4. MODAL SETOR KAS KE BENDAHARA MADRASAH
+  // 4. MODAL SETOR KAS KE TABUNGAN MADRASAH
   // =========================================================================
   void _openSetorSheet() {
     HapticHelper.light();
@@ -925,7 +926,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Tidak ada uang kas fisik di tangan Wali untuk disetorkan.',
+            'Tidak ada uang kas fisik di tangan Wali untuk diajukan setor.',
           ),
           backgroundColor: AppColors.amberAccent,
         ),
@@ -1006,7 +1007,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Setor Kas ke Bendahara',
+                              'Setor ke Tabungan Madrasah',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -1028,7 +1029,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                   ),
                   const SizedBox(height: 14),
 
-                  // Info Box Sisa Kas di Tangan Wali
+                  // Info Tabungan Tujuan & Sisa Fisik
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
@@ -1041,34 +1042,101 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                         color: AppColors.primaryLight.withValues(alpha: 0.3),
                       ),
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.info_outline_rounded,
-                          color: AppColors.primaryLight,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.info_outline_rounded,
+                              color: AppColors.primaryLight,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            const Expanded(
+                              child: Text(
                                 'Uang Fisik Kas di Tangan Wali:',
                                 style: TextStyle(
                                   fontSize: 11,
+                                  fontWeight: FontWeight.w600,
                                   color: AppColors.primaryLight,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              _formatRupiah(sisaDiWali),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.primaryLight,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (ringkasan.tabungan != null) ...[
+                          const SizedBox(height: 6),
+                          const Divider(height: 1),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Tujuan: Rek. ${ringkasan.tabungan!.nomorRekening}',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.black54,
                                 ),
                               ),
                               Text(
-                                _formatRupiah(sisaDiWali),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.primaryLight,
+                                'Saldo: ${_formatRupiah(ringkasan.tabungan!.saldo)}',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? AppColors.primaryDark
+                                      : AppColors.primaryLight,
                                 ),
                               ),
                             ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Catatan Alur Verifikasi
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF2C2411)
+                          : const Color(0xFFFFFBEB),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppColors.amberAccent.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.hourglass_empty_rounded,
+                          size: 16,
+                          color: AppColors.amberAccent,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Pengajuan setoran akan berstatus "Menunggu Verifikasi" hingga fisik uang diterima & disetujui Admin/Petugas Tabungan di Web Backend.',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: isDark
+                                  ? const Color(0xFFFDE68A)
+                                  : const Color(0xFF92400E),
+                            ),
                           ),
                         ),
                       ],
@@ -1164,7 +1232,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                     DropdownButtonFormField<int>(
                       initialValue: selectedPenerimaId,
                       decoration: const InputDecoration(
-                        labelText: 'Penerima (Bendahara / Staf)',
+                        labelText: 'Petugas / Penerima Verifikasi',
                         prefixIcon: Icon(Icons.person_outline_rounded),
                       ),
                       items: kas.penerimaList.map((p) {
@@ -1236,8 +1304,8 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                                 SnackBar(
                                   content: Text(
                                     success
-                                        ? 'Alhamdulillah, setoran kas ${_formatRupiah(jumlah)} berhasil diserahkan ke Bendahara!'
-                                        : 'Gagal mencatat setoran kas.',
+                                        ? 'Alhamdulillah, pengajuan setoran kas ${_formatRupiah(jumlah)} berhasil diajukan! Menunggu verifikasi petugas.'
+                                        : 'Gagal mengajukan setoran kas.',
                                   ),
                                   backgroundColor: success
                                       ? AppColors.primaryLight
@@ -1255,7 +1323,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Setorkan ke Brankas Madrasah'),
+                        : const Text('Ajukan Setoran ke Tabungan'),
                   ),
                 ],
               ),
@@ -1267,7 +1335,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
   }
 
   // =========================================================================
-  // 5. MODAL EDIT SETORAN KE BENDAHARA
+  // 5. MODAL EDIT SETORAN KE TABUNGAN
   // =========================================================================
   void _openEditSetoranSheet(SetoranKasItem setoran) {
     HapticHelper.light();
@@ -1340,7 +1408,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                       const SizedBox(width: 10),
                       const Expanded(
                         child: Text(
-                          'Edit Setoran ke Bendahara',
+                          'Edit Pengajuan Setoran Kas',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -1396,7 +1464,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                       initialValue:
                           selectedPenerimaId ?? kas.penerimaList.first.id,
                       decoration: const InputDecoration(
-                        labelText: 'Penerima (Bendahara / Staf)',
+                        labelText: 'Petugas / Penerima Verifikasi',
                         prefixIcon: Icon(Icons.person_outline_rounded),
                       ),
                       items: kas.penerimaList.map((p) {
@@ -1449,7 +1517,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                                 SnackBar(
                                   content: Text(
                                     success
-                                        ? 'Data setoran kas berhasil diperbarui menjadi ${_formatRupiah(jumlah)}!'
+                                        ? 'Pengajuan setoran kas berhasil diperbarui menjadi ${_formatRupiah(jumlah)}!'
                                         : 'Gagal memperbarui setoran kas.',
                                   ),
                                   backgroundColor: success
@@ -1468,7 +1536,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Simpan Perubahan'),
+                        : const Text('Simpan Perubahan Pengajuan'),
                   ),
                 ],
               ),
@@ -1590,7 +1658,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
               SegmentedTabItem(
                 activeIcon: Icons.account_balance_rounded,
                 inactiveIcon: Icons.account_balance_outlined,
-                label: 'Setor Bendahara',
+                label: 'Setor ke Tabungan',
                 activeColor: AppColors.skyBlueAccent,
               ),
             ],
@@ -1706,6 +1774,74 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                       ),
                     ],
                   ),
+
+                  // Tabungan Kas Ruangan Account Chip
+                  if (kas.ringkasan?.tabungan != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF0F2313)
+                            : const Color(0xFFE8F5E9),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF1E3A20)
+                              : const Color(0xFFC8E6C9),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.account_balance_rounded,
+                            size: 16,
+                            color: isDark
+                                ? AppColors.primaryDark
+                                : AppColors.primaryLight,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Rek. Tabungan: ${kas.ringkasan!.tabungan!.nomorRekening} (Saldo: ${_formatRupiah(kas.ringkasan!.tabungan!.saldo)})',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isDark
+                                    ? AppColors.primaryDark
+                                    : AppColors.primaryLight,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.hadirTextLight.withValues(
+                                alpha: 0.15,
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              kas.ringkasan!.tabungan!.status,
+                              style: const TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.hadirTextLight,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -1723,7 +1859,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                             : AppColors.outlineLight,
                       ),
                       _buildSummaryItem(
-                        'Disetor ke Bendahara',
+                        'Di Tabungan',
                         _formatRupiah(kas.ringkasan!.totalSudahDisetor),
                         AppColors.skyBlueAccent,
                         isDark,
@@ -1739,9 +1875,27 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                             : AppColors.outlineLight,
                       ),
                       _buildSummaryItem(
+                        'Menunggu Verif',
+                        _formatRupiah(kas.ringkasan!.totalMenungguVerifikasi),
+                        AppColors.amberAccent,
+                        isDark,
+                        onTap: () {
+                          _tabController.animateTo(1);
+                        },
+                      ),
+                      Container(
+                        height: 36,
+                        width: 1,
+                        color: isDark
+                            ? AppColors.outlineDark
+                            : AppColors.outlineLight,
+                      ),
+                      _buildSummaryItem(
                         'Di Tangan Wali',
                         _formatRupiah(kas.ringkasan!.sisaDiTanganWali),
-                        AppColors.amberAccent,
+                        kas.ringkasan!.sisaDiTanganWali > 0
+                            ? AppColors.roseDanger
+                            : Colors.grey,
                         isDark,
                         onTap: _openSetorSheet,
                       ),
@@ -1989,12 +2143,13 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
   }
 
   // =========================================================================
-  // TAB VIEW 2: SETORAN KE BENDAHARA MADRASAH
+  // TAB VIEW 2: SETORAN KE TABUNGAN MADRASAH
   // =========================================================================
   Widget _buildSetorTabView(bool isDark, KasProvider kas) {
     final riwayat = kas.riwayatSetoran;
     final ringkasan = kas.ringkasan;
     final sisaDiWali = ringkasan?.sisaDiTanganWali ?? 0;
+    final tabungan = ringkasan?.tabungan;
 
     return RefreshIndicator(
       onRefresh: () async => _loadData(),
@@ -2031,7 +2186,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Brankas Setoran Kas',
+                              'Tabungan Kas Ruangan',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -2050,14 +2205,158 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                         ),
                       ],
                     ),
+                    if (tabungan != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF0F2313)
+                              : const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          tabungan.status,
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                            color: isDark
+                                ? AppColors.primaryDark
+                                : AppColors.primaryLight,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
+
+                // Info Rekening Tabungan Kas Ruangan
+                if (tabungan != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isDark
+                            ? const [Color(0xFF1B381E), Color(0xFF0F2313)]
+                            : const [AppColors.primaryLight, Color(0xFF1B6A35)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'SALDO TABUNGAN KAS',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _formatRupiah(tabungan.saldo),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text(
+                              'No. Rekening',
+                              style: TextStyle(
+                                color: Colors.white60,
+                                fontSize: 9.5,
+                              ),
+                            ),
+                            Text(
+                              tabungan.nomorRekening,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (tabungan.totalTarik > 0) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.skyBlueAccent.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppColors.skyBlueAccent.withValues(
+                            alpha: 0.25,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.info_outline_rounded,
+                            size: 14,
+                            color: AppColors.skyBlueAccent,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Penarikan kas dari tabungan (${_formatRupiah(tabungan.totalTarik)}) telah dikembalikan ke saldo fisik di tangan Wali.',
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                color: AppColors.skyBlueAccent,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     _buildSummaryItem(
                       'Uang di Tangan Wali',
                       _formatRupiah(sisaDiWali),
+                      sisaDiWali > 0
+                          ? AppColors.roseDanger
+                          : AppColors.primaryLight,
+                      isDark,
+                    ),
+                    Container(
+                      height: 36,
+                      width: 1,
+                      color: isDark
+                          ? AppColors.outlineDark
+                          : AppColors.outlineLight,
+                    ),
+                    _buildSummaryItem(
+                      'Menunggu Verif',
+                      _formatRupiah(riwayat?.totalMenungguVerifikasi ?? 0),
                       AppColors.amberAccent,
                       isDark,
                     ),
@@ -2069,7 +2368,7 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                           : AppColors.outlineLight,
                     ),
                     _buildSummaryItem(
-                      'Total Masuk Brankas',
+                      'Masuk Tabungan',
                       _formatRupiah(riwayat?.totalDisetor ?? 0),
                       AppColors.primaryLight,
                       isDark,
@@ -2086,8 +2385,8 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
                     icon: const Icon(Icons.payments_rounded, size: 18),
                     label: Text(
                       sisaDiWali > 0
-                          ? 'Setor Kas ke Bendahara (${_formatRupiah(sisaDiWali)})'
-                          : 'Tidak Ada Kas Fisik yang Perlu Disetor',
+                          ? 'Ajukan Setor ke Tabungan (${_formatRupiah(sisaDiWali)})'
+                          : 'Semua Uang Kas Sudah Masuk / Diajukan',
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -2105,154 +2404,549 @@ class _KasRuanganScreenState extends State<KasRuanganScreen>
           ),
           const SizedBox(height: 18),
 
-          // Judul Riwayat
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Riwayat Tanda Terima Setoran',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-              if (riwayat != null)
-                Text(
-                  '${riwayat.list.length} Transaksi',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isDark
-                        ? const Color(0xFF8D9387)
-                        : const Color(0xFF73796E),
+          // Segmented Switcher untuk Riwayat Setoran vs Penarikan
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticHelper.selection();
+                      setState(() => _riwayatTabType = 0);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _riwayatTabType == 0
+                            ? (isDark ? const Color(0xFF334155) : Colors.white)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(9),
+                        boxShadow: _riwayatTabType == 0
+                            ? [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.arrow_downward_rounded,
+                            size: 15,
+                            color: _riwayatTabType == 0
+                                ? AppColors.skyBlueAccent
+                                : (isDark
+                                      ? const Color(0xFF8D9387)
+                                      : const Color(0xFF73796E)),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Setoran Kas (${riwayat?.list.length ?? 0})',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: _riwayatTabType == 0
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: _riwayatTabType == 0
+                                  ? (isDark
+                                        ? Colors.white
+                                        : const Color(0xFF1E293B))
+                                  : (isDark
+                                        ? const Color(0xFF8D9387)
+                                        : const Color(0xFF73796E)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-            ],
+                const SizedBox(width: 4),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticHelper.selection();
+                      setState(() => _riwayatTabType = 1);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _riwayatTabType == 1
+                            ? (isDark ? const Color(0xFF334155) : Colors.white)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(9),
+                        boxShadow: _riwayatTabType == 1
+                            ? [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.arrow_upward_rounded,
+                            size: 15,
+                            color: _riwayatTabType == 1
+                                ? AppColors.amberAccent
+                                : (isDark
+                                      ? const Color(0xFF8D9387)
+                                      : const Color(0xFF73796E)),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Penarikan Kas (${riwayat?.penarikanList.length ?? 0})',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: _riwayatTabType == 1
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: _riwayatTabType == 1
+                                  ? (isDark
+                                        ? Colors.white
+                                        : const Color(0xFF1E293B))
+                                  : (isDark
+                                        ? const Color(0xFF8D9387)
+                                        : const Color(0xFF73796E)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
-          // Daftar Riwayat Setoran
-          if (kas.isLoading)
-            const ShimmerLoadingList(count: 3, height: 90)
-          else if (riwayat == null || riwayat.list.isEmpty)
-            const GlassCard(
-              padding: EdgeInsets.all(24),
-              child: Center(
-                child: Text('Belum ada riwayat setoran ke bendahara.'),
-              ),
-            )
-          else
-            ...riwayat.list.map((s) {
-              return GlassCard(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          // Tampilan Konten sesuai Tab: Setoran (0) vs Penarikan (1)
+          if (_riwayatTabType == 0) ...[
+            // Daftar Riwayat Setoran
+            if (kas.isLoading)
+              const ShimmerLoadingList(count: 3, height: 90)
+            else if (riwayat == null || riwayat.list.isEmpty)
+              const GlassCard(
+                padding: EdgeInsets.all(24),
+                child: Center(
+                  child: Text('Belum ada riwayat setoran ke tabungan.'),
+                ),
+              )
+            else
+              ...riwayat.list.map((s) {
+                final isDiterima = s.isDiterima;
+                final isMenunggu = s.isMenungguVerifikasi;
+                final isDitolak = s.isDitolak;
+
+                return GlassCard(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             _formatRupiah(s.jumlahSetor),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w900,
-                              color: AppColors.primaryLight,
+                              color: isDiterima
+                                  ? AppColors.primaryLight
+                                  : (isMenunggu
+                                        ? AppColors.amberAccent
+                                        : AppColors.roseDanger),
                             ),
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Tanggal: ${s.hariTanggal ?? s.tanggalSetor}',
+                          // Status Badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isDiterima
+                                  ? (isDark
+                                        ? const Color(0xFF0F2313)
+                                        : const Color(0xFFE8F5E9))
+                                  : (isMenunggu
+                                        ? (isDark
+                                              ? const Color(0xFF382305)
+                                              : const Color(0xFFFEF3C7))
+                                        : (isDark
+                                              ? const Color(0xFF380C14)
+                                              : const Color(0xFFFFE4E6))),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              isDiterima
+                                  ? '✓ Masuk Tabungan'
+                                  : (isMenunggu
+                                        ? '⏳ Menunggu Verifikasi'
+                                        : '✕ Ditolak'),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: isDiterima
+                                    ? AppColors.hadirTextLight
+                                    : (isMenunggu
+                                          ? AppColors.amberAccent
+                                          : AppColors.roseDanger),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Tanggal Pengajuan: ${s.hariTanggal ?? s.tanggalSetor}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark
+                              ? const Color(0xFF8D9387)
+                              : const Color(0xFF73796E),
+                        ),
+                      ),
+
+                      if (isDiterima)
+                        Text(
+                          'Diverifikasi: ${s.diverifikasiOlehNama ?? s.penerimaNama}${s.diverifikasiPada != null ? " • ${s.diverifikasiPada}" : ""}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? const Color(0xFF86EFAC)
+                                : const Color(0xFF1B6A35),
+                          ),
+                        )
+                      else if (isMenunggu)
+                        Text(
+                          'Petugas Dituju: ${s.penerimaNama}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? const Color(0xFFC3C8BC)
+                                : const Color(0xFF43483E),
+                          ),
+                        )
+                      else if (isDitolak)
+                        Text(
+                          'Ditolak oleh: ${s.diverifikasiOlehNama ?? s.penerimaNama}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.roseDanger,
+                          ),
+                        ),
+
+                      if (s.catatanVerifikasi != null &&
+                          s.catatanVerifikasi!.isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.only(top: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF380C14)
+                                : const Color(0xFFFFE4E6),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'Catatan Verifikator: ${s.catatanVerifikasi}',
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.roseDanger,
+                            ),
+                          ),
+                        ),
+
+                      if (s.keterangan.isNotEmpty && s.keterangan != '-')
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            'Catatan Wali: ${s.keterangan}',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 10.5,
+                              fontStyle: FontStyle.italic,
                               color: isDark
                                   ? const Color(0xFF8D9387)
                                   : const Color(0xFF73796E),
                             ),
                           ),
+                        ),
+
+                      // Action buttons (only when Menunggu Verifikasi)
+                      if (s.canEdit || s.canDelete) ...[
+                        const SizedBox(height: 8),
+                        const Divider(height: 1),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (s.canEdit)
+                              TextButton.icon(
+                                icon: const Icon(
+                                  Icons.edit_outlined,
+                                  size: 15,
+                                  color: AppColors.skyBlueAccent,
+                                ),
+                                label: const Text(
+                                  'Edit',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.skyBlueAccent,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  _openEditSetoranSheet(s);
+                                },
+                              ),
+                            if (s.canDelete) ...[
+                              const SizedBox(width: 8),
+                              TextButton.icon(
+                                icon: const Icon(
+                                  Icons.cancel_outlined,
+                                  size: 15,
+                                  color: AppColors.roseDanger,
+                                ),
+                                label: const Text(
+                                  'Batalkan',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.roseDanger,
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  final kasProvider = context
+                                      .read<KasProvider>();
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (c) => AlertDialog(
+                                      title: const Text(
+                                        'Batalkan Pengajuan Setoran?',
+                                      ),
+                                      content: Text(
+                                        'Yakin ingin membatalkan pengajuan setoran ${_formatRupiah(s.jumlahSetor)} tanggal ${s.hariTanggal ?? s.tanggalSetor}?\n\nStatus uang akan dikembalikan ke sisa di tangan Wali Kelas.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(c, false),
+                                          child: const Text('Tutup'),
+                                        ),
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                AppColors.roseDanger,
+                                          ),
+                                          onPressed: () =>
+                                              Navigator.pop(c, true),
+                                          child: const Text('Batalkan Setoran'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirm == true) {
+                                    await kasProvider.hapusSetoran(
+                                      id: s.id,
+                                      ruanganId: s.ruanganId,
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }),
+          ] else ...[
+            // Daftar Riwayat Penarikan
+            if (kas.isLoading)
+              const ShimmerLoadingList(count: 3, height: 90)
+            else if (riwayat == null || riwayat.penarikanList.isEmpty)
+              const GlassCard(
+                padding: EdgeInsets.all(24),
+                child: Center(
+                  child: Text(
+                    'Belum ada riwayat penarikan tunai dari tabungan kas ini.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              )
+            else
+              ...riwayat.penarikanList.map((p) {
+                return GlassCard(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.amberAccent.withValues(
+                                    alpha: 0.12,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.arrow_outward_rounded,
+                                  size: 16,
+                                  color: AppColors.amberAccent,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '- ${_formatRupiah(p.nominal)}',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.amberAccent,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF382305)
+                                  : const Color(0xFFFEF3C7),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              p.kategori,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.amberAccent,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
                           Text(
-                            'Penerima: ${s.penerimaNama}',
+                            p.kodeTransaksi,
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'monospace',
                               color: isDark
                                   ? const Color(0xFFC3C8BC)
                                   : const Color(0xFF43483E),
                             ),
                           ),
-                          if (s.keterangan.isNotEmpty && s.keterangan != '-')
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2),
-                              child: Text(
-                                'Catatan: ${s.keterangan}',
-                                style: TextStyle(
-                                  fontSize: 10.5,
-                                  fontStyle: FontStyle.italic,
-                                  color: isDark
-                                      ? const Color(0xFF8D9387)
-                                      : const Color(0xFF73796E),
-                                ),
+                          const Text(
+                            ' • ',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
+                          Expanded(
+                            child: Text(
+                              p.hariTanggal ?? p.tanggal,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark
+                                    ? const Color(0xFF8D9387)
+                                    : const Color(0xFF73796E),
                               ),
                             ),
+                          ),
                         ],
                       ),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.edit_outlined,
-                            size: 18,
-                            color: AppColors.skyBlueAccent,
-                          ),
-                          tooltip: 'Edit Setoran',
-                          onPressed: () {
-                            _openEditSetoranSheet(s);
-                          },
+                      const SizedBox(height: 4),
+                      Text(
+                        'Petugas Pencair: ${p.petugasNama}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? const Color(0xFF8D9387)
+                              : const Color(0xFF73796E),
                         ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete_outline_rounded,
-                            size: 18,
-                            color: AppColors.roseDanger,
+                      ),
+                      if (p.keterangan.isNotEmpty && p.keterangan != '-')
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            'Keperluan: ${p.keterangan}',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontStyle: FontStyle.italic,
+                              color: isDark
+                                  ? const Color(0xFF8D9387)
+                                  : const Color(0xFF73796E),
+                            ),
                           ),
-                          tooltip: 'Batalkan Setoran',
-                          onPressed: () async {
-                            final kasProvider = context.read<KasProvider>();
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (c) => AlertDialog(
-                                title: const Text('Batalkan Setoran Kas?'),
-                                content: Text(
-                                  'Yakin ingin membatalkan setoran ${_formatRupiah(s.jumlahSetor)} tanggal ${s.hariTanggal ?? s.tanggalSetor}?\n\nStatus uang akan dikembalikan ke tangan Wali Kelas.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(c, false),
-                                    child: const Text('Batal'),
-                                  ),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.roseDanger,
-                                    ),
-                                    onPressed: () => Navigator.pop(c, true),
-                                    child: const Text('Hapus'),
-                                  ),
-                                ],
+                        ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF0F2313)
+                              : const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 13,
+                              color: AppColors.hadirTextLight,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'Uang fisik kembali ke tangan Wali Ruangan',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.hadirTextLight,
                               ),
-                            );
-                            if (confirm == true) {
-                              await kasProvider.hapusSetoran(
-                                id: s.id,
-                                ruanganId: s.ruanganId,
-                              );
-                            }
-                          },
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+          ],
         ],
       ),
     );

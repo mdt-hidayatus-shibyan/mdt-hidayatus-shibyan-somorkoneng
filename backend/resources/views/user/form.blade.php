@@ -153,21 +153,35 @@
                             {{ $isEdit ? 'Ubah Password (Opsional)' : 'Password Akun' }}
                         </span>
                         <button type="button" onclick="generateRandomPassword()"
-                            class="text-[11px] font-black text-primary dark:text-primary-dark hover:underline flex items-center gap-1">
+                            class="text-[11px] font-black text-primary dark:text-primary-dark hover:underline flex items-center gap-1 transition-colors">
                             <i class="bi bi-shuffle"></i> Acak Password
                         </button>
                     </div>
 
+                    @if ($isEdit)
+                        <p class="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium -mt-1">
+                            Kosongkan jika tidak ingin mengubah password.
+                        </p>
+                    @endif
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
+                        <div class="relative">
                             <input type="password" name="password" id="inputPassword" {{ $isEdit ? '' : 'required' }}
-                                placeholder="{{ $isEdit ? 'Kosongkan jika tidak diubah' : 'Password minimal 6 digit' }}"
-                                class="m3-input-glass w-full text-xs font-mono">
+                                placeholder="{{ $isEdit ? 'Password baru...' : 'Password minimal 6 digit' }}"
+                                class="m3-input-glass w-full !pr-10 text-xs font-mono">
+                            <button type="button" onclick="togglePwdVis('inputPassword', this)"
+                                class="absolute inset-y-0 right-0 w-9 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
+                                <i class="bi bi-eye text-xs"></i>
+                            </button>
                         </div>
-                        <div>
+                        <div class="relative">
                             <input type="password" name="password_confirmation" id="inputPasswordConfirm"
                                 {{ $isEdit ? '' : 'required' }} placeholder="Ulangi password"
-                                class="m3-input-glass w-full text-xs font-mono">
+                                class="m3-input-glass w-full !pr-10 text-xs font-mono">
+                            <button type="button" onclick="togglePwdVis('inputPasswordConfirm', this)"
+                                class="absolute inset-y-0 right-0 w-9 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
+                                <i class="bi bi-eye text-xs"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -228,6 +242,21 @@
             }
             document.getElementById('inputPassword').value = pass;
             document.getElementById('inputPasswordConfirm').value = pass;
+        }
+
+        function togglePwdVis(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
         }
     </script>
 </x-app-layout>

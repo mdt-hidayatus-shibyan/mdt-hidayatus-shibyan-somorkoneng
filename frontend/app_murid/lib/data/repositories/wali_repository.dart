@@ -9,6 +9,9 @@ import '../models/nilai_model.dart';
 import '../models/pelanggaran_model.dart';
 import '../models/tagihan_model.dart';
 import '../models/presensi_model.dart';
+import '../models/tabungan_model.dart';
+import '../models/koperasi_model.dart';
+import '../models/kenaikan_model.dart';
 
 class WaliRepository {
   final Dio _dio = ApiClient.instance.dio;
@@ -43,9 +46,15 @@ class WaliRepository {
     return null;
   }
 
-  Future<RekapPresensiAnakModel?> getPresensiAnak(int anakId) async {
+  Future<RekapPresensiAnakModel?> getPresensiAnak(
+    int anakId, {
+    String? tanggal,
+  }) async {
     try {
-      final res = await _dio.get('${ApiEndpoints.presensiAnak}/$anakId');
+      final res = await _dio.get(
+        '${ApiEndpoints.presensiAnak}/$anakId',
+        queryParameters: tanggal != null ? {'tanggal': tanggal} : null,
+      );
       if (res.statusCode == 200 && res.data['success'] == true) {
         return RekapPresensiAnakModel.fromJson(res.data['data']);
       }
@@ -73,15 +82,28 @@ class WaliRepository {
     return null;
   }
 
-  Future<List<JadwalItemModel>> getJadwalAnak(int anakId) async {
+  Future<JadwalDetailAnakModel?> getJadwalAnak(int anakId) async {
     try {
       final res = await _dio.get('${ApiEndpoints.jadwalAnak}/$anakId');
-      if (res.statusCode == 200 && res.data['success'] == true) {
-        final list = res.data['data']?['jadwal'] as List<dynamic>? ?? [];
-        return list.map((e) => JadwalItemModel.fromJson(e)).toList();
+      if (res.statusCode == 200 &&
+          res.data['success'] == true &&
+          res.data['data'] != null) {
+        return JadwalDetailAnakModel.fromJson(res.data['data']);
       }
     } catch (_) {}
-    return [];
+    return null;
+  }
+
+  Future<KenaikanAnakModel?> getKenaikanAnak(int anakId) async {
+    try {
+      final res = await _dio.get('${ApiEndpoints.kenaikanAnak}/$anakId');
+      if (res.statusCode == 200 &&
+          res.data['success'] == true &&
+          res.data['data'] != null) {
+        return KenaikanAnakModel.fromJson(res.data['data']);
+      }
+    } catch (_) {}
+    return null;
   }
 
   Future<DokumenGroupModel?> getDokumenAnak(int anakId) async {
@@ -92,6 +114,119 @@ class WaliRepository {
       }
     } catch (_) {}
     return null;
+  }
+
+  Future<TabunganAnakData?> getTabunganAnak(
+    int anakId, {
+    String? bulan,
+    int? tabunganId,
+  }) async {
+    try {
+      final res = await _dio.get(
+        '${ApiEndpoints.tabunganAnak}/$anakId',
+        queryParameters: {
+          if (bulan != null) 'bulan': bulan,
+          if (tabunganId != null) 'tabungan_id': tabunganId,
+        },
+      );
+      if (res.statusCode == 200 && res.data['success'] == true) {
+        return TabunganAnakData.fromJson(res.data['data']);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  Future<KoperasiAnakData?> getKoperasiAnak(int anakId) async {
+    try {
+      final res = await _dio.get('${ApiEndpoints.koperasiAnak}/$anakId');
+      if (res.statusCode == 200 && res.data['success'] == true) {
+        return KoperasiAnakData.fromJson(res.data['data']);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  Future<Map<String, dynamic>> ajukanKomplainTabungan({
+    required int transaksiId,
+    required int nominalKlaim,
+    required String alasan,
+    String? fotoBukti,
+  }) async {
+    try {
+      final res = await _dio.post(
+        ApiEndpoints.tabunganKomplain,
+        data: {
+          'transaksi_id': transaksiId,
+          'nominal_klaim': nominalKlaim,
+          'alasan': alasan,
+          if (fotoBukti != null) 'foto_bukti': fotoBukti,
+        },
+      );
+      if (res.statusCode == 200 && res.data['success'] == true) {
+        return {
+          'success': true,
+          'message': res.data['message'] ?? 'Komplain berhasil diajukan.',
+          'data': res.data['data'],
+        };
+      }
+      return {
+        'success': false,
+        'message': res.data['message'] ?? 'Gagal mengajukan komplain.',
+      };
+    } on DioException catch (e) {
+      final msg =
+          e.response?.data?['message'] ??
+          e.message ??
+          'Terjadi kesalahan jaringan.';
+      return {'success': false, 'message': msg};
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString().replaceAll('Exception: ', ''),
+      };
+    }
+  }
+
+  Future<List<TabunganKomplainModel>> getRiwayatKomplainTabungan(
+    int anakId,
+  ) async {
+    try {
+      final res = await _dio.get('${ApiEndpoints.tabunganKomplain}/$anakId');
+      if (res.statusCode == 200 && res.data['success'] == true) {
+        final list = res.data['data']?['komplains'] as List<dynamic>? ?? [];
+        return list.map((e) => TabunganKomplainModel.fromJson(e)).toList();
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  Future<Map<String, dynamic>> batalkanKomplainTabungan(int komplainId) async {
+    try {
+      final res = await _dio.post(
+        '${ApiEndpoints.tabunganKomplain}/$komplainId/batal',
+      );
+      if (res.statusCode == 200 && res.data['success'] == true) {
+        return {
+          'success': true,
+          'message': res.data['message'] ?? 'Komplain berhasil dibatalkan.',
+        };
+      }
+      return {
+        'success': false,
+        'message': res.data['message'] ?? 'Gagal membatalkan komplain.',
+      };
+    } on DioException catch (e) {
+      final msg =
+          e.response?.data?['message'] ??
+          e.message ??
+          'Terjadi kesalahan jaringan.';
+      return {'success': false, 'message': msg};
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString().replaceAll('Exception: ', ''),
+      };
+    }
   }
 
   Future<Map<String, dynamic>?> getBantuanKontak() async {

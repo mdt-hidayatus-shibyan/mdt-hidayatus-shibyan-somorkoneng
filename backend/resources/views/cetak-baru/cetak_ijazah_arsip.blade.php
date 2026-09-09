@@ -240,18 +240,20 @@
 
 <body>
 
-    <!-- TOMBOL AKSI -->
-    <div class="no-print fixed top-5 right-5 flex gap-3 z-50">
-        <button onclick="window.close()"
-            class="px-5 py-2.5 bg-slate-600 text-white rounded-lg font-bold shadow-sm hover:bg-slate-700 transition-colors">Tutup</button>
+    <!-- TOMBOL AKSI ATAS (HILANG SAAT DICETAK) -->
+    <div
+        class="no-print sticky top-0 z-50 flex flex-wrap justify-center items-center py-3 px-4 bg-slate-900 text-white gap-3 border-b mb-6 shadow-md">
+        <div
+            class="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-400/40 rounded-lg text-xs font-bold flex items-center shadow-2xs">
+            🛡️ DOKUMEN BEKU (ARSIP RESMI)
+        </div>
         <button onclick="window.print()"
-            class="px-5 py-2.5 bg-[#0F3D36] text-white rounded-lg font-bold shadow-sm hover:bg-[#0a2e28] transition-colors flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            Cetak A4
+            class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black flex items-center gap-1.5 transition-all shadow-md active:scale-95">
+            🖨️ Cetak / Simpan PDF
+        </button>
+        <button onclick="window.close()"
+            class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold transition-all shadow-md">
+            ✕ Tutup
         </button>
     </div>
 
@@ -362,6 +364,16 @@
         </div>
 
     </div>
+
+    @if (request()->has('print') || request()->has('auto_print') || request()->has('download'))
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    window.print();
+                }, 600);
+            });
+        </script>
+    @endif
 
 </body>
 

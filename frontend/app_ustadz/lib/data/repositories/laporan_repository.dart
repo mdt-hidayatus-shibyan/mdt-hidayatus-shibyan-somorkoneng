@@ -33,30 +33,36 @@ class LaporanRepository {
         return LaporanPresensiMuridModel.fromJson(response.data['data']);
       } else {
         throw Exception(
-          response.data['message'] ?? 'Gagal memuat laporan presensi santri.',
+          response.data['message'] ?? 'Gagal memuat laporan presensi murid.',
         );
       }
     } on DioException catch (e) {
       if (e.response?.data != null && e.response?.data['message'] != null) {
         throw Exception(e.response!.data['message']);
       }
-      throw Exception('Gagal memuat laporan presensi santri: ${e.message}');
+      throw Exception('Gagal memuat laporan presensi murid: ${e.message}');
     }
   }
 
   // 2. Laporan Presensi Ustadz
   Future<LaporanPresensiUstadzModel> getLaporanPresensiUstadz({
+    int? ruanganId,
     int? ustadzId,
     int? bulanHijriyahId,
+    String? semester,
+    String? status,
     String? startDate,
     String? endDate,
   }) async {
     try {
       final queryParams = <String, dynamic>{};
+      if (ruanganId != null) queryParams['ruangan_id'] = ruanganId;
       if (ustadzId != null) queryParams['ustadz_id'] = ustadzId;
       if (bulanHijriyahId != null) {
         queryParams['bulan_hijriyah_id'] = bulanHijriyahId;
       }
+      if (semester != null) queryParams['semester'] = semester;
+      if (status != null && status != 'Semua') queryParams['status'] = status;
       if (startDate != null) queryParams['start_date'] = startDate;
       if (endDate != null) queryParams['end_date'] = endDate;
 
@@ -84,6 +90,7 @@ class LaporanRepository {
   Future<LaporanPelanggaranMuridModel> getLaporanPelanggaranMurid({
     int? ruanganId,
     String? kategori,
+    int? bulanHijriyahId,
     String? startDate,
     String? endDate,
   }) async {
@@ -92,6 +99,9 @@ class LaporanRepository {
       if (ruanganId != null) queryParams['ruangan_id'] = ruanganId;
       if (kategori != null && kategori != 'Semua') {
         queryParams['kategori'] = kategori;
+      }
+      if (bulanHijriyahId != null) {
+        queryParams['bulan_hijriyah_id'] = bulanHijriyahId;
       }
       if (startDate != null) queryParams['start_date'] = startDate;
       if (endDate != null) queryParams['end_date'] = endDate;
@@ -105,15 +115,14 @@ class LaporanRepository {
         return LaporanPelanggaranMuridModel.fromJson(response.data['data']);
       } else {
         throw Exception(
-          response.data['message'] ??
-              'Gagal memuat laporan pelanggaran santri.',
+          response.data['message'] ?? 'Gagal memuat laporan pelanggaran murid.',
         );
       }
     } on DioException catch (e) {
       if (e.response?.data != null && e.response?.data['message'] != null) {
         throw Exception(e.response!.data['message']);
       }
-      throw Exception('Gagal memuat laporan pelanggaran santri: ${e.message}');
+      throw Exception('Gagal memuat laporan pelanggaran murid: ${e.message}');
     }
   }
 

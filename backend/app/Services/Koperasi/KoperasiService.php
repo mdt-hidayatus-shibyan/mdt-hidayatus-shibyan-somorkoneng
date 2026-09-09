@@ -4,12 +4,16 @@ namespace App\Services\Koperasi;
 
 use App\Models\Koperasi\MutasiStokKoperasi;
 use App\Models\Koperasi\PaketKoperasi;
+use App\Models\Koperasi\PembelianDetailKoperasi;
+use App\Models\Koperasi\PembelianKoperasi;
 use App\Models\Koperasi\PenjualanDetailKoperasi;
 use App\Models\Koperasi\PenjualanKoperasi;
 use App\Models\Koperasi\ProdukKoperasi;
 use App\Models\Tabungan\Tabungan;
 use App\Models\Tabungan\TransaksiTabungan;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class KoperasiService
@@ -591,5 +595,241 @@ class KoperasiService
             'totalPaket',
             'stokMenipisCount'
         );
+    }
+
+    /**
+     * Memproses Transaksi Pembelian / Kulakan Barang dari Supplier
+     */
+    public function simpanPembelian(array $data, int $petugasId, $fotoFaktur = null): PembelianKoperasi
+    {
+        return DB::transaction(function () use ($data, $petugasId, $fotoFaktur) {
+            $items = $data['items'] ?? [];
+            if (empty($items)) {
+                throw new \InvalidArgumentException('Daftar barang kulakan masih kosong.');
+            }
+
+            $nomorFaktur = PembelianKoperasi::generateNomorFaktur();
+            $nomorFakturSupplier = !empty($data['nomor_faktur_supplier']) ? trim($data['nomor_faktur_supplier']) : null;
+            $supplier = trim($data['supplier'] ?? 'Supplier Umum');
+            $tglTransaksi = $data['tanggal'] ?? now();
+
+            $totalItem = 0;
+            $totalNominal = 0.00;
+            $processedDetails = [];
+
+            // 1. Process each item: update stock, update buy price & sell price
+            $updateHargaProduk = isset($data['update_harga_produk']) ? (bool) $data['update_harga_produk'] : true;
+
+            foreach ($items as $item) {
+                $produkId = (int) ($item['produk_id'] ?? 0);
+                $qty = (int) ($item['jumlah'] ?? 1);
+                if ($qty <= 0) continue;
+
+                $hargaBeli = (float) ($item['harga_beli'] ?? $item['harga_beli_satuan'] ?? 0);
+                $hargaJual = (float) ($item['harga_jual'] ?? $item['harga_jual_satuan'] ?? 0);
+                $subtotal = $hargaBeli * $qty;
+
+                $prod = ProdukKoperasi::where('id', $produkId)->lockForUpdate()->firstOrFail();
+
+                $stokSebelum = $prod->stok;
+                $stokSesudah = $stokSebelum + $qty;
+
+                // Update product stock and pricing
+                $updateData = ['stok' => $stokSesudah];
+                if ($updateHargaProduk) {
+                    if ($hargaBeli > 0) {
+                        $updateData['harga_beli'] = $hargaBeli;
+                    }
+                    if ($hargaJual > 0) {
+                        $updateData['harga_jual'] = $hargaJual;
+                    }
+                }
+                $prod->update($updateData);
+
+                // Record stock mutation
+                MutasiStokKoperasi::create([
+                    'produk_id' => $prod->id,
+                    'jenis_mutasi' => 'Stok_Masuk',
+                    'jumlah' => $qty,
+                    'stok_sebelum' => $stokSebelum,
+                    'stok_sesudah' => $stokSesudah,
+                    'referensi' => $nomorFaktur,
+                    'keterangan' => "Kulakan dari Supplier: {$supplier}" . ($nomorFakturSupplier ? " (Faktur: {$nomorFakturSupplier})" : ""),
+                    'petugas_id' => $petugasId,
+                ]);
+
+                $totalItem += $qty;
+                $totalNominal += $subtotal;
+
+                $processedDetails[] = [
+                    'produk_id' => $prod->id,
+                    'kode_produk' => $prod->kode_produk,
+                    'nama_produk' => $prod->nama_produk,
+                    'satuan' => $prod->satuan,
+                    'jumlah' => $qty,
+                    'harga_beli_satuan' => $hargaBeli,
+                    'harga_jual_satuan' => $hargaJual > 0 ? $hargaJual : (float) $prod->harga_jual,
+                    'subtotal' => $subtotal,
+                ];
+            }
+
+            $ongkir = (float) ($data['ongkir'] ?? 0.00);
+            $diskon = (float) ($data['diskon'] ?? 0.00);
+            $grandTotal = max(0, $totalNominal + $ongkir - $diskon);
+
+            // 2. Handle Payment Method & Debt Calculation
+            $metodeBayar = $data['metode_pembayaran'] ?? 'Tunai_Kas'; // Tunai_Kas, Transfer_Bank, Hutang_Tempo
+            $nominalBayar = (float) ($data['nominal_bayar'] ?? 0.00);
+            $kembalian = 0.00;
+            $sisaHutang = 0.00;
+            $statusPembayaran = 'Lunas';
+            $tanggalPelunasan = null;
+            $metodePelunasan = null;
+            $petugasPelunasanId = null;
+            $tanggalJatuhTempo = !empty($data['tanggal_jatuh_tempo']) ? $data['tanggal_jatuh_tempo'] : null;
+
+            if (in_array($metodeBayar, ['Hutang_Tempo', 'Hutang_Supplier', 'Hutang'])) {
+                $statusPembayaran = 'Belum_Lunas';
+                $sisaHutang = max(0, $grandTotal - $nominalBayar);
+                if ($sisaHutang <= 0) {
+                    $statusPembayaran = 'Lunas';
+                    $tanggalPelunasan = $tglTransaksi;
+                    $metodePelunasan = $metodeBayar;
+                    $petugasPelunasanId = $petugasId;
+                }
+            } else {
+                // Tunai_Kas atau Transfer_Bank
+                if ($nominalBayar <= 0) {
+                    $nominalBayar = $grandTotal;
+                }
+                $kembalian = max(0, $nominalBayar - $grandTotal);
+                $sisaHutang = max(0, $grandTotal - $nominalBayar);
+                if ($sisaHutang > 0) {
+                    $statusPembayaran = 'Belum_Lunas';
+                } else {
+                    $statusPembayaran = 'Lunas';
+                    $tanggalPelunasan = $tglTransaksi;
+                    $metodePelunasan = $metodeBayar;
+                    $petugasPelunasanId = $petugasId;
+                }
+            }
+
+            // 3. Handle Foto Faktur Upload
+            $fotoPath = null;
+            if ($fotoFaktur) {
+                $fotoPath = $fotoFaktur->store('koperasi/faktur_kulakan', 'public');
+            }
+
+            // 4. Create Pembelian Header
+            $pembelian = PembelianKoperasi::create([
+                'nomor_faktur' => $nomorFaktur,
+                'nomor_faktur_supplier' => $nomorFakturSupplier,
+                'supplier' => $supplier,
+                'tanggal' => $tglTransaksi,
+                'petugas_id' => $petugasId,
+                'total_item' => $totalItem,
+                'total_nominal' => $totalNominal,
+                'ongkir' => $ongkir,
+                'diskon' => $diskon,
+                'metode_pembayaran' => $metodeBayar,
+                'nominal_bayar' => $nominalBayar,
+                'kembalian' => $kembalian,
+                'sisa_hutang' => $sisaHutang,
+                'status_pembayaran' => $statusPembayaran,
+                'tanggal_jatuh_tempo' => $tanggalJatuhTempo,
+                'tanggal_pelunasan' => $tanggalPelunasan,
+                'metode_pelunasan' => $metodePelunasan,
+                'petugas_pelunasan_id' => $petugasPelunasanId,
+                'status' => 'Selesai',
+                'foto_faktur' => $fotoPath,
+                'catatan' => $data['catatan'] ?? null,
+            ]);
+
+            // 5. Create Detail Items
+            foreach ($processedDetails as $detail) {
+                $detail['pembelian_id'] = $pembelian->id;
+                PembelianDetailKoperasi::create($detail);
+            }
+
+            return $pembelian->load(['details.produk', 'petugas', 'petugasPelunasan']);
+        });
+    }
+
+    /**
+     * Memproses Pelunasan Hutang ke Supplier
+     */
+    public function lunasiHutangSupplier(int $pembelianId, array $data, int $petugasId): PembelianKoperasi
+    {
+        return DB::transaction(function () use ($pembelianId, $data, $petugasId) {
+            $pembelian = PembelianKoperasi::where('id', $pembelianId)->lockForUpdate()->firstOrFail();
+
+            if ($pembelian->status === 'Dibatalkan') {
+                throw new \Exception("Faktur pembelian '{$pembelian->nomor_faktur}' telah dibatalkan, tidak dapat dilunasi.");
+            }
+
+            if ($pembelian->status_pembayaran === 'Lunas') {
+                throw new \Exception("Faktur pembelian '{$pembelian->nomor_faktur}' sudah lunas sebelumnya.");
+            }
+
+            $metodePelunasan = $data['metode_pelunasan'] ?? 'Tunai_Kas';
+            $nominalBayar = (float) ($data['nominal_bayar'] ?? $pembelian->sisa_hutang);
+            $kembalian = max(0, $nominalBayar - $pembelian->sisa_hutang);
+
+            $pembelian->update([
+                'status_pembayaran' => 'Lunas',
+                'nominal_bayar' => (float) $pembelian->nominal_bayar + $nominalBayar,
+                'kembalian' => $kembalian,
+                'sisa_hutang' => 0.00,
+                'tanggal_pelunasan' => now(),
+                'metode_pelunasan' => $metodePelunasan,
+                'petugas_pelunasan_id' => $petugasId,
+                'catatan' => ($pembelian->catatan ? $pembelian->catatan . " | " : "") . ($data['catatan_pelunasan'] ?? 'Dilunasi ke Supplier'),
+            ]);
+
+            return $pembelian->fresh(['petugas', 'petugasPelunasan', 'details.produk']);
+        });
+    }
+
+    /**
+     * Membatalkan / Void Transaksi Pembelian dan Mengurangi Stok Kembali
+     */
+    public function batalPembelian(int $pembelianId, string $alasan, int $petugasId): PembelianKoperasi
+    {
+        return DB::transaction(function () use ($pembelianId, $alasan, $petugasId) {
+            $pembelian = PembelianKoperasi::with('details')->where('id', $pembelianId)->lockForUpdate()->firstOrFail();
+
+            if ($pembelian->status === 'Dibatalkan') {
+                throw new \Exception("Transaksi pembelian '{$pembelian->nomor_faktur}' sudah dibatalkan sebelumnya.");
+            }
+
+            // Kurangi kembali stok yang sebelumnya masuk
+            foreach ($pembelian->details as $detail) {
+                $prod = ProdukKoperasi::where('id', $detail->produk_id)->lockForUpdate()->first();
+                if ($prod) {
+                    $stokSebelum = $prod->stok;
+                    $stokSesudah = max(0, $stokSebelum - $detail->jumlah);
+
+                    $prod->update(['stok' => $stokSesudah]);
+
+                    MutasiStokKoperasi::create([
+                        'produk_id' => $prod->id,
+                        'jenis_mutasi' => 'Pembatalan_Transaksi',
+                        'jumlah' => -$detail->jumlah,
+                        'stok_sebelum' => $stokSebelum,
+                        'stok_sesudah' => $stokSesudah,
+                        'referensi' => $pembelian->nomor_faktur,
+                        'keterangan' => "Batal Kulakan Faktur {$pembelian->nomor_faktur}: {$alasan}",
+                        'petugas_id' => $petugasId,
+                    ]);
+                }
+            }
+
+            $pembelian->update([
+                'status' => 'Dibatalkan',
+                'catatan' => ($pembelian->catatan ? $pembelian->catatan . " | " : "") . "Dibatalkan: {$alasan}",
+            ]);
+
+            return $pembelian;
+        });
     }
 }

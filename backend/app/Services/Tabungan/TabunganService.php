@@ -8,6 +8,7 @@ use App\Models\Tabungan\PengaturanPotonganTabungan;
 use App\Models\Tabungan\PeriodeTabungan;
 use App\Models\Tabungan\RiwayatBukuTabungan;
 use App\Models\Tabungan\Tabungan;
+use App\Models\Tabungan\TabunganKomplain;
 use App\Models\Tabungan\TransaksiTabungan;
 use App\Models\Ustadz;
 use Illuminate\Support\Facades\DB;
@@ -265,6 +266,11 @@ class TabunganService
                 'total_tarik' => (float) $tabungan->total_tarik + $nominal,
             ]);
 
+            // Jika rekening adalah tipe Kas Ruangan, buka kunci cicilan pembayaran kas murid (uang kembali ke tangan Wali)
+            if ($tabungan->jenis_nasabah === 'Kas Ruangan' && $tabungan->ruangan_id) {
+                $this->bukaKunciCicilanKas($tabungan->ruangan_id, $nominal);
+            }
+
             return $trx;
         });
     }
@@ -386,6 +392,15 @@ class TabunganService
                 'petugas_id' => $petugasId ?? $trx->petugas_id,
             ]);
 
+            // Jika rekening Kas Ruangan, sesuaikan pembukaan/penguncian cicilan
+            if ($tabungan->jenis_nasabah === 'Kas Ruangan' && $tabungan->ruangan_id) {
+                if ($selisihKotor > 0) {
+                    $this->bukaKunciCicilanKas($tabungan->ruangan_id, $selisihKotor);
+                } elseif ($selisihKotor < 0) {
+                    $this->kunciCicilanKas($tabungan->ruangan_id, abs($selisihKotor));
+                }
+            }
+
             $this->recalibrasiSaldoRekening($tabungan->id);
 
             return $trx->fresh();
@@ -408,6 +423,11 @@ class TabunganService
             $nominalKotor = (float) $trx->nominal_kotor;
             $kodeTrx = $trx->kode_transaksi;
             $nominalBersih = (float) $trx->nominal_bersih;
+
+            // Jika rekening Kas Ruangan, kunci kembali cicilan pembayaran kas
+            if ($tabungan->jenis_nasabah === 'Kas Ruangan' && $tabungan->ruangan_id) {
+                $this->kunciCicilanKas($tabungan->ruangan_id, $nominalKotor);
+            }
 
             $trx->delete();
 
@@ -498,6 +518,7 @@ class TabunganService
         $transaksiHariIni = TransaksiTabungan::whereDate('tanggal', date('Y-m-d'))->get();
         $setorHariIni = $transaksiHariIni->where('jenis_transaksi', 'Setor')->sum('nominal_bersih');
         $tarikHariIni = $transaksiHariIni->where('jenis_transaksi', 'Tarik')->sum('nominal_bersih');
+        $komplainPending = TabunganKomplain::where('status', 'Menunggu_Verifikasi')->count();
 
         return [
             'total_saldo' => (float) $totalSaldo,
@@ -512,6 +533,7 @@ class TabunganService
             'total_rekening_aktif' => $totalRekeningAktif,
             'setor_hari_ini' => (float) $setorHariIni,
             'tarik_hari_ini' => (float) $tarikHariIni,
+            'komplain_pending' => $komplainPending,
         ];
     }
 
@@ -661,5 +683,100 @@ class TabunganService
             'prev' => $prev,
             'next' => $next,
         ];
+    }
+
+    /**
+     * Verifikasi komplain setoran tunai oleh Admin / Bendahara
+     */
+    public function verifikasiKomplainSetoran(int $komplainId, string $tindakan, string $catatan, ?int $petugasId = null, ?float $nominalDisetujui = null)
+    {
+        return DB::transaction(function () use ($komplainId, $tindakan, $catatan, $petugasId, $nominalDisetujui) {
+            $komplain = TabunganKomplain::with(['transaksiTabungan', 'tabungan'])->where('id', $komplainId)->lockForUpdate()->firstOrFail();
+
+            if ($komplain->status !== 'Menunggu_Verifikasi') {
+                throw new \Exception("Komplain {$komplain->kode_komplain} sudah diproses sebelumnya (Status: {$komplain->status}).");
+            }
+
+            if ($tindakan === 'setujui') {
+                $nominalBaru = (float) ($nominalDisetujui !== null ? $nominalDisetujui : $komplain->nominal_klaim);
+                $tanggal = $komplain->transaksiTabungan->tanggal ? \Carbon\Carbon::parse($komplain->transaksiTabungan->tanggal)->format('Y-m-d') : date('Y-m-d');
+                $keteranganKoreksi = "Koreksi komplain ({$komplain->kode_komplain}): " . ($catatan ?: 'Penyesuaian nominal setoran sesuai klaim wali murid');
+
+                // Update transaksi dan rekalibrasi saldo buku tabungan
+                $this->updateSetorTunai(
+                    $komplain->transaksi_tabungan_id,
+                    $nominalBaru,
+                    $tanggal,
+                    $keteranganKoreksi,
+                    $petugasId
+                );
+
+                $komplain->update([
+                    'status' => 'Disetujui',
+                    'diverifikasi_oleh' => $petugasId,
+                    'diverifikasi_pada' => now(),
+                    'catatan_verifikasi' => $catatan ?: 'Komplain disetujui, nominal setoran telah disesuaikan.',
+                ]);
+            } elseif ($tindakan === 'tolak') {
+                if (empty(trim($catatan))) {
+                    throw new \InvalidArgumentException('Catatan / alasan penolakan wajib diisi.');
+                }
+
+                $komplain->update([
+                    'status' => 'Ditolak',
+                    'diverifikasi_oleh' => $petugasId,
+                    'diverifikasi_pada' => now(),
+                    'catatan_verifikasi' => $catatan,
+                ]);
+            } else {
+                throw new \InvalidArgumentException("Tindakan '{$tindakan}' tidak valid. Pilih 'setujui' atau 'tolak'.");
+            }
+
+            return $komplain->fresh(['transaksiTabungan', 'tabungan', 'murid', 'diverifikasiOleh']);
+        });
+    }
+
+    /**
+     * Kunci cicilan pembayaran kas murid saat disetor ke Tabungan Madrasah
+     */
+    public function kunciCicilanKas(int $ruanganId, float $nominal)
+    {
+        $sisa = $nominal;
+        $cicilans = \App\Models\KasRuangan\PembayaranKasRuangan::where('ruangan_id', $ruanganId)
+            ->where('is_disetor', false)
+            ->orderBy('tanggal_bayar', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        foreach ($cicilans as $c) {
+            if ($sisa >= $c->jumlah_bayar) {
+                $c->update(['is_disetor' => true]);
+                $sisa -= $c->jumlah_bayar;
+            } else {
+                break;
+            }
+        }
+    }
+
+    /**
+     * Buka kunci cicilan pembayaran kas murid saat terjadi penarikan tunai tabungan kas (uang kembali ke tangan Wali)
+     */
+    public function bukaKunciCicilanKas(int $ruanganId, float $nominal)
+    {
+        $sisaRefund = $nominal;
+        $cicilansTerkunci = \App\Models\KasRuangan\PembayaranKasRuangan::where('ruangan_id', $ruanganId)
+            ->where('is_disetor', true)
+            ->orderBy('tanggal_bayar', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        foreach ($cicilansTerkunci as $c) {
+            if ($sisaRefund >= $c->jumlah_bayar) {
+                $c->update(['is_disetor' => false]);
+                $sisaRefund -= $c->jumlah_bayar;
+            } else {
+                break;
+            }
+        }
     }
 }

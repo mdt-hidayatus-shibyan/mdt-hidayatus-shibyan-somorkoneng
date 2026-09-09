@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
@@ -15,6 +16,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
+      fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
       colorScheme: const ColorScheme.light(
         primary: primaryColor,
         onPrimary: AppColors.onPrimaryLight,
@@ -87,11 +89,14 @@ class AppTheme {
           elevation: 0,
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
-          minimumSize: const Size.fromHeight(48),
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          textStyle: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -106,6 +111,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
+      fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
       colorScheme: const ColorScheme.dark(
         primary: primaryColor,
         onPrimary: AppColors.onPrimaryDark,
@@ -178,11 +184,14 @@ class AppTheme {
           elevation: 0,
           backgroundColor: primaryColor,
           foregroundColor: AppColors.onPrimaryDark,
-          minimumSize: const Size.fromHeight(48),
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          textStyle: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

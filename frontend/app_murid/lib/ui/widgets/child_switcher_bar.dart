@@ -8,7 +8,9 @@ import '../../providers/keuangan_provider.dart';
 import '../../providers/presensi_provider.dart';
 
 class ChildSwitcherBar extends StatelessWidget {
-  const ChildSwitcherBar({super.key});
+  final EdgeInsetsGeometry? margin;
+
+  const ChildSwitcherBar({super.key, this.margin});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,7 @@ class ChildSwitcherBar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: isDark
@@ -41,15 +43,15 @@ class ChildSwitcherBar extends StatelessWidget {
             child: Row(
               children: [
                 Icon(
-                  Icons.child_care_rounded,
-                  size: 14,
+                  Icons.family_restroom_rounded,
+                  size: 15,
                   color: isDark
                       ? AppColors.primaryDark
                       : AppColors.primaryLight,
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'PILIH SANTRI / ANAK (${anakList.length})',
+                  'PILIH MURID / ANAK (${anakList.length})',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -76,7 +78,7 @@ class ChildSwitcherBar extends StatelessWidget {
                         HapticHelper.medium();
                         dashboard.switchAnak(anak);
                         // Refresh active child data in other tabs
-                        context.read<KeuanganProvider>().fetchTagihan(
+                        context.read<KeuanganProvider>().fetchAllKeuangan(
                           anak.id,
                           force: true,
                         );

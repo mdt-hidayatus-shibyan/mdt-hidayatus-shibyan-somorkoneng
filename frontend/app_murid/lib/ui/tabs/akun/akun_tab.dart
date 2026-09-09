@@ -10,7 +10,6 @@ import '../../widgets/glass_card.dart';
 import '../../widgets/modern_header.dart';
 import '../../auth/login_screen.dart';
 import 'biodata_anak_screen.dart';
-import 'buku_kasus_screen.dart';
 import 'hubungi_admin_screen.dart';
 import 'pengaturan_server_screen.dart';
 
@@ -197,6 +196,169 @@ class AkunTab extends StatelessWidget {
     );
   }
 
+  void _showThemeDialog(BuildContext context, AuthProvider auth) {
+    HapticHelper.medium();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? AppColors.surfaceContainerDark : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            Icon(
+              Icons.palette_outlined,
+              size: 22,
+              color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Pilih Tema Tampilan',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildThemeOption(
+              ctx,
+              title: 'Mode Terang',
+              subtitle: 'Tema standar bersih, cerah & nyaman (Default)',
+              icon: Icons.light_mode_rounded,
+              selected: auth.themeMode == ThemeMode.light,
+              onTap: () {
+                auth.setThemeMode(ThemeMode.light);
+                Navigator.of(ctx).pop();
+              },
+              isDark: isDark,
+            ),
+            const SizedBox(height: 8),
+            _buildThemeOption(
+              ctx,
+              title: 'Mode Gelap (Super AMOLED)',
+              subtitle: 'Latar hitam murni hemat daya layar',
+              icon: Icons.dark_mode_rounded,
+              selected: auth.themeMode == ThemeMode.dark,
+              onTap: () {
+                auth.setThemeMode(ThemeMode.dark);
+                Navigator.of(ctx).pop();
+              },
+              isDark: isDark,
+            ),
+            const SizedBox(height: 8),
+            _buildThemeOption(
+              ctx,
+              title: 'Ikuti Pengaturan Sistem',
+              subtitle: 'Menyesuaikan mode perangkat Anda',
+              icon: Icons.brightness_auto_rounded,
+              selected: auth.themeMode == ThemeMode.system,
+              onTap: () {
+                auth.setThemeMode(ThemeMode.system);
+                Navigator.of(ctx).pop();
+              },
+              isDark: isDark,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeOption(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return InkWell(
+      onTap: () {
+        HapticHelper.selection();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected
+              ? (isDark
+                    ? AppColors.primaryDark.withValues(alpha: 0.2)
+                    : AppColors.primaryLight.withValues(alpha: 0.1))
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected
+                ? (isDark ? AppColors.primaryDark : AppColors.primaryLight)
+                : (isDark ? Colors.white12 : Colors.black12),
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: selected
+                  ? (isDark ? AppColors.primaryDark : AppColors.primaryLight)
+                  : (isDark ? Colors.white60 : Colors.black54),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: isDark ? Colors.white54 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (selected)
+              Icon(
+                Icons.check_circle_rounded,
+                size: 18,
+                color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getThemeSubtitle(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'Mode Terang (Default)';
+      case ThemeMode.dark:
+        return 'Mode Gelap (Super AMOLED)';
+      case ThemeMode.system:
+        return 'Ikuti Pengaturan Sistem';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -342,7 +504,7 @@ class AkunTab extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              // Menu Terkait Santri Aktif
+              // Menu Terkait Murid Aktif
               if (selectedAnak != null) ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(
@@ -353,7 +515,7 @@ class AkunTab extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'MENU SANTRI AKTIF (${selectedAnak.namaLengkap})',
+                        'MENU MURID AKTIF (${selectedAnak.namaLengkap})',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w900,
@@ -369,9 +531,9 @@ class AkunTab extends StatelessWidget {
                           children: [
                             _buildMenuItem(
                               icon: Icons.badge_rounded,
-                              title: 'Biodata & Identitas Santri',
+                              title: 'Biodata & Identitas Murid',
                               subtitle:
-                                  'Detail data santri, orang tua, dan NISM',
+                                  'Detail data murid, orang tua, dan NISM',
                               color: isDark
                                   ? AppColors.primaryDark
                                   : AppColors.primaryLight,
@@ -381,23 +543,6 @@ class AkunTab extends StatelessWidget {
                                   MaterialPageRoute(
                                     builder: (_) =>
                                         BiodataAnakScreen(anak: selectedAnak),
-                                  ),
-                                );
-                              },
-                              isDark: isDark,
-                            ),
-                            const Divider(height: 1, indent: 56),
-                            _buildMenuItem(
-                              icon: Icons.warning_amber_rounded,
-                              title: 'Buku Kasus & Kedisiplinan',
-                              subtitle:
-                                  'Riwayat catatan pelanggaran dan poin santri',
-                              color: AppColors.amberAccent,
-                              onTap: () {
-                                HapticHelper.light();
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const BukuKasusScreen(),
                                   ),
                                 );
                               },
@@ -451,6 +596,15 @@ class AkunTab extends StatelessWidget {
                                 ),
                               );
                             },
+                            isDark: isDark,
+                          ),
+                          const Divider(height: 1, indent: 56),
+                          _buildMenuItem(
+                            icon: Icons.palette_outlined,
+                            title: 'Tema Tampilan',
+                            subtitle: _getThemeSubtitle(auth.themeMode),
+                            color: const Color(0xFFEAB308),
+                            onTap: () => _showThemeDialog(context, auth),
                             isDark: isDark,
                           ),
                           const Divider(height: 1, indent: 56),
@@ -534,6 +688,7 @@ class AkunTab extends StatelessWidget {
     required Color color,
     required VoidCallback onTap,
     required bool isDark,
+    Widget? trailing,
   }) {
     return ListTile(
       onTap: onTap,
@@ -562,7 +717,13 @@ class AkunTab extends StatelessWidget {
           color: isDark ? Colors.white54 : Colors.black54,
         ),
       ),
-      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (trailing != null) ...[trailing, const SizedBox(width: 8)],
+          const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+        ],
+      ),
     );
   }
 }

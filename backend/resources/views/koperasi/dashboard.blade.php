@@ -23,6 +23,11 @@
                 <i class="bi bi-calculator-fill text-sm"></i>
                 <span>Buka Kasir POS</span>
             </a>
+            <a href="{{ route('koperasi.pembelian.index') }}"
+                class="inline-flex items-center justify-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-xs shadow-2xs active:scale-95 transition-all">
+                <i class="bi bi-bag-plus-fill text-sm"></i>
+                <span>Kulakan Barang</span>
+            </a>
             <a href="{{ route('koperasi.paket.index') }}"
                 class="inline-flex items-center justify-center gap-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-xs shadow-2xs active:scale-95 transition-all">
                 <i class="bi bi-collection-fill text-sm"></i>

@@ -103,7 +103,7 @@ class LaporanPresensiMuridModel {
   final String namaRuangan;
   final String levelNama;
   final String tahunPelajaran;
-  final int totalSantri;
+  final int totalMurid;
   final int totalHariEfektif;
   final int totalHadir;
   final int totalIzin;
@@ -119,7 +119,7 @@ class LaporanPresensiMuridModel {
     required this.namaRuangan,
     this.levelNama = '-',
     required this.tahunPelajaran,
-    required this.totalSantri,
+    required this.totalMurid,
     required this.totalHariEfektif,
     required this.totalHadir,
     required this.totalIzin,
@@ -137,7 +137,7 @@ class LaporanPresensiMuridModel {
       namaRuangan: json['nama_ruangan'] ?? '',
       levelNama: json['level_nama'] ?? '-',
       tahunPelajaran: json['tahun_pelajaran'] ?? '-',
-      totalSantri: json['total_santri'] ?? 0,
+      totalMurid: json['total_murid'] ?? json['total_santri'] ?? 0,
       totalHariEfektif: json['total_hari_efektif'] ?? 0,
       totalHadir: json['total_hadir'] ?? 0,
       totalIzin: json['total_izin'] ?? 0,
@@ -152,9 +152,10 @@ class LaporanPresensiMuridModel {
       bulanHijriyahList: (json['bulan_hijriyah_list'] as List? ?? [])
           .map((e) => BulanHijriyahLaporanItem.fromJson(e))
           .toList(),
-      rekapMurid: (json['rekap_murid'] as List? ?? [])
-          .map((e) => RekapPresensiMuridItem.fromJson(e))
-          .toList(),
+      rekapMurid:
+          (json['rekap_murid'] as List? ?? json['rekap_santri'] as List? ?? [])
+              .map((e) => RekapPresensiMuridItem.fromJson(e))
+              .toList(),
     );
   }
 }
@@ -192,6 +193,8 @@ class RiwayatPresensiUstadzItem {
   final String status;
   final String jamMasuk;
   final String? jamKeluar;
+  final String? mapel;
+  final String? namaRuangan;
   final String keterangan;
   final String? foto;
 
@@ -202,6 +205,8 @@ class RiwayatPresensiUstadzItem {
     required this.status,
     required this.jamMasuk,
     this.jamKeluar,
+    this.mapel,
+    this.namaRuangan,
     this.keterangan = '-',
     this.foto,
   });
@@ -214,6 +219,8 @@ class RiwayatPresensiUstadzItem {
       status: json['status'] ?? 'Hadir',
       jamMasuk: json['jam_masuk'] ?? '-',
       jamKeluar: json['jam_keluar'],
+      mapel: json['mapel'],
+      namaRuangan: json['nama_ruangan'],
       keterangan: json['keterangan'] ?? '-',
       foto: ApiClient.resolveImageUrl(json['foto']),
     );
@@ -221,6 +228,8 @@ class RiwayatPresensiUstadzItem {
 }
 
 class LaporanPresensiUstadzModel {
+  final int? ruanganId;
+  final String? namaRuangan;
   final UstadzLaporanItem ustadz;
   final String tahunPelajaran;
   final int totalSesi;
@@ -235,6 +244,8 @@ class LaporanPresensiUstadzModel {
   final List<RiwayatPresensiUstadzItem> riwayat;
 
   LaporanPresensiUstadzModel({
+    this.ruanganId,
+    this.namaRuangan,
     required this.ustadz,
     required this.tahunPelajaran,
     required this.totalSesi,
@@ -251,6 +262,8 @@ class LaporanPresensiUstadzModel {
 
   factory LaporanPresensiUstadzModel.fromJson(Map<String, dynamic> json) {
     return LaporanPresensiUstadzModel(
+      ruanganId: json['ruangan_id'],
+      namaRuangan: json['nama_ruangan'],
       ustadz: UstadzLaporanItem.fromJson(json['ustadz'] ?? {}),
       tahunPelajaran: json['tahun_pelajaran'] ?? '-',
       totalSesi: json['total_sesi'] ?? 0,
@@ -321,7 +334,7 @@ class RekapPelanggaranMuridItem {
 class LogPelanggaranItem {
   final int id;
   final int muridId;
-  final String namaSantri;
+  final String namaMurid;
   final String nism;
   final String tanggal;
   final String? hariTanggal;
@@ -334,7 +347,7 @@ class LogPelanggaranItem {
   LogPelanggaranItem({
     required this.id,
     required this.muridId,
-    required this.namaSantri,
+    required this.namaMurid,
     required this.nism,
     required this.tanggal,
     this.hariTanggal,
@@ -349,7 +362,7 @@ class LogPelanggaranItem {
     return LogPelanggaranItem(
       id: json['id'] ?? 0,
       muridId: json['murid_id'] ?? 0,
-      namaSantri: json['nama_santri'] ?? '',
+      namaMurid: json['nama_murid'] ?? json['nama_santri'] ?? '',
       nism: json['nism'] ?? '',
       tanggal: json['tanggal'] ?? '',
       hariTanggal: json['hari_tanggal'],
@@ -367,7 +380,7 @@ class LaporanPelanggaranMuridModel {
   final String namaRuangan;
   final String levelNama;
   final String tahunPelajaran;
-  final int totalSantri;
+  final int totalMurid;
   final int totalKasus;
   final double totalPoin;
   final int kasusSelesai;
@@ -376,7 +389,7 @@ class LaporanPelanggaranMuridModel {
   final int kasusSedang;
   final int kasusBerat;
   final List<LaporanRuanganItem> ruanganList;
-  final List<RekapPelanggaranMuridItem> rekapSantri;
+  final List<RekapPelanggaranMuridItem> rekapMurid;
   final List<LogPelanggaranItem> riwayatLog;
 
   LaporanPelanggaranMuridModel({
@@ -384,7 +397,7 @@ class LaporanPelanggaranMuridModel {
     required this.namaRuangan,
     this.levelNama = '-',
     required this.tahunPelajaran,
-    required this.totalSantri,
+    required this.totalMurid,
     required this.totalKasus,
     required this.totalPoin,
     required this.kasusSelesai,
@@ -393,7 +406,7 @@ class LaporanPelanggaranMuridModel {
     required this.kasusSedang,
     required this.kasusBerat,
     this.ruanganList = const [],
-    this.rekapSantri = const [],
+    this.rekapMurid = const [],
     this.riwayatLog = const [],
   });
 
@@ -403,7 +416,7 @@ class LaporanPelanggaranMuridModel {
       namaRuangan: json['nama_ruangan'] ?? '',
       levelNama: json['level_nama'] ?? '-',
       tahunPelajaran: json['tahun_pelajaran'] ?? '-',
-      totalSantri: json['total_santri'] ?? 0,
+      totalMurid: json['total_murid'] ?? json['total_santri'] ?? 0,
       totalKasus: json['total_kasus'] ?? 0,
       totalPoin: (json['total_poin'] is num)
           ? (json['total_poin'] as num).toDouble()
@@ -416,9 +429,10 @@ class LaporanPelanggaranMuridModel {
       ruanganList: (json['ruangan_list'] as List? ?? [])
           .map((e) => LaporanRuanganItem.fromJson(e))
           .toList(),
-      rekapSantri: (json['rekap_santri'] as List? ?? [])
-          .map((e) => RekapPelanggaranMuridItem.fromJson(e))
-          .toList(),
+      rekapMurid:
+          (json['rekap_murid'] as List? ?? json['rekap_santri'] as List? ?? [])
+              .map((e) => RekapPelanggaranMuridItem.fromJson(e))
+              .toList(),
       riwayatLog: (json['riwayat_log'] as List? ?? [])
           .map((e) => LogPelanggaranItem.fromJson(e))
           .toList(),
@@ -523,9 +537,10 @@ class LaporanUjianModel {
   final int ruanganId;
   final String namaRuangan;
   final String levelNama;
+  final bool isKelasAkhir;
   final UjianOptionItem ujian;
   final String tahunPelajaran;
-  final int totalSantri;
+  final int totalMurid;
   final double rataRataKelas;
   final double nilaiTertinggi;
   final double nilaiTerendah;
@@ -540,9 +555,10 @@ class LaporanUjianModel {
     required this.ruanganId,
     required this.namaRuangan,
     this.levelNama = '-',
+    this.isKelasAkhir = false,
     required this.ujian,
     required this.tahunPelajaran,
-    required this.totalSantri,
+    required this.totalMurid,
     required this.rataRataKelas,
     required this.nilaiTertinggi,
     required this.nilaiTerendah,
@@ -559,9 +575,10 @@ class LaporanUjianModel {
       ruanganId: json['ruangan_id'] ?? 0,
       namaRuangan: json['nama_ruangan'] ?? '',
       levelNama: json['level_nama'] ?? '-',
+      isKelasAkhir: json['is_kelas_akhir'] ?? false,
       ujian: UjianOptionItem.fromJson(json['ujian'] ?? {}),
       tahunPelajaran: json['tahun_pelajaran'] ?? '-',
-      totalSantri: json['total_santri'] ?? 0,
+      totalMurid: json['total_murid'] ?? json['total_santri'] ?? 0,
       rataRataKelas: (json['rata_rata_kelas'] is num)
           ? (json['rata_rata_kelas'] as num).toDouble()
           : 0.0,
@@ -657,7 +674,7 @@ class LaporanKenaikanKelasModel {
   final String levelNama;
   final bool isKelasAkhir;
   final String tahunPelajaran;
-  final int totalSantri;
+  final int totalMurid;
   final int totalNaikKelas;
   final int totalLulus;
   final int totalTinggalKelas;
@@ -670,7 +687,7 @@ class LaporanKenaikanKelasModel {
     this.levelNama = '-',
     this.isKelasAkhir = false,
     required this.tahunPelajaran,
-    required this.totalSantri,
+    required this.totalMurid,
     required this.totalNaikKelas,
     required this.totalLulus,
     required this.totalTinggalKelas,
@@ -685,7 +702,7 @@ class LaporanKenaikanKelasModel {
       levelNama: json['level_nama'] ?? '-',
       isKelasAkhir: json['is_kelas_akhir'] ?? false,
       tahunPelajaran: json['tahun_pelajaran'] ?? '-',
-      totalSantri: json['total_santri'] ?? 0,
+      totalMurid: json['total_murid'] ?? json['total_santri'] ?? 0,
       totalNaikKelas: json['total_naik_kelas'] ?? 0,
       totalLulus: json['total_lulus'] ?? 0,
       totalTinggalKelas: json['total_tinggal_kelas'] ?? 0,

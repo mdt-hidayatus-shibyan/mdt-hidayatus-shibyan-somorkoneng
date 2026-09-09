@@ -7,6 +7,8 @@ use App\Models\KasRuangan\PembayaranKasRuangan;
 use App\Models\KasRuangan\PengaturanKasRuangan;
 use App\Models\KasRuangan\SetoranKasRuangan;
 use App\Models\Ruangan;
+use App\Models\Tabungan\Tabungan;
+use App\Models\Tabungan\TransaksiTabungan;
 use App\Models\TahunPelajaran;
 use App\Models\User;
 use App\Repositories\MuridRuanganRepository;
@@ -64,8 +66,16 @@ class KasRuanganController extends Controller
 
         $totalMurid = $this->muridRuanganRepo->getMuridByRuanganAndTahun($ruangan->id, $tahunAktif->id ?? $ruangan->tahun_pelajaran_id, 'Aktif')->count();
         $totalTerkumpul = PembayaranKasRuangan::where('ruangan_id', $ruangan->id)->sum('jumlah_bayar');
-        $totalSudahDisetor = SetoranKasRuangan::where('ruangan_id', $ruangan->id)->sum('jumlah_setor');
-        $sisaDiTanganWali = max(0, $totalTerkumpul - $totalSudahDisetor);
+        $totalSudahDisetor = SetoranKasRuangan::where('ruangan_id', $ruangan->id)->where('status', 'Diterima')->sum('jumlah_setor');
+        $totalMenungguVerifikasi = SetoranKasRuangan::where('ruangan_id', $ruangan->id)->where('status', 'Menunggu Verifikasi')->sum('jumlah_setor');
+
+        // Rekening Tabungan Kas Ruangan
+        $tabunganKas = Tabungan::where('jenis_nasabah', 'Kas Ruangan')
+            ->where('ruangan_id', $ruangan->id)
+            ->first();
+
+        $totalDitarik = $tabunganKas ? (float) $tabunganKas->total_tarik : 0;
+        $sisaDiTanganWali = max(0, ($totalTerkumpul + $totalDitarik) - $totalSudahDisetor - $totalMenungguVerifikasi);
 
         $ruanganList = $accessibleRuangans->map(fn($r) => [
             'id' => $r->id,
@@ -82,8 +92,19 @@ class KasRuanganController extends Controller
                 'total_murid' => $totalMurid,
                 'total_terkumpul' => (int) $totalTerkumpul,
                 'total_sudah_disetor' => (int) $totalSudahDisetor,
+                'total_menunggu_verifikasi' => (int) $totalMenungguVerifikasi,
+                'total_ditarik' => (int) $totalDitarik,
                 'sisa_di_tangan_wali' => (int) $sisaDiTanganWali,
                 'ruangan_list' => $ruanganList,
+                'tabungan' => $tabunganKas ? [
+                    'id' => $tabunganKas->id,
+                    'nomor_rekening' => $tabunganKas->nomor_rekening,
+                    'nama_rekening' => $tabunganKas->nama_rekening,
+                    'saldo' => (int) $tabunganKas->saldo,
+                    'total_setor' => (int) $tabunganKas->total_setor,
+                    'total_tarik' => (int) $tabunganKas->total_tarik,
+                    'status' => $tabunganKas->status,
+                ] : null,
             ]
         ], 200);
     }
@@ -247,7 +268,8 @@ class KasRuanganController extends Controller
                 try {
                     $carbon = Carbon::parse($tgl)->locale('id');
                     $hariTanggal = $carbon->isoFormat('dddd, D MMMM YYYY');
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                }
             }
 
             return [
@@ -267,7 +289,7 @@ class KasRuanganController extends Controller
     }
 
     // =========================================================================
-    // SETORAN KAS KE BENDAHARA MADRASAH
+    // SETORAN KAS KE TABUNGAN MADRASAH
     // =========================================================================
 
     public function getRiwayatSetoran(Request $request)
@@ -293,15 +315,23 @@ class KasRuanganController extends Controller
 
         $ruangan = Ruangan::with('level')->findOrFail($ruanganId);
 
-        $setorans = SetoranKasRuangan::with(['penyetor.ustadz', 'penerima.ustadz'])
+        $setorans = SetoranKasRuangan::with(['penyetor.ustadz', 'penerima.ustadz', 'verifikator.ustadz', 'transaksiTabungan'])
             ->where('ruangan_id', $ruanganId)
             ->latest('tanggal_setor')
             ->latest('id')
             ->get();
 
         $terkumpul = PembayaranKasRuangan::where('ruangan_id', $ruanganId)->sum('jumlah_bayar');
-        $disetor = $setorans->sum('jumlah_setor');
-        $diWali = max(0, $terkumpul - $disetor);
+        $disetor = $setorans->where('status', 'Diterima')->sum('jumlah_setor');
+        $menunggu = $setorans->where('status', 'Menunggu Verifikasi')->sum('jumlah_setor');
+
+        // Rekening Tabungan Kas Ruangan
+        $tabunganKas = Tabungan::where('jenis_nasabah', 'Kas Ruangan')
+            ->where('ruangan_id', $ruanganId)
+            ->first();
+
+        $totalDitarik = $tabunganKas ? (float) $tabunganKas->total_tarik : 0;
+        $diWali = max(0, ($terkumpul + $totalDitarik) - $disetor - $menunggu);
 
         $list = $setorans->map(function ($s) {
             $tgl = $s->tanggal_setor;
@@ -310,7 +340,8 @@ class KasRuanganController extends Controller
                 try {
                     $carbon = Carbon::parse($tgl)->locale('id');
                     $hariTanggal = $carbon->isoFormat('dddd, D MMMM YYYY');
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                }
             }
 
             return [
@@ -319,12 +350,52 @@ class KasRuanganController extends Controller
                 'tanggal_setor' => is_string($s->tanggal_setor) ? $s->tanggal_setor : ($s->tanggal_setor?->format('Y-m-d') ?? date('Y-m-d')),
                 'hari_tanggal' => $hariTanggal ?? ($s->tanggal_setor ? (string)$s->tanggal_setor : date('Y-m-d')),
                 'jumlah_setor' => (int) $s->jumlah_setor,
+                'status' => $s->status ?? 'Menunggu Verifikasi',
+                'catatan_verifikasi' => $s->catatan_verifikasi,
+                'diverifikasi_oleh_nama' => $s->verifikator?->ustadz?->nama_lengkap ?? $s->verifikator?->name,
+                'diverifikasi_pada' => $s->diverifikasi_pada ? $s->diverifikasi_pada->format('d-m-Y H:i') : null,
                 'keterangan' => $s->keterangan ?? '-',
                 'penerima_id' => $s->penerima_id,
-                'penerima_nama' => $s->penerima?->ustadz?->nama_lengkap ?? $s->penerima?->name ?? 'Bendahara Madrasah',
+                'penerima_nama' => $s->penerima?->ustadz?->nama_lengkap ?? $s->penerima?->name ?? 'Petugas Tabungan',
                 'disetor_oleh_nama' => $s->penyetor?->ustadz?->nama_lengkap ?? $s->penyetor?->name ?? 'Wali Ruangan',
+                'can_edit' => ($s->status ?? 'Menunggu Verifikasi') === 'Menunggu Verifikasi',
+                'can_delete' => ($s->status ?? 'Menunggu Verifikasi') === 'Menunggu Verifikasi',
             ];
         });
+
+        // Riwayat Penarikan dari Tabungan Kas Ruangan
+        $penarikanList = [];
+        if ($tabunganKas) {
+            $penarikans = TransaksiTabungan::with(['petugas.ustadz', 'kategoriPenarikan'])
+                ->where('tabungan_id', $tabunganKas->id)
+                ->where('jenis_transaksi', 'Tarik')
+                ->latest('tanggal')
+                ->latest('id')
+                ->get();
+
+            $penarikanList = $penarikans->map(function ($p) {
+                $tgl = $p->tanggal;
+                $hariTanggal = null;
+                if ($tgl) {
+                    try {
+                        $carbon = Carbon::parse($tgl)->locale('id');
+                        $hariTanggal = $carbon->isoFormat('dddd, D MMMM YYYY');
+                    } catch (\Exception $e) {
+                    }
+                }
+
+                return [
+                    'id' => $p->id,
+                    'kode_transaksi' => $p->kode_transaksi,
+                    'tanggal' => is_string($p->tanggal) ? $p->tanggal : ($p->tanggal?->format('Y-m-d') ?? date('Y-m-d')),
+                    'hari_tanggal' => $hariTanggal ?? ($p->tanggal ? (string)$p->tanggal : date('Y-m-d')),
+                    'nominal' => (int) ($p->nominal_bersih ?? $p->nominal_kotor ?? $p->nominal ?? 0),
+                    'keterangan' => $p->keterangan ?? '-',
+                    'kategori' => $p->kategoriPenarikan?->nama ?? 'Penarikan Kas',
+                    'petugas_nama' => $p->petugas?->ustadz?->nama_lengkap ?? $p->petugas?->name ?? 'Petugas Tabungan',
+                ];
+            })->values()->all();
+        }
 
         return response()->json([
             'success' => true,
@@ -334,15 +405,26 @@ class KasRuanganController extends Controller
                 'level_nama' => $ruangan->level->nama_level ?? '-',
                 'total_terkumpul' => (int) $terkumpul,
                 'total_disetor' => (int) $disetor,
+                'total_menunggu_verifikasi' => (int) $menunggu,
+                'total_ditarik' => (int) $totalDitarik,
                 'sisa_di_tangan_wali' => (int) $diWali,
+                'tabungan' => $tabunganKas ? [
+                    'id' => $tabunganKas->id,
+                    'nomor_rekening' => $tabunganKas->nomor_rekening,
+                    'nama_rekening' => $tabunganKas->nama_rekening,
+                    'saldo' => (int) $tabunganKas->saldo,
+                    'total_setor' => (int) $tabunganKas->total_setor,
+                    'total_tarik' => (int) $tabunganKas->total_tarik,
+                ] : null,
                 'list' => $list,
+                'penarikan_list' => $penarikanList,
             ]
         ], 200);
     }
 
     public function getPenerimaList(Request $request)
     {
-        $users = User::role(['administrator', 'staff'])->get();
+        $users = User::role(['administrator', 'staff', 'petugas-tabungan', 'bendahara'])->get();
         if ($users->isEmpty()) {
             $users = User::all();
         }
@@ -351,7 +433,7 @@ class KasRuanganController extends Controller
             'id' => $u->id,
             'name' => $u->ustadz?->nama_lengkap ?? $u->name,
             'username' => $u->username,
-            'role' => $u->getRoleNames()->first() ?? 'Staff / Bendahara',
+            'role' => $u->getRoleNames()->first() ?? 'Petugas Tabungan / Staf',
         ]);
 
         return response()->json([
@@ -380,8 +462,12 @@ class KasRuanganController extends Controller
 
         $ruanganId = $request->ruangan_id;
         $terkumpul = PembayaranKasRuangan::where('ruangan_id', $ruanganId)->sum('jumlah_bayar');
-        $disetor = SetoranKasRuangan::where('ruangan_id', $ruanganId)->sum('jumlah_setor');
-        $diWali = max(0, $terkumpul - $disetor);
+        $disetor = SetoranKasRuangan::where('ruangan_id', $ruanganId)->where('status', 'Diterima')->sum('jumlah_setor');
+        $menunggu = SetoranKasRuangan::where('ruangan_id', $ruanganId)->where('status', 'Menunggu Verifikasi')->sum('jumlah_setor');
+
+        $tabunganKas = Tabungan::where('jenis_nasabah', 'Kas Ruangan')->where('ruangan_id', $ruanganId)->first();
+        $totalDitarik = $tabunganKas ? (float) $tabunganKas->total_tarik : 0;
+        $diWali = max(0, ($terkumpul + $totalDitarik) - $disetor - $menunggu);
 
         if ($request->jumlah_setor > $diWali) {
             return response()->json([
@@ -393,7 +479,7 @@ class KasRuanganController extends Controller
         $userId = $request->user()->id;
         $penerimaId = $request->penerima_id;
         if (!$penerimaId) {
-            $admin = User::role(['administrator', 'staff'])->first() ?? User::first();
+            $admin = User::role(['administrator', 'staff', 'petugas-tabungan'])->first() ?? User::first();
             $penerimaId = $admin->id ?? $userId;
         }
 
@@ -406,17 +492,17 @@ class KasRuanganController extends Controller
                 'tanggal_setor' => $request->tanggal_setor,
                 'jumlah_setor' => $request->jumlah_setor,
                 'keterangan' => $request->keterangan,
+                'status' => 'Menunggu Verifikasi',
             ]);
-
-            $this->kunciCicilan($ruanganId, $request->jumlah_setor);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Alhamdulillah, setoran kas ke Bendahara Madrasah berhasil dicatat dan masuk ke Brankas!',
+                'message' => 'Alhamdulillah, pengajuan setoran kas ke Tabungan Madrasah berhasil dicatat. Menunggu verifikasi petugas tabungan.',
                 'data' => [
                     'id' => $setoran->id,
+                    'status' => $setoran->status,
                 ]
             ], 200);
         } catch (\Exception $e) {
@@ -430,6 +516,15 @@ class KasRuanganController extends Controller
 
     public function updateSetoran(Request $request, $id)
     {
+        $setoran = SetoranKasRuangan::findOrFail($id);
+
+        if ($setoran->status !== 'Menunggu Verifikasi') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Setoran tidak dapat diubah karena statusnya sudah ' . $setoran->status . '.'
+            ], 422);
+        }
+
         $validator = Validator::make($request->all(), [
             'jumlah_setor' => 'required|numeric|min:1000',
             'tanggal_setor' => 'required|date',
@@ -445,24 +540,24 @@ class KasRuanganController extends Controller
             ], 422);
         }
 
+        $ruanganId = $setoran->ruangan_id;
+        $terkumpul = PembayaranKasRuangan::where('ruangan_id', $ruanganId)->sum('jumlah_bayar');
+        $disetor = SetoranKasRuangan::where('ruangan_id', $ruanganId)->where('status', 'Diterima')->sum('jumlah_setor');
+        $menungguLain = SetoranKasRuangan::where('ruangan_id', $ruanganId)->where('status', 'Menunggu Verifikasi')->where('id', '!=', $id)->sum('jumlah_setor');
+
+        $tabunganKas = Tabungan::where('jenis_nasabah', 'Kas Ruangan')->where('ruangan_id', $ruanganId)->first();
+        $totalDitarik = $tabunganKas ? (float) $tabunganKas->total_tarik : 0;
+        $diWali = max(0, ($terkumpul + $totalDitarik) - $disetor - $menungguLain);
+
+        if ($request->jumlah_setor > $diWali) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jumlah setoran baru (' . number_format($request->jumlah_setor, 0, ',', '.') . ') melebihi total kas di tangan Wali (' . number_format($diWali, 0, ',', '.') . ').'
+            ], 422);
+        }
+
         DB::beginTransaction();
         try {
-            $setoran = SetoranKasRuangan::findOrFail($id);
-            $ruanganId = $setoran->ruangan_id;
-
-            // Buka kunci lama terlebih dahulu (Kembalikan status uang ke Wali Kelas)
-            $this->bukaKunciCicilan($ruanganId, $setoran->jumlah_setor);
-
-            // Cek apakah uang di Wali Kelas cukup untuk target setoran yang baru
-            $uangDiWali = PembayaranKasRuangan::where('ruangan_id', $ruanganId)->where('is_disetor', false)->sum('jumlah_bayar');
-            if ($request->jumlah_setor > $uangDiWali) {
-                throw new \Exception('Jumlah setoran baru melebihi total uang kas yang ada di tangan Wali Kelas.');
-            }
-
-            // Kunci ulang cicilan murid berdasarkan nominal baru
-            $this->kunciCicilan($ruanganId, $request->jumlah_setor);
-
-            // Update berkas setoran
             $setoran->update([
                 'tanggal_setor' => $request->tanggal_setor,
                 'jumlah_setor' => $request->jumlah_setor,
@@ -474,7 +569,7 @@ class KasRuanganController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Data setoran ke Bendahara berhasil diperbarui!'
+                'message' => 'Pengajuan setoran kas berhasil diperbarui!'
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -487,21 +582,23 @@ class KasRuanganController extends Controller
 
     public function hapusSetoran(Request $request, $id)
     {
+        $setoran = SetoranKasRuangan::findOrFail($id);
+
+        if ($setoran->status !== 'Menunggu Verifikasi') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Setoran tidak dapat dibatalkan karena statusnya sudah ' . $setoran->status . '.'
+            ], 422);
+        }
+
         DB::beginTransaction();
         try {
-            $setoran = SetoranKasRuangan::findOrFail($id);
-
-            // Buka kembali semua cicilan murid yang pernah dikunci oleh nominal setoran ini
-            $this->bukaKunciCicilan($setoran->ruangan_id, $setoran->jumlah_setor);
-
-            // Hapus berkas setoran
             $setoran->delete();
-
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Data setoran berhasil dibatalkan. Status uang telah dikembalikan ke Wali Kelas!'
+                'message' => 'Pengajuan setoran kas berhasil dibatalkan.'
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();

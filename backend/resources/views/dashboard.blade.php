@@ -70,7 +70,7 @@
                 class="m3-glass-card p-3.5 flex flex-col items-center justify-center text-center hover:border-indigo-400/60 dark:hover:border-indigo-500/50 hover:bg-indigo-50/20 transition-all duration-200 group active:scale-95">
                 <div
                     class="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200/60 dark:border-indigo-800/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-2 text-lg group-hover:scale-110 transition-transform">
-                    <i class="bi bi-piggy-bank"></i>
+                    <i class="bi bi-wallet2"></i>
                 </div>
                 <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">Kas Ruangan</span>
             </a>
@@ -270,7 +270,7 @@
                     </div>
                     <div
                         class="mt-2 text-[10px] font-bold text-zinc-500 dark:text-zinc-400 border-t border-dashed border-zinc-200/80 dark:border-zinc-800/80 pt-2 truncate">
-                        <i class="bi bi-piggy-bank-fill text-indigo-500 mr-1"></i> Disetorkan
+                        <i class="bi bi-wallet-fill text-indigo-500 mr-1"></i> Disetorkan
                     </div>
                 </div>
             </div>

@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\KasRuanganController;
 use App\Http\Controllers\Api\TagihanController;
 use App\Http\Controllers\Api\MuridController;
 use App\Http\Controllers\Api\LaporanController;
+use App\Http\Controllers\Api\TabunganApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -125,6 +126,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/bantuan/laporan', [\App\Http\Controllers\Api\BantuanController::class, 'simpanLaporan']);
     Route::get('/bantuan/riwayat', [\App\Http\Controllers\Api\BantuanController::class, 'getRiwayat']);
 
+    // 2.12 Tabungan Madrasah (Ustadz & Wali Ruangan)
+    Route::get('/tabungan/ustadz/rekening', [TabunganApiController::class, 'getRingkasanUstadz']);
+    Route::get('/tabungan/ruangan', [TabunganApiController::class, 'getTabunganRuangan']);
+    Route::get('/tabungan/detail/{id}', [TabunganApiController::class, 'getDetailTabungan']);
+    Route::post('/tabungan/setor', [TabunganApiController::class, 'setorTunai']);
+    Route::get('/tabungan/cari', [TabunganApiController::class, 'cariRekening']);
+
     // =========================================================================
     // 3. APLIKASI MURID & WALI MURID (app_murid)
     // =========================================================================
@@ -136,7 +144,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pelanggaran/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getPelanggaranAnak']);
         Route::get('/nilai/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getNilaiAnak']);
         Route::get('/jadwal/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getJadwalAnak']);
+        Route::get('/kenaikan/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getKenaikanAnak']);
         Route::get('/dokumen/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getDokumenAnak']);
+        Route::get('/pengumuman', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getPengumuman']);
+        Route::get('/tabungan/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getTabunganAnak']);
+        Route::post('/tabungan/komplain', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'ajukanKomplain']);
+        Route::get('/tabungan/komplain/{murid_id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getRiwayatKomplain']);
+        Route::post('/tabungan/komplain/{id}/batal', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'batalkanKomplain']);
+        Route::get('/koperasi/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getKoperasiAnak']);
         Route::post('/update-pin', [\App\Http\Controllers\Api\AuthController::class, 'updatePinWali']);
     });
 });

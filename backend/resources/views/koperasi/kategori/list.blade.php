@@ -1,7 +1,9 @@
 ﻿<!-- Toolbar Header Table -->
-<div class="p-4 sm:p-5 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-zinc-950/70 flex justify-between items-center">
+<div
+    class="p-4 sm:p-5 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-zinc-950/70 flex justify-between items-center">
     <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-500/20 shrink-0">
+        <div
+            class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-500/20 shrink-0">
             <i class="bi bi-tag-fill text-base"></i>
         </div>
         <div>
@@ -14,11 +16,6 @@
         </div>
     </div>
 
-    <a href="{{ route('koperasi.kategori.create') }}"
-        class="action-modal min-h-[38px] px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
-        <i class="bi bi-plus-lg"></i>
-        <span>Kategori Baru</span>
-    </a>
 </div>
 
 <!-- Table -->
@@ -41,7 +38,8 @@
                     <td class="text-center font-bold text-zinc-400">{{ $idx + 1 }}</td>
                     <td>
                         <div class="flex items-center gap-2.5">
-                            <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-sm shrink-0 border border-purple-500/20">
+                            <div
+                                class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-sm shrink-0 border border-purple-500/20">
                                 <i class="bi {{ $kat->icon ?: 'bi-tag-fill' }}"></i>
                             </div>
                             <div>
@@ -54,7 +52,8 @@
                     </td>
                     <td>
                         <div class="flex items-center gap-1.5">
-                            <code class="px-2 py-0.5 rounded text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-mono">
+                            <code
+                                class="px-2 py-0.5 rounded text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-mono">
                                 {{ $kat->icon ?: 'bi-tag-fill' }}
                             </code>
                         </div>
@@ -63,7 +62,8 @@
                         {{ $kat->keterangan ?: '-' }}
                     </td>
                     <td class="text-center font-bold">
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
+                        <span
+                            class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
                             {{ $kat->produks_count }} Produk
                         </span>
                     </td>
@@ -90,7 +90,8 @@
                                     </button>
                                 </form>
                             @else
-                                <span class="w-8 h-8 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-zinc-300 dark:text-zinc-700 flex items-center justify-center cursor-not-allowed"
+                                <span
+                                    class="w-8 h-8 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-zinc-300 dark:text-zinc-700 flex items-center justify-center cursor-not-allowed"
                                     title="Tidak dapat dihapus karena memiliki {{ $kat->produks_count }} produk">
                                     <i class="bi bi-trash text-xs"></i>
                                 </span>

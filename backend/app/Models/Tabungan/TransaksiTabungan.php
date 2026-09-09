@@ -21,6 +21,11 @@ class TransaksiTabungan extends Model
         'saldo_akhir' => 'float',
     ];
 
+    public function getNominalAttribute()
+    {
+        return (float) ($this->nominal_bersih ?? $this->nominal_kotor ?? 0);
+    }
+
     public function tabungan()
     {
         return $this->belongsTo(Tabungan::class, 'tabungan_id');
@@ -39,5 +44,15 @@ class TransaksiTabungan extends Model
     public function kategoriPenarikan()
     {
         return $this->belongsTo(KategoriPenarikan::class, 'kategori_penarikan_id');
+    }
+
+    public function komplains()
+    {
+        return $this->hasMany(TabunganKomplain::class, 'transaksi_tabungan_id')->orderBy('id', 'desc');
+    }
+
+    public function komplainAktif()
+    {
+        return $this->hasOne(TabunganKomplain::class, 'transaksi_tabungan_id')->latestOfMany();
     }
 }

@@ -39,6 +39,17 @@ class NilaiUjian extends Model
     {
         return $this->belongsTo(JadwalUjian::class);
     }
+    public function mataPelajaran()
+    {
+        return $this->hasOneThrough(
+            MataPelajaran::class,
+            JadwalUjian::class,
+            'id',
+            'id',
+            'jadwal_ujian_id',
+            'mata_pelajaran_id'
+        );
+    }
     public function penginput()
     {
         return $this->belongsTo(User::class, 'diinput_oleh');

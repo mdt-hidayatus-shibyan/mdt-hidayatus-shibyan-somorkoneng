@@ -139,16 +139,17 @@
 
 <body>
 
-    <div class="no-print fixed top-5 right-5 flex gap-3 z-50">
-        <!-- Indikator Arsip Beku -->
+    <!-- TOMBOL AKSI & INDIKATOR -->
+    <div
+        class="no-print sticky top-0 z-50 flex flex-wrap justify-center items-center py-3 px-4 bg-slate-900 text-white gap-3 border-b mb-6 shadow-md">
         <div
-            class="px-3 py-2 bg-amber-100 text-amber-800 border border-amber-300 rounded font-bold flex items-center shadow-sm text-sm">
-            🛡️ DOKUMEN BEKU (ARSIP)
+            class="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-400/40 rounded-lg text-xs font-bold flex items-center shadow-2xs">
+            🛡️ DOKUMEN BEKU (ARSIP RESMI)
         </div>
-        <button onclick="window.close()"
-            class="px-4 py-2 bg-slate-600 text-white rounded font-bold shadow hover:bg-slate-700">Tutup</button>
         <button onclick="window.print()"
-            class="px-4 py-2 bg-[#0F3D36] text-white rounded font-bold shadow hover:bg-[#0a2e28]">🖨️ Cetak A4</button>
+            class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black flex items-center gap-1.5 transition-all shadow-md active:scale-95">
+            🖨️ Cetak / Simpan PDF
+        </button>
     </div>
 
     <div class="sk-container text-[11pt] text-justify">
@@ -325,6 +326,16 @@
             </tr>
         </table>
     </div>
+
+    @if (request()->has('print') || request()->has('auto_print') || request()->has('download'))
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    window.print();
+                }, 600);
+            });
+        </script>
+    @endif
 
 </body>
 

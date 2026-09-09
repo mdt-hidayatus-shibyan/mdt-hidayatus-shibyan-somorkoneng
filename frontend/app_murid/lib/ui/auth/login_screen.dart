@@ -150,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 Text(
-                  'Portal Monitoring Santri & Wali Murid',
+                  'Portal Monitoring Murid & Wali Murid',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -248,7 +248,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'Identitas Wali / Santri',
+                  'Identitas Wali / Murid',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
@@ -259,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Masukkan No. Kartu Keluarga (KK), No. Registrasi Wali, atau NISM Santri Anda.',
+              'Masukkan No. Kartu Keluarga (KK), No. Registrasi Wali, atau NISM Murid Anda.',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -458,7 +458,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     Text(
-                      '${_kampungName ?? "-"} • $_totalAnak Santri Aktif',
+                      '${_kampungName ?? "-"} • $_totalAnak Murid Aktif',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,

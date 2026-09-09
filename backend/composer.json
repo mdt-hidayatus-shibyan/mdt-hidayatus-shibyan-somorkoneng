@@ -15,6 +15,7 @@
         "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
+        "picqer/php-barcode-generator": "*",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-backup": "*",
         "spatie/laravel-permission": "^8.3"

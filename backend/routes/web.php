@@ -72,6 +72,7 @@ use App\Http\Controllers\Tabungan\PembagianTabunganController;
 use App\Http\Controllers\Tabungan\RincianTabunganController;
 use App\Http\Controllers\Tabungan\CekMutasiTabunganController;
 use App\Http\Controllers\Tabungan\PecahanUangTabunganController;
+use App\Http\Controllers\Tabungan\KomplainTabunganController;
 
 // 9. Koperasi Madrasah (POS Kasir & Toko) Controllers
 use App\Http\Controllers\Koperasi\KoperasiDashboardController;
@@ -81,6 +82,7 @@ use App\Http\Controllers\Koperasi\PaketKoperasiController;
 use App\Http\Controllers\Koperasi\KasirKoperasiController;
 use App\Http\Controllers\Koperasi\TransaksiKoperasiController;
 use App\Http\Controllers\Koperasi\StokKoperasiController;
+use App\Http\Controllers\Koperasi\PembelianKoperasiController;
 use App\Http\Controllers\Koperasi\LaporanKoperasiController;
 
 // 10. Pengaturan Sistem & RBAC Controllers
@@ -143,6 +145,10 @@ Route::get('/storage/{path}', function ($path) {
         'Cache-Control' => 'public, max-age=86400',
     ]);
 })->where('path', '.*')->name('storage.local');
+
+// Arsip Dokumen Publik (Cetak & Unduh PDF via ID UUID Dokumen)
+Route::get('/arsip-dokumen/{id}/cetak', [ArsipDokumenController::class, 'cetak'])->name('arsip.cetak');
+Route::get('/arsip-dokumen/{id}/download', [ArsipDokumenController::class, 'download'])->name('arsip.download');
 
 
 /*
@@ -493,8 +499,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/arsip-rapor', [ArsipRaporController::class, 'index'])->name('arsip-rapor.index');
     Route::get('/arsip-sk', [ArsipSKController::class, 'index'])->name('arsip-sk.index');
     Route::get('/arsip-ijazah', [ArsipIjazahController::class, 'index'])->name('arsip-ijazah.index');
-    Route::get('/arsip-dokumen/{id}/cetak', [ArsipDokumenController::class, 'cetak'])->name('arsip.cetak');
-    Route::get('/arsip-dokumen/{id}/download', [ArsipDokumenController::class, 'download'])->name('arsip.download');
 
 
     // ==========================================
@@ -549,6 +553,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [SetoranKasRuanganController::class, 'indexSetoran'])->name('index');
         Route::get('/{ruangan}/riwayat', [SetoranKasRuanganController::class, 'riwayatSetoran'])->name('riwayat');
         Route::post('/', [SetoranKasRuanganController::class, 'simpanSetoran'])->name('simpan');
+        Route::post('/{id}/verifikasi', [SetoranKasRuanganController::class, 'verifikasiSetoran'])->name('verifikasi');
         Route::put('/{id}', [SetoranKasRuanganController::class, 'updateSetoran'])->name('update');
         Route::delete('/{id}', [SetoranKasRuanganController::class, 'destroySetoran'])->name('destroy');
     });
@@ -631,6 +636,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/pecahan/cetak', [PecahanUangTabunganController::class, 'cetak'])->name('pecahan.cetak');
         Route::get('/pecahan/slip/{id}', [PecahanUangTabunganController::class, 'cetakSlip'])->name('pecahan.cetak-slip');
         Route::get('/pecahan/slip-massal', [PecahanUangTabunganController::class, 'cetakSlipMassal'])->name('pecahan.cetak-slip-massal');
+
+        // Verifikasi Komplain Setor Tunai Tabungan Santri
+        Route::get('/komplain', [KomplainTabunganController::class, 'index'])->name('komplain.index');
+        Route::get('/komplain/{id}', [KomplainTabunganController::class, 'show'])->name('komplain.show');
+        Route::post('/komplain/{id}/verifikasi', [KomplainTabunganController::class, 'verifikasi'])->name('komplain.verifikasi');
     });
 
 
@@ -650,6 +660,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/pos/struk/{id}', [KasirKoperasiController::class, 'struk'])->name('kasir.struk');
 
         // Master Produk & Kategori
+        Route::get('/produk/barcode/cetak-massal', [ProdukKoperasiController::class, 'cetakBarcodeMassal'])->name('produk.barcode-massal');
+        Route::get('/produk/barcode/print-sheet', [ProdukKoperasiController::class, 'printSheet'])->name('produk.barcode-sheet');
+        Route::get('/produk/{produk}/barcode/cetak', [ProdukKoperasiController::class, 'cetakBarcodeSingle'])->name('produk.barcode-single');
         Route::post('/produk/{produk}/toggle-status', [ProdukKoperasiController::class, 'toggleStatus'])->name('produk.toggle-status');
         Route::post('/kategori/{kategori}/toggle-status', [KategoriProdukController::class, 'toggleStatus'])->name('kategori.toggle-status');
         Route::resource('kategori', KategoriProdukController::class);
@@ -664,6 +677,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/stok/opname', [StokKoperasiController::class, 'opnameModal'])->name('stok.opname');
         Route::get('/stok', [StokKoperasiController::class, 'index'])->name('stok.index');
         Route::post('/stok', [StokKoperasiController::class, 'store'])->name('stok.store');
+
+        // Pembelian / Kulakan / Restock Grosir
+        Route::get('/pembelian', [PembelianKoperasiController::class, 'index'])->name('pembelian.index');
+        Route::get('/pembelian/create', [PembelianKoperasiController::class, 'create'])->name('pembelian.create');
+        Route::post('/pembelian', [PembelianKoperasiController::class, 'store'])->name('pembelian.store');
+        Route::get('/pembelian/{id}', [PembelianKoperasiController::class, 'show'])->name('pembelian.show');
+        Route::get('/pembelian/{id}/cetak', [PembelianKoperasiController::class, 'cetak'])->name('pembelian.cetak');
+        Route::post('/pembelian/{id}/lunasi', [PembelianKoperasiController::class, 'lunasi'])->name('pembelian.lunasi');
+        Route::post('/pembelian/{id}/batal', [PembelianKoperasiController::class, 'batal'])->name('pembelian.batal');
 
         // Riwayat Transaksi & Detail
         Route::get('/transaksi', [TransaksiKoperasiController::class, 'index'])->name('transaksi.index');

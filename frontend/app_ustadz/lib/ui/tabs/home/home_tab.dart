@@ -18,6 +18,7 @@ import '../murid/direktori_murid_screen.dart';
 import '../pelanggaran/referensi_pelanggaran_screen.dart';
 import '../presensi/form_presensi_screen.dart';
 import '../tagihan/tagihan_screen.dart';
+import '../tabungan/tabungan_screen.dart';
 import '../akun/hubungi_admin_screen.dart';
 import 'kalendar_screen.dart';
 import 'pengumuman_screen.dart';
@@ -412,6 +413,34 @@ class _HomeTabState extends State<HomeTab> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _buildQuickAction(
+                      Icons.account_balance_wallet_rounded,
+                      'Tabungan',
+                      isDark
+                          ? const Color(0xFF0F2313)
+                          : const Color(0xFFE8F5E9),
+                      isDark ? AppColors.primaryDark : AppColors.primaryLight,
+                      () {
+                        HapticHelper.light();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const TabunganScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    const Expanded(child: SizedBox()),
+                    const SizedBox(width: 8),
+                    const Expanded(child: SizedBox()),
+                    const SizedBox(width: 8),
+                    const Expanded(child: SizedBox()),
+                  ],
+                ),
                 const SizedBox(height: 20),
 
                 // Menu Tambahan Khusus Wali Ruangan
@@ -534,37 +563,6 @@ class _HomeTabState extends State<HomeTab> {
                           );
                         },
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      _buildQuickAction(
-                        Icons.school_rounded,
-                        'Kenaikan Kelas',
-                        isDark
-                            ? const Color(0xFF241538)
-                            : const Color(0xFFF3E8FF),
-                        AppColors.violetAccent,
-                        () {
-                          HapticHelper.light();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PusatLaporanScreen(
-                                initialRuanganId: user?.ruanganWaliId,
-                                initialTabIndex: 4,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      const Expanded(child: SizedBox()),
-                      const SizedBox(width: 8),
-                      const Expanded(child: SizedBox()),
-                      const SizedBox(width: 8),
-                      const Expanded(child: SizedBox()),
                     ],
                   ),
                   const SizedBox(height: 24),

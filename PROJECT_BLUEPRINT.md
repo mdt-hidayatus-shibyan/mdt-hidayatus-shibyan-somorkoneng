@@ -1,8 +1,8 @@
-﻿# 🏛️ MDT HIDAYATUS SHIBYAN - MASTER PROJECT BLUEPRINT & GUIDELINES
+# 🏛️ MDT HIDAYATUS SHIBYAN - MASTER PROJECT BLUEPRINT & GUIDELINES
 
 > **Dokumen Panduan Arsitektur, Desain Sistem, dan Standar Alur Kerja**  
-> *Versi 2.0 — Terakhir Diperbarui: September 2026*  
-> *Dokumen ini adalah single-source-of-truth (SSOT) agar implementasi fitur, styling, tata letak UI, dan komunikasi API tetap konsisten.*
+> _Versi 2.0 — Terakhir Diperbarui: September 2026_  
+> _Dokumen ini adalah single-source-of-truth (SSOT) agar implementasi fitur, styling, tata letak UI, dan komunikasi API tetap konsisten._
 
 ---
 
@@ -36,19 +36,21 @@ D:\laragon\www\mdt_hidayatus_shibyan\
 ## 🎨 2. DESIGN SYSTEM & ATURAN UI/UX
 
 ### 2.1. Standar Brand & Palette Warna
-| Token Name | Light Theme | Dark Theme (AMOLED) | Kegunaan |
-| :--- | :--- | :--- | :--- |
-| `primary` | `#146C2E` (Forest Green) | `#3BC05B` (Bright Emerald) | Brand Utama, Tombol Utama, Active Tab |
-| `primaryContainer` | `#DCFCE7` (Emerald 100) | `#00531E` (Emerald 950) | Background Badge, Highlight Card |
-| `surface` | `#FAF9F6` (Warm Canvas) | `#000000` (True Black OLED) | Background Scaffold Utama |
-| `cardGlass` | `rgba(255,255,255,0.85)` | `rgba(24,31,24,0.65)` | Kartu Glassmorphism & Kontainer |
-| `outline` | `#E4E4E7` (Zinc 200) | `#272F27` (Greenish Zinc) | Border Garis Tipis & Divider |
-| `amberAccent` | `#F59E0B` | `#FBBF24` | Poin Pelanggaran, Ranking, Warning |
-| `skyBlueAccent` | `#0284C7` | `#38BDF8` | Kalender Pendidikan, Pengumuman |
-| `violetAccent` | `#7C3AED` | `#A78BFA` | Leger Nilai, Ujian, Kenaikan Kelas |
-| `roseDanger` | `#DC2626` | `#F87171` | Hapus Data, Status Alpha, Tunggakan |
+
+| Token Name         | Light Theme              | Dark Theme (AMOLED)         | Kegunaan                              |
+| :----------------- | :----------------------- | :-------------------------- | :------------------------------------ |
+| `primary`          | `#146C2E` (Forest Green) | `#3BC05B` (Bright Emerald)  | Brand Utama, Tombol Utama, Active Tab |
+| `primaryContainer` | `#DCFCE7` (Emerald 100)  | `#00531E` (Emerald 950)     | Background Badge, Highlight Card      |
+| `surface`          | `#FAF9F6` (Warm Canvas)  | `#000000` (True Black OLED) | Background Scaffold Utama             |
+| `cardGlass`        | `rgba(255,255,255,0.85)` | `rgba(24,31,24,0.65)`       | Kartu Glassmorphism & Kontainer       |
+| `outline`          | `#E4E4E7` (Zinc 200)     | `#272F27` (Greenish Zinc)   | Border Garis Tipis & Divider          |
+| `amberAccent`      | `#F59E0B`                | `#FBBF24`                   | Poin Pelanggaran, Ranking, Warning    |
+| `skyBlueAccent`    | `#0284C7`                | `#38BDF8`                   | Kalender Pendidikan, Pengumuman       |
+| `violetAccent`     | `#7C3AED`                | `#A78BFA`                   | Leger Nilai, Ujian, Kenaikan Kelas    |
+| `roseDanger`       | `#DC2626`                | `#F87171`                   | Hapus Data, Status Alpha, Tunggakan   |
 
 ### 2.2. Standar Presensi Status Badge
+
 - **Hadir (H)**: Hijau (`#15803D` text / `#DCFCE7` bg)
 - **Izin (I)**: Biru (`#1D4ED8` text / `#DBEAFE` bg)
 - **Sakit (S)**: Kuning Amber (`#B45309` text / `#FEF3C7` bg)
@@ -56,18 +58,25 @@ D:\laragon\www\mdt_hidayatus_shibyan\
 - **Dispensasi (D)**: Ungu (`#6D28D9` text / `#EDE9FE` bg)
 
 ### 2.3. Glassmorphism & Micro-Interactions
+
 - Radius kartu: **24px - 32px**.
 - Border stroke: **1px** solid `outlineLight` / `outlineDark`.
 - Haptic Feedback: Panggil `HapticHelper.light()` atau `HapticFeedback.lightImpact()` pada setiap aksi klik tombol penting, pull-to-refresh, dan bottom sheet trigger.
 - Full Edge-to-Edge System Bar (Android 15+ compatible) dengan `transparent` statusBar & navigationBar.
+
+### 2.4. Mode Tema Aplikasi (Default: Light Mode)
+
+- **Mode Default:** Aplikasi berjalan dalam **Mode Terang (Light Mode)** secara default dengan kanvas cerah _Warm Clean Canvas_ (`#FAF9F6`).
+- **Pilihan Tema Pengguna:** Mendukung opsi _Mode Terang_, _Mode Gelap (Super AMOLED True Black #000000)_, dan _Ikuti Sistem_ yang tersimpan permanen di `StorageService`.
 
 ---
 
 ## 🔤 3. STANDAR TERMINOLOGI RESMI (GLOSSARY)
 
 Seluruh antarmuka mobile **WAJIB** mematuhi terminologi baku berikut:
-1. **"Murid"** (Bukan "Santri" di UI Mobile) ➔ contoh: *Direktori Murid*, *Kas Murid*, *Murid Binaan*.
-2. **"Ruangan"** (Bukan "Kelas") ➔ contoh: *Kas Ruangan*, *Ruangan 1 Ula*, *Wali Ruangan*.
+
+1. **"Murid"** (Bukan "Santri" di UI Mobile) ➔ contoh: _Direktori Murid_, _Kas Murid_, _Murid Binaan_.
+2. **"Ruangan"** (Bukan "Kelas") ➔ contoh: _Kas Ruangan_, _Ruangan 1 Ula_, _Wali Ruangan_.
 3. **"Wali Ruangan"** (Bukan "Wali Kelas").
 4. **"NIGM"** (Nomor Induk Guru Madin) ➔ Read-only untuk ustadz.
 5. **"NISM"** (Nomor Induk Santri Madin) ➔ Nomor identitas murid.
@@ -78,6 +87,7 @@ Seluruh antarmuka mobile **WAJIB** mematuhi terminologi baku berikut:
 ## 🌐 4. ATURAN PENANGANAN URL GAMBAR & JARINGAN
 
 Untuk mencegah error `HTTP statusCode: 0` pada perangkat fisik dan emulator:
+
 - **Backend**: Menyimpan file di `storage/app/public/...` dan dapat diakses via `/storage/...`.
 - **Frontend Resolver**: Gunakan `ApiConstants.formatImageUrl(url)` atau `ApiClient.resolveImageUrl(url)`.
 - Resolver ini secara otomatis mendeteksi URL yang mengandung `localhost` / `127.0.0.1` atau relative path `/storage/...` dan menggantinya dengan Host/IP API yang aktif digunakan aplikasi.
@@ -88,6 +98,7 @@ Untuk mencegah error `HTTP statusCode: 0` pada perangkat fisik dan emulator:
 ## 📑 5. SPESIFIKASI MODUL & FITUR
 
 ### 🧑‍🏫 A. APLIKASI USTADZ (`app_ustadz`)
+
 1. **Dashboard Home**: Jadwal Mengajar Hari Ini, Presensi Cepat, Statistik Murid Binaan, Ringkasan Kas & SPP Ruangan.
 2. **Presensi**:
    - Presensi Murid per Sesi Mengajar (H/I/S/A/D dengan catatan).
@@ -116,6 +127,7 @@ Untuk mencegah error `HTTP statusCode: 0` pada perangkat fisik dan emulator:
 ---
 
 ### 🎓 B. APLIKASI MURID & WALI MURID (`app_murid`)
+
 1. **Autentikasi**:
    - Login menggunakan **NISM + Tanggal Lahir / PIN / Password / No HP**.
 2. **Dashboard Murid / Wali**:
@@ -148,6 +160,7 @@ Untuk mencegah error `HTTP statusCode: 0` pada perangkat fisik dan emulator:
 Semua endpoint API Laravel wajib mengembalikan JSON berformat standar:
 
 ### Success Response:
+
 ```json
 {
   "success": true,
@@ -159,6 +172,7 @@ Semua endpoint API Laravel wajib mengembalikan JSON berformat standar:
 ```
 
 ### Error Response:
+
 ```json
 {
   "success": false,

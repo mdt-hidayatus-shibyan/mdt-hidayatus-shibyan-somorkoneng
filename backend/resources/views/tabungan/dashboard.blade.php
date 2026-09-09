@@ -13,6 +13,17 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
+            <a href="{{ route('tabungan.komplain.index') }}"
+                class="inline-flex items-center justify-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/20 font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-xs shadow-2xs active:scale-95 transition-all relative">
+                <i class="bi bi-chat-square-dots-fill text-sm"></i>
+                <span>Komplain Setoran</span>
+                @if (($ringkasan['komplain_pending'] ?? 0) > 0)
+                    <span
+                        class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-black bg-rose-600 text-white rounded-full ml-1 animate-pulse">
+                        {{ $ringkasan['komplain_pending'] }}
+                    </span>
+                @endif
+            </a>
             <a href="{{ route('tabungan.cek-mutasi.index') }}"
                 class="inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-xs shadow-sm active:scale-95 transition-all">
                 <i class="bi bi-shield-check text-sm"></i>
@@ -39,6 +50,32 @@
             </a>
         </div>
     </div>
+
+    <!-- Alert Banner Komplain Setoran Pending -->
+    @if (($ringkasan['komplain_pending'] ?? 0) > 0)
+        <div
+            class="mb-6 p-4 m3-glass-card rounded-2xl md:rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-l-4 border-l-rose-500 bg-rose-500/5">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 text-lg border border-rose-500/20">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div>
+                    <h4 class="font-black text-xs text-rose-700 dark:text-rose-400 uppercase tracking-wider">
+                        Ada {{ $ringkasan['komplain_pending'] }} Pengajuan Komplain Setoran Menunggu Verifikasi
+                    </h4>
+                    <p class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        Wali murid telah mengajukan koreksi atas nominal setor tunai yang salah input. Segera periksa
+                        dan sesuaikan saldo nasabah.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('tabungan.komplain.index') }}"
+                class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl transition-colors shrink-0 text-center shadow-sm">
+                Buka Halaman Komplain
+            </a>
+        </div>
+    @endif
 
     <!-- Alert / Banner Periode Aktif -->
     @if ($periodeAktif)

@@ -84,8 +84,8 @@ class _AkademikTabState extends State<AkademikTab>
     if (selectedAnak == null) {
       return Scaffold(
         body: const EmptyStateWidget(
-          icon: Icons.child_care_rounded,
-          title: 'Pilih Santri Terlebih Dahulu',
+          icon: Icons.family_restroom_rounded,
+          title: 'Pilih Murid Terlebih Dahulu',
           subtitle: 'Silakan pilih profil anak pada menu Beranda.',
         ),
       );
@@ -100,7 +100,7 @@ class _AkademikTabState extends State<AkademikTab>
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: ModernHeader(
                 title: 'Akademik & Rapor',
-                subtitle: 'Rapor Ujian, Jadwal, SK & Ijazah Santri',
+                subtitle: 'Rapor Ujian, Info Kenaikan, SK & Ijazah Murid',
                 icon: Icons.auto_stories_rounded,
               ),
             ),
@@ -117,8 +117,8 @@ class _AkademikTabState extends State<AkademikTab>
                   icon: Icons.menu_book_rounded,
                 ),
                 SegmentedTabBarItem(
-                  label: 'Jadwal',
-                  icon: Icons.calendar_today_rounded,
+                  label: 'Kenaikan Kelas',
+                  icon: Icons.school_rounded,
                 ),
                 SegmentedTabBarItem(
                   label: 'SK & Ijazah',
@@ -152,7 +152,7 @@ class _AkademikTabState extends State<AkademikTab>
                         physics: const BouncingScrollPhysics(),
                         children: [
                           _buildRaporTab(akademik, isDark),
-                          _buildJadwalView(akademik, isDark),
+                          _buildKenaikanKelasTab(akademik, isDark),
                           _buildDokumenIjazahTab(akademik, isDark),
                         ],
                       ),
@@ -206,7 +206,7 @@ class _AkademikTabState extends State<AkademikTab>
         // 2. RINCIAN LEGER NILAI PER MAPEL
         if (ujianList.isNotEmpty) ...[
           Text(
-            'RINCIAN NILAI UJIAN SANTRI',
+            'RINCIAN NILAI UJIAN MURID',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w900,
@@ -552,16 +552,16 @@ class _AkademikTabState extends State<AkademikTab>
   }
 
   // =========================================================================
-  // TAB 2: JADWAL PELAJARAN
+  // TAB 2: INFORMASI KENAIKAN KELAS & KELULUSAN (HASIL PLENO SK RESMI)
   // =========================================================================
-  Widget _buildJadwalView(AkademikProvider akademik, bool isDark) {
-    final jadwalList = akademik.jadwalList;
+  Widget _buildKenaikanKelasTab(AkademikProvider akademik, bool isDark) {
+    final kenaikan = akademik.kenaikan;
 
-    if (jadwalList.isEmpty) {
+    if (kenaikan == null) {
       return const EmptyStateWidget(
-        icon: Icons.calendar_today_rounded,
-        title: 'Belum Ada Jadwal Pelajaran',
-        subtitle: 'Jadwal pelajaran santri di ruangan ini belum diatur.',
+        icon: Icons.school_rounded,
+        title: 'Data Belum Tersedia',
+        subtitle: 'Informasi kenaikan kelas murid belum dapat dimuat.',
       );
     }
 
@@ -571,98 +571,399 @@ class _AkademikTabState extends State<AkademikTab>
       ),
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
       children: [
-        Text(
-          'JADWAL PELAJARAN MINGGUAN (SABTU - KAMIS)',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.8,
-            color: isDark ? Colors.white60 : Colors.black54,
-          ),
-        ),
-        const SizedBox(height: 8),
+        if (kenaikan.isDisahkan) ...[
+          // 1. HERO KEPUTUSAN RESMI
+          Builder(
+            builder: (_) {
+              Color cardColor = const Color(0xFF10B981);
+              IconData cardIcon = Icons.verified_rounded;
+              String titleText = 'ALHAMDULILLAH, NAIK KELAS';
+              String subtitleText =
+                  'Dinyatakan naik ke tingkat ${kenaikan.levelTujuan ?? "-"}';
 
-        ...jadwalList.map((j) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: GlassCard(
-              padding: const EdgeInsets.all(14),
-              borderRadius: 18,
-              child: Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.primaryDark.withValues(alpha: 0.15)
-                          : AppColors.primaryLight.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
+              if (kenaikan.isLulus) {
+                cardColor = AppColors.violetAccent;
+                cardIcon = Icons.school_rounded;
+                titleText = 'ALHAMDULILLAH, LULUS';
+                subtitleText =
+                    'Dinyatakan lulus dari tingkat ${kenaikan.levelAsal}';
+              } else if (kenaikan.isTinggalKelas) {
+                cardColor = AppColors.amberAccent;
+                cardIcon = Icons.menu_book_rounded;
+                titleText = 'STATUS: TINGGAL KELAS';
+                subtitleText =
+                    'Tetap melanjutkan di tingkat ${kenaikan.levelAsal}';
+              }
+
+              return GlassCard(
+                padding: const EdgeInsets.all(20),
+                borderRadius: 24,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: cardColor.withValues(alpha: 0.18),
+                        border: Border.all(color: cardColor, width: 2),
+                      ),
+                      child: Icon(cardIcon, color: cardColor, size: 32),
                     ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    const SizedBox(height: 14),
+                    Text(
+                      titleText,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.3,
+                        color: cardColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitleText,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white70 : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: cardColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
+                          Icon(
+                            Icons.assignment_turned_in_rounded,
+                            size: 14,
+                            color: cardColor,
+                          ),
+                          const SizedBox(width: 6),
                           Text(
-                            j.hari,
+                            'SK: ${kenaikan.noSk ?? "-"}',
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              color: isDark
-                                  ? AppColors.primaryDark
-                                  : AppColors.primaryLight,
-                            ),
-                          ),
-                          Text(
-                            j.jamKe != null ? 'Jam ${j.jamKe}' : '-',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white60 : Colors.black54,
+                              fontWeight: FontWeight.w800,
+                              color: cardColor,
                             ),
                           ),
                         ],
                       ),
                     ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: 14),
+
+          // 2. RINCIAN KEPUTUSAN & AKUMULASI NILAI
+          Text(
+            'DETAIL KEPUTUSAN & HASIL BELAJAR',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.8,
+              color: isDark ? Colors.white60 : Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          GlassCard(
+            padding: const EdgeInsets.all(18),
+            borderRadius: 22,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Tahun Pelajaran',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white54 : Colors.black54,
+                      ),
+                    ),
+                    Text(
+                      kenaikan.tahunPelajaran,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Ruangan Asal',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white54 : Colors.black54,
+                      ),
+                    ),
+                    Text(
+                      kenaikan.ruanganAsal,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      kenaikan.isLulus ? 'Tingkat Kelulusan' : 'Tingkat Tujuan',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white54 : Colors.black54,
+                      ),
+                    ),
+                    Text(
+                      kenaikan.levelTujuan ?? kenaikan.levelAsal,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: isDark
+                            ? AppColors.primaryDark
+                            : AppColors.primaryLight,
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Nilai Akumulasi Akhir',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white54 : Colors.black54,
+                      ),
+                    ),
+                    Text(
+                      kenaikan.nilaiAkumulasi.toStringAsFixed(2),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF10B981),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // 3. CATATAN & PESAN WALI RUANGAN / DEWAN ASATIDZ
+          if (kenaikan.catatanWaliKelas != null &&
+              kenaikan.catatanWaliKelas!.isNotEmpty) ...[
+            Text(
+              'CATATAN WALI RUANGAN & DEWAN ASATIDZ',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.8,
+                color: isDark ? Colors.white60 : Colors.black54,
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            GlassCard(
+              padding: const EdgeInsets.all(16),
+              borderRadius: 20,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.format_quote_rounded,
+                    size: 24,
+                    color: isDark
+                        ? AppColors.primaryDark
+                        : AppColors.primaryLight,
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 10),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          j.mapel,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: isDark ? Colors.white : Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Pengampu: ${j.ustadz}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white70 : Colors.black87,
-                          ),
-                        ),
-                        Text(
-                          j.waktu,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: isDark ? Colors.white54 : Colors.black54,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      kenaikan.catatanWaliKelas!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.5,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white70 : Colors.black87,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          );
-        }),
+            const SizedBox(height: 14),
+          ],
+
+          // 4. LEGALITAS PENGESAHAN
+          GlassCard(
+            padding: const EdgeInsets.all(16),
+            borderRadius: 20,
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color:
+                        (isDark
+                                ? AppColors.primaryDark
+                                : AppColors.primaryLight)
+                            .withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.verified_user_rounded,
+                    size: 20,
+                    color: isDark
+                        ? AppColors.primaryDark
+                        : AppColors.primaryLight,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Disahkan pada ${kenaikan.tanggalDisahkanFormatted ?? kenaikan.tanggalDisahkan ?? "-"}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        'Oleh: ${kenaikan.diputuskanOleh ?? "Kepala MDT Hidayatus Shibyan"}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white54 : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ] else ...[
+          // STATUS BELUM DISAHKAN
+          GlassCard(
+            padding: const EdgeInsets.all(24),
+            borderRadius: 24,
+            child: Column(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.skyBlueAccent.withValues(alpha: 0.15),
+                    border: Border.all(
+                      color: AppColors.skyBlueAccent.withValues(alpha: 0.4),
+                      width: 2,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.pending_actions_rounded,
+                    color: AppColors.skyBlueAccent,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Keputusan Belum Disahkan',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.3,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  kenaikan.pesan ??
+                      'Keputusan hasil belajar dan kenaikan kelas untuk tahun pelajaran aktif belum disahkan dalam sidang pleno madrasah. Informasi resmi akan tampil otomatis setelah penetapan dewan asatidz.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.5,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white60 : Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.03),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.meeting_room_rounded,
+                        size: 14,
+                        color: isDark
+                            ? AppColors.primaryDark
+                            : AppColors.primaryLight,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Ruangan Aktif: ${kenaikan.ruanganAsal}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -772,7 +1073,7 @@ class _AkademikTabState extends State<AkademikTab>
                           Text(
                             isKelasAkhir
                                 ? 'Ijazah Sedang Diproses'
-                                : 'Belum Mencapai Kelas Akhir',
+                                : 'Belum Mencapai Jenjang Akhir',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
@@ -782,8 +1083,8 @@ class _AkademikTabState extends State<AkademikTab>
                           const SizedBox(height: 2),
                           Text(
                             isKelasAkhir
-                                ? 'Ijazah santri kelas akhir akan otomatis muncul setelah ujian akhir disahkan.'
-                                : 'Ijazah resmi diterbitkan ketika santri telah menuntaskan jenjang kelas akhir (3 TPQ, 6 IBT, atau 3 TSA).',
+                                ? 'Ijazah murid jenjang akhir akan otomatis muncul setelah ujian akhir disahkan.'
+                                : 'Ijazah resmi diterbitkan ketika murid telah menuntaskan jenjang akhir (3 TPQ, 6 IBT, atau 3 TSA).',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,

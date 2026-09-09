@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/models/dokumen_model.dart';
 import '../data/models/jadwal_model.dart';
+import '../data/models/kenaikan_model.dart';
 import '../data/models/nilai_model.dart';
 import '../data/models/pelanggaran_model.dart';
 import '../data/repositories/wali_repository.dart';
@@ -11,7 +12,8 @@ class AkademikProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   RekapNilaiAnakModel? _rekapNilai;
-  List<JadwalItemModel> _jadwalList = [];
+  JadwalDetailAnakModel? _jadwalDetail;
+  KenaikanAnakModel? _kenaikan;
   RekapPelanggaranAnakModel? _rekapPelanggaran;
   DokumenGroupModel? _dokumen;
   int? _loadedAnakId;
@@ -20,7 +22,9 @@ class AkademikProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   RekapNilaiAnakModel? get rekapNilai => _rekapNilai;
   List<UjianRaporItem> get daftarUjian => _rekapNilai?.daftarUjian ?? [];
-  List<JadwalItemModel> get jadwalList => _jadwalList;
+  JadwalDetailAnakModel? get jadwalDetail => _jadwalDetail;
+  List<JadwalItemModel> get jadwalList => _jadwalDetail?.jadwalMingguan ?? [];
+  KenaikanAnakModel? get kenaikan => _kenaikan;
   RekapPelanggaranAnakModel? get rekapPelanggaran => _rekapPelanggaran;
   DokumenGroupModel? get dokumen => _dokumen;
   List<DokumenItemModel> get raporArsipList => _dokumen?.raporList ?? [];
@@ -32,8 +36,9 @@ class AkademikProvider extends ChangeNotifier {
     if (!force &&
         _loadedAnakId == anakId &&
         _rekapNilai != null &&
-        _dokumen != null)
+        _dokumen != null) {
       return;
+    }
 
     _isLoading = true;
     _errorMessage = null;
@@ -45,12 +50,14 @@ class AkademikProvider extends ChangeNotifier {
         _repo.getJadwalAnak(anakId),
         _repo.getPelanggaranAnak(anakId),
         _repo.getDokumenAnak(anakId),
+        _repo.getKenaikanAnak(anakId),
       ]);
 
       _rekapNilai = results[0] as RekapNilaiAnakModel?;
-      _jadwalList = results[1] as List<JadwalItemModel>;
+      _jadwalDetail = results[1] as JadwalDetailAnakModel?;
       _rekapPelanggaran = results[2] as RekapPelanggaranAnakModel?;
       _dokumen = results[3] as DokumenGroupModel?;
+      _kenaikan = results[4] as KenaikanAnakModel?;
       _loadedAnakId = anakId;
     } catch (e) {
       _errorMessage = 'Gagal memuat data akademik: $e';

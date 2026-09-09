@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/date_formatter.dart';
 import '../../../core/utils/haptic_helper.dart';
 import '../../../providers/dashboard_provider.dart';
 import '../../../providers/presensi_provider.dart';
@@ -29,25 +29,22 @@ class _PresensiTabState extends State<PresensiTab> {
     });
   }
 
-  void _kirimIzinWhatsApp(String namaAnak, String ruangan) async {
-    HapticHelper.medium();
+  Future<void> _pickDate(BuildContext context) async {
+    final presensi = context.read<PresensiProvider>();
+    final selectedAnak = context.read<DashboardProvider>().selectedAnak;
+    if (selectedAnak == null) return;
 
-    final text =
-        "Assalamu'alaikum Wr. Wb. Ustadz / Ustadzah Wali Ruangan,\n\n"
-        "Saya selaku Wali Murid dari:\n"
-        "👤 *Nama Santri:* $namaAnak\n"
-        "🏫 *Ruangan:* $ruangan\n\n"
-        "Bermaksud untuk memohon izin bahwa ananda berhalangan hadir pada kegiatan belajar mengajar madrasah dikarenakan: (tuliskan alasan: Sakit / Kepentingan Keluarga).\n\n"
-        "Atas perhatian dan izin dari Ustadz/Ustadzah, kami sampaikan terima kasih.\nWassalamu'alaikum Wr. Wb.";
-
-    final encoded = Uri.encodeComponent(text);
-    final url = Uri.parse('https://wa.me/?text=$encoded');
-
-    try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      }
-    } catch (_) {}
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: presensi.selectedDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 30)),
+    );
+    if (picked != null &&
+        (picked != presensi.selectedDate || presensi.isFilterSemua)) {
+      HapticHelper.light();
+      presensi.setSelectedDate(picked, selectedAnak.id);
+    }
   }
 
   @override
@@ -60,8 +57,8 @@ class _PresensiTabState extends State<PresensiTab> {
     if (selectedAnak == null) {
       return Scaffold(
         body: const EmptyStateWidget(
-          icon: Icons.child_care_rounded,
-          title: 'Pilih Santri Terlebih Dahulu',
+          icon: Icons.family_restroom_rounded,
+          title: 'Pilih Murid Terlebih Dahulu',
           subtitle: 'Silakan pilih profil anak pada menu Beranda.',
         ),
       );
@@ -77,7 +74,7 @@ class _PresensiTabState extends State<PresensiTab> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: ModernHeader(
-                title: 'Presensi Santri',
+                title: 'Presensi Murid',
                 subtitle: 'Rekapitulasi Kehadiran & Izin Madrasah',
                 icon: Icons.event_available_rounded,
               ),
@@ -235,64 +232,90 @@ class _PresensiTabState extends State<PresensiTab> {
 
                           const SizedBox(height: 14),
 
-                          // Tombol Cepat Ajukan Izin via WhatsApp
+                          // Date Switcher Bar (Filter Tanggal seperti pada app_ustadz)
                           GlassCard(
-                            padding: const EdgeInsets.all(16),
-                            borderRadius: 20,
-                            onTap: () => _kirimIzinWhatsApp(
-                              selectedAnak.namaLengkap,
-                              selectedAnak.ruangan ?? '-',
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
                             ),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFF25D366,
-                                    ).withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: const Icon(
-                                    Icons.chat_rounded,
-                                    color: Color(0xFF25D366),
-                                    size: 22,
-                                  ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today_rounded,
+                                      size: 18,
+                                      color: isDark
+                                          ? AppColors.primaryDark
+                                          : AppColors.primaryLight,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      presensi.isFilterSemua
+                                          ? 'Semua Riwayat Presensi'
+                                          : DateFormatter.formatIndonesian(
+                                              presensi.selectedDate,
+                                            ),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Ajukan Izin / Sakit Santri',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w900,
-                                          color: isDark
-                                              ? Colors.white
-                                              : Colors.black87,
+                                Row(
+                                  children: [
+                                    if (!presensi.isFilterSemua) ...[
+                                      TextButton(
+                                        onPressed: () {
+                                          HapticHelper.light();
+                                          presensi.setFilterSemua(
+                                            selectedAnak.id,
+                                          );
+                                        },
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: Text(
+                                          'Semua',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 11,
+                                            color: isDark
+                                                ? Colors.white60
+                                                : Colors.black54,
+                                          ),
                                         ),
                                       ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'Kirim format surat izin otomatis ke Wali Ruangan via WA',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w500,
-                                          color: isDark
-                                              ? Colors.white54
-                                              : Colors.black54,
-                                        ),
-                                      ),
+                                      const SizedBox(width: 4),
                                     ],
-                                  ),
-                                ),
-                                const Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 14,
+                                    TextButton(
+                                      onPressed: () => _pickDate(context),
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 4,
+                                        ),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: const Text(
+                                        'Ganti Tanggal',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -301,7 +324,9 @@ class _PresensiTabState extends State<PresensiTab> {
                           const SizedBox(height: 16),
 
                           Text(
-                            'RIWAYAT PRESENSI PER SESI',
+                            presensi.isFilterSemua
+                                ? 'SEMUA RIWAYAT PRESENSI'
+                                : 'PRESENSI TANGGAL ${DateFormatter.formatIndonesian(presensi.selectedDate).toUpperCase()}',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w900,
@@ -312,11 +337,14 @@ class _PresensiTabState extends State<PresensiTab> {
                           const SizedBox(height: 8),
 
                           if (presensi.riwayat.isEmpty)
-                            const EmptyStateWidget(
+                            EmptyStateWidget(
                               icon: Icons.event_busy_rounded,
-                              title: 'Belum Ada Riwayat Presensi',
-                              subtitle:
-                                  'Catatan presensi santri akan muncul di sini.',
+                              title: presensi.isFilterSemua
+                                  ? 'Belum Ada Riwayat Presensi'
+                                  : 'Tidak Ada Presensi',
+                              subtitle: presensi.isFilterSemua
+                                  ? 'Catatan presensi murid akan muncul di sini.'
+                                  : 'Tidak ada catatan presensi pada ${DateFormatter.formatIndonesian(presensi.selectedDate)}.',
                             )
                           else
                             ...presensi.riwayat.map((p) {

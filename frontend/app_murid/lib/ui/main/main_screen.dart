@@ -10,8 +10,8 @@ import '../../providers/presensi_provider.dart';
 import '../tabs/akademik/akademik_tab.dart';
 import '../tabs/akun/akun_tab.dart';
 import '../tabs/home/home_tab.dart';
-import '../tabs/keuangan/keuangan_tab.dart';
 import '../tabs/presensi/presensi_tab.dart';
+import '../tabs/tagihan/tagihan_tab.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -38,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
     if (dashboard.selectedAnak != null) {
       final id = dashboard.selectedAnak!.id;
       if (mounted) {
-        context.read<KeuanganProvider>().fetchTagihan(id);
+        context.read<KeuanganProvider>().fetchAllKeuangan(id);
         context.read<PresensiProvider>().fetchPresensi(id);
         context.read<AkademikProvider>().fetchAkademik(id);
       }
@@ -55,7 +55,7 @@ class _MainScreenState extends State<MainScreen> {
     final selectedAnak = context.read<DashboardProvider>().selectedAnak;
     if (selectedAnak != null) {
       if (index == 1) {
-        context.read<KeuanganProvider>().fetchTagihan(selectedAnak.id);
+        context.read<KeuanganProvider>().fetchAllKeuangan(selectedAnak.id);
       } else if (index == 2) {
         context.read<PresensiProvider>().fetchPresensi(selectedAnak.id);
       } else if (index == 3) {
@@ -70,7 +70,7 @@ class _MainScreenState extends State<MainScreen> {
 
     final List<Widget> screens = [
       HomeTab(onNavigateTab: _onTabChanged),
-      const KeuanganTab(),
+      const TagihanTab(),
       const PresensiTab(),
       const AkademikTab(),
       const AkunTab(),
@@ -97,7 +97,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildFloatingNavBar(bool isDark) {
     final items = [
       _NavItem(icon: Icons.home_rounded, label: 'Beranda'),
-      _NavItem(icon: Icons.account_balance_wallet_rounded, label: 'Keuangan'),
+      _NavItem(icon: Icons.receipt_long_rounded, label: 'Tagihan'),
       _NavItem(icon: Icons.event_available_rounded, label: 'Presensi'),
       _NavItem(icon: Icons.auto_stories_rounded, label: 'Akademik'),
       _NavItem(icon: Icons.person_rounded, label: 'Akun'),

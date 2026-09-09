@@ -14,10 +14,14 @@ class ApiEndpoints {
   static const String pelanggaranAnak = '/wali/pelanggaran'; // + /{id}
   static const String nilaiAnak = '/wali/nilai'; // + /{id}
   static const String jadwalAnak = '/wali/jadwal'; // + /{id}
+  static const String kenaikanAnak = '/wali/kenaikan'; // + /{id}
   static const String dokumenAnak = '/wali/dokumen'; // + /{id}
+  static const String tabunganAnak = '/wali/tabungan'; // + /{id}
+  static const String tabunganKomplain = '/wali/tabungan/komplain';
+  static const String koperasiAnak = '/wali/koperasi'; // + /{id}
 
   // Umum / Bantuan
-  static const String pengumuman = '/pengumuman';
+  static const String pengumuman = '/wali/pengumuman';
   static const String bantuanKontak = '/bantuan/kontak';
   static const String kalendar = '/kalendar-pendidikan';
 }

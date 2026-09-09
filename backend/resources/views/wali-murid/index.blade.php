@@ -125,7 +125,7 @@
 
     <!-- Data Grid / List Card Container -->
     <div id="data-grid-container" class="flex flex-col gap-3 md:gap-4 relative z-10">
-        @include('wali_murid.list', ['walis' => $walis])
+        @include('wali-murid.list', ['walis' => $walis])
     </div>
 
 </x-app-layout>

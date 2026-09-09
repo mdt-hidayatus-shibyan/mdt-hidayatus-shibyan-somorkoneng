@@ -38,11 +38,168 @@ class _AkunTabState extends State<AkunTab> {
     });
   }
 
-  void _toggleDarkMode(bool value) {
-    HapticHelper.segmentTick();
-    context.read<ThemeProvider>().setThemeMode(
-      value ? ThemeMode.dark : ThemeMode.light,
+  void _showThemeDialog() {
+    HapticHelper.medium();
+    final themeProvider = context.read<ThemeProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? AppColors.surfaceContainerDark : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            Icon(
+              Icons.palette_outlined,
+              size: 22,
+              color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Pilih Tema Tampilan',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildThemeOption(
+              ctx,
+              title: 'Mode Terang',
+              subtitle: 'Tema standar bersih, cerah & nyaman (Default)',
+              icon: Icons.light_mode_rounded,
+              selected: themeProvider.themeMode == ThemeMode.light,
+              onTap: () {
+                themeProvider.setThemeMode(ThemeMode.light);
+                Navigator.of(ctx).pop();
+              },
+              isDark: isDark,
+            ),
+            const SizedBox(height: 8),
+            _buildThemeOption(
+              ctx,
+              title: 'Mode Gelap (Super AMOLED)',
+              subtitle: 'Latar hitam murni hemat daya layar',
+              icon: Icons.dark_mode_rounded,
+              selected: themeProvider.themeMode == ThemeMode.dark,
+              onTap: () {
+                themeProvider.setThemeMode(ThemeMode.dark);
+                Navigator.of(ctx).pop();
+              },
+              isDark: isDark,
+            ),
+            const SizedBox(height: 8),
+            _buildThemeOption(
+              ctx,
+              title: 'Ikuti Pengaturan Sistem',
+              subtitle: 'Menyesuaikan mode perangkat Anda',
+              icon: Icons.brightness_auto_rounded,
+              selected: themeProvider.themeMode == ThemeMode.system,
+              onTap: () {
+                themeProvider.setThemeMode(ThemeMode.system);
+                Navigator.of(ctx).pop();
+              },
+              isDark: isDark,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
     );
+  }
+
+  Widget _buildThemeOption(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return InkWell(
+      onTap: () {
+        HapticHelper.selection();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected
+              ? (isDark
+                    ? AppColors.primaryDark.withValues(alpha: 0.2)
+                    : AppColors.primaryLight.withValues(alpha: 0.1))
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected
+                ? (isDark ? AppColors.primaryDark : AppColors.primaryLight)
+                : (isDark ? Colors.white12 : Colors.black12),
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: selected
+                  ? (isDark ? AppColors.primaryDark : AppColors.primaryLight)
+                  : (isDark ? Colors.white60 : Colors.black54),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: isDark ? Colors.white54 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (selected)
+              Icon(
+                Icons.check_circle_rounded,
+                size: 18,
+                color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getThemeSubtitle(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'Mode Terang (Default)';
+      case ThemeMode.dark:
+        return 'Mode Gelap (Super AMOLED)';
+      case ThemeMode.system:
+        return 'Ikuti Pengaturan Sistem';
+    }
   }
 
   void _copyToClipboard(String text, String label) {
@@ -2173,20 +2330,9 @@ class _AkunTabState extends State<AkunTab> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Column(
                 children: [
-                  SwitchListTile(
+                  ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text(
-                      'Mode Gelap',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: const Text(
-                      'Mode gelap hitam murni (#000000) untuk layar AMOLED.',
-                      style: TextStyle(fontSize: 11),
-                    ),
-                    secondary: Container(
+                    leading: Container(
                       padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
                         color:
@@ -2197,16 +2343,26 @@ class _AkunTabState extends State<AkunTab> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
-                        Icons.dark_mode_rounded,
+                        Icons.palette_outlined,
                         size: 16,
                         color: isDark
                             ? AppColors.primaryDark
                             : AppColors.primaryLight,
                       ),
                     ),
-                    value: themeProvider.isDarkMode,
-                    activeThumbColor: AppColors.primaryDark,
-                    onChanged: _toggleDarkMode,
+                    title: const Text(
+                      'Tema Tampilan',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      _getThemeSubtitle(themeProvider.themeMode),
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: _showThemeDialog,
                   ),
                   const Divider(height: 1),
                   ListTile(

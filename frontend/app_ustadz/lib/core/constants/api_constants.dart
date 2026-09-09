@@ -91,6 +91,13 @@ class ApiConstants {
   static const String bantuanLaporan = '/bantuan/laporan';
   static const String bantuanRiwayat = '/bantuan/riwayat';
 
+  // Tabungan Madrasah
+  static const String tabunganUstadzRekening = '/tabungan/ustadz/rekening';
+  static const String tabunganRuangan = '/tabungan/ruangan';
+  static const String tabunganDetail = '/tabungan/detail';
+  static const String tabunganSetor = '/tabungan/setor';
+  static const String tabunganCari = '/tabungan/cari';
+
   /// Format URL foto/gambar dari backend agar cocok dengan host yang aktif.
   /// Menghindari kegagalan koneksi ketika backend mengembalikan host 'localhost' / '127.0.0.1'
   /// saat diakses dari HP fisik atau emulator Android.

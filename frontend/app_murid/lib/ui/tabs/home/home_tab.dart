@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/haptic_helper.dart';
@@ -11,7 +13,10 @@ import '../../widgets/child_switcher_bar.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
 import '../akun/biodata_anak_screen.dart';
-import '../akun/hubungi_admin_screen.dart';
+import '../akun/buku_kasus_screen.dart';
+import '../koperasi/koperasi_screen.dart';
+import '../tabungan/tabungan_screen.dart';
+import 'semua_jadwal_screen.dart';
 
 class HomeTab extends StatelessWidget {
   final Function(int tabIndex)? onNavigateTab;
@@ -58,7 +63,19 @@ class HomeTab extends StatelessWidget {
             if (!context.mounted) return;
             if (dashboard.selectedAnak != null) {
               final id = dashboard.selectedAnak!.id;
-              context.read<KeuanganProvider>().fetchTagihan(id, force: true);
+              final keuangan = context.read<KeuanganProvider>();
+              if (dashboard.anakList.length >= 2) {
+                await Future.wait([
+                  keuangan.fetchAllKeuangan(id, force: true),
+                  keuangan.fetchAllChildrenTabungan(
+                    dashboard.anakList.map((a) => a.id).toList(),
+                    force: true,
+                  ),
+                ]);
+              } else {
+                await keuangan.fetchAllKeuangan(id, force: true);
+              }
+              if (!context.mounted) return;
               context.read<PresensiProvider>().fetchPresensi(id, force: true);
               context.read<AkademikProvider>().fetchAkademik(id, force: true);
             }
@@ -147,7 +164,7 @@ class HomeTab extends StatelessWidget {
                 const ChildSwitcherBar(),
 
                 if (selectedAnak != null) ...[
-                  // Kartu Profil Santri Terpilih
+                  // Kartu Profil Murid Terpilih
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -160,42 +177,59 @@ class HomeTab extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              // Avatar / Foto Santri
-                              Container(
-                                width: 52,
-                                height: 52,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isDark
-                                      ? AppColors.primaryDark.withValues(
-                                          alpha: 0.2,
-                                        )
-                                      : AppColors.primaryLight.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                  border: Border.all(
-                                    color: isDark
-                                        ? AppColors.primaryDark
-                                        : AppColors.primaryLight,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    selectedAnak.namaLengkap.isNotEmpty
-                                        ? selectedAnak.namaLengkap
-                                              .substring(0, 1)
-                                              .toUpperCase()
-                                        : 'S',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w900,
+                              // Avatar / Foto Murid
+                              Builder(
+                                builder: (_) {
+                                  final fotoUrl = ApiClient.resolveImageUrl(
+                                    selectedAnak.foto,
+                                  );
+                                  return Container(
+                                    width: 54,
+                                    height: 54,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
                                       color: isDark
-                                          ? AppColors.primaryDark
-                                          : AppColors.primaryLight,
+                                          ? AppColors.primaryDark.withValues(
+                                              alpha: 0.2,
+                                            )
+                                          : AppColors.primaryLight.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? AppColors.primaryDark
+                                            : AppColors.primaryLight,
+                                        width: 2,
+                                      ),
+                                      image: fotoUrl != null
+                                          ? DecorationImage(
+                                              image: NetworkImage(fotoUrl),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : null,
                                     ),
-                                  ),
-                                ),
+                                    child: fotoUrl == null
+                                        ? Center(
+                                            child: Text(
+                                              selectedAnak
+                                                      .namaLengkap
+                                                      .isNotEmpty
+                                                  ? selectedAnak.namaLengkap
+                                                        .substring(0, 1)
+                                                        .toUpperCase()
+                                                  : 'M',
+                                              style: TextStyle(
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.w900,
+                                                color: isDark
+                                                    ? AppColors.primaryDark
+                                                    : AppColors.primaryLight,
+                                              ),
+                                            ),
+                                          )
+                                        : null,
+                                  );
+                                },
                               ),
                               const SizedBox(width: 14),
                               Expanded(
@@ -225,7 +259,7 @@ class HomeTab extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      'NISM: ${selectedAnak.nism} • ${selectedAnak.kampung ?? "-"}',
+                                      'NISM: ${selectedAnak.nism}',
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w500,
@@ -297,102 +331,227 @@ class HomeTab extends StatelessWidget {
                     ),
                   ),
 
-                  // Ringkasan Keuangan Santri Card
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
-                    ),
-                    child: GlassCard(
-                      padding: const EdgeInsets.all(18),
-                      borderRadius: 24,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // Ringkasan Keuangan Murid Card
+                  Builder(
+                    builder: (ctx) {
+                      final keuangan = ctx.watch<KeuanganProvider>();
+                      final tabungan = keuangan
+                          .getTabunganFor(selectedAnak.id)
+                          ?.rekening;
+                      final hasMultipleChildren =
+                          dashboard.anakList.length >= 2;
+                      final totalTabunganKeluarga = hasMultipleChildren
+                          ? keuangan.getTotalFamilySavings(
+                              dashboard.anakList.map((a) => a.id).toList(),
+                            )
+                          : 0;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                        child: GlassCard(
+                          padding: const EdgeInsets.all(18),
+                          borderRadius: 24,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Icon(
-                                    Icons.account_balance_wallet_rounded,
-                                    size: 18,
-                                    color: isDark
-                                        ? AppColors.amberAccent
-                                        : const Color(0xFFD97706),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.account_balance_wallet_rounded,
+                                        size: 18,
+                                        color: isDark
+                                            ? AppColors.amberAccent
+                                            : const Color(0xFFD97706),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Ringkasan Keuangan',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w900,
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black87,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Ringkasan Keuangan',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w900,
-                                      color: isDark
-                                          ? Colors.white
-                                          : Colors.black87,
+                                  InkWell(
+                                    onTap: () => onNavigateTab?.call(1),
+                                    child: Text(
+                                      'Lihat Semua >',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: isDark
+                                            ? AppColors.primaryDark
+                                            : AppColors.primaryLight,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                              InkWell(
-                                onTap: () => onNavigateTab?.call(1),
-                                child: Text(
-                                  'Lihat Semua >',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
-                                    color: isDark
-                                        ? AppColors.primaryDark
-                                        : AppColors.primaryLight,
+                              const SizedBox(height: 14),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildFinanceMiniCard(
+                                      title: 'Total Tagihan',
+                                      amount: CurrencyFormatter.format(
+                                        data.totalTagihan,
+                                      ),
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.black87,
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _buildFinanceMiniCard(
+                                      title: 'Lunas',
+                                      amount: CurrencyFormatter.format(
+                                        data.totalLunas,
+                                      ),
+                                      color: const Color(0xFF10B981),
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _buildFinanceMiniCard(
+                                      title: 'Tunggakan',
+                                      amount: CurrencyFormatter.format(
+                                        data.totalTunggakan,
+                                      ),
+                                      color: data.totalTunggakan > 0
+                                          ? AppColors.roseDanger
+                                          : const Color(0xFF10B981),
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (tabungan != null || hasMultipleChildren) ...[
+                                const SizedBox(height: 12),
+                                const Divider(height: 1),
+                                const SizedBox(height: 10),
+                                InkWell(
+                                  onTap: () {
+                                    HapticHelper.light();
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => const TabunganScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons
+                                                .account_balance_wallet_rounded,
+                                            size: 16,
+                                            color: isDark
+                                                ? AppColors.primaryDark
+                                                : AppColors.primaryLight,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            hasMultipleChildren
+                                                ? 'Tabungan ${selectedAnak.namaLengkap.split(" ").first}:'
+                                                : 'Saldo Tabungan:',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: isDark
+                                                  ? Colors.white70
+                                                  : Colors.black87,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            tabungan != null
+                                                ? CurrencyFormatter.format(
+                                                    tabungan.saldo,
+                                                  )
+                                                : 'Belum Buka',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w900,
+                                              color: tabungan != null
+                                                  ? (isDark
+                                                        ? AppColors.primaryDark
+                                                        : AppColors
+                                                              .primaryLight)
+                                                  : (isDark
+                                                        ? Colors.white38
+                                                        : Colors.black38),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            Icons.chevron_right_rounded,
+                                            size: 16,
+                                            color: isDark
+                                                ? Colors.white38
+                                                : Colors.black38,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
+                                if (hasMultipleChildren) ...[
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Total Tabungan Keluarga (${dashboard.anakList.length} Murid):',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                          color: isDark
+                                              ? Colors.white54
+                                              : Colors.black54,
+                                        ),
+                                      ),
+                                      Text(
+                                        CurrencyFormatter.format(
+                                          totalTabunganKeluarga,
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                          color: isDark
+                                              ? AppColors.primaryDark
+                                              : AppColors.primaryLight,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
                             ],
                           ),
-                          const SizedBox(height: 14),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildFinanceMiniCard(
-                                  title: 'Total Tagihan',
-                                  amount: CurrencyFormatter.format(
-                                    data.totalTagihan,
-                                  ),
-                                  color: isDark
-                                      ? Colors.white70
-                                      : Colors.black87,
-                                  isDark: isDark,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildFinanceMiniCard(
-                                  title: 'Lunas',
-                                  amount: CurrencyFormatter.format(
-                                    data.totalLunas,
-                                  ),
-                                  color: const Color(0xFF10B981),
-                                  isDark: isDark,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildFinanceMiniCard(
-                                  title: 'Tunggakan',
-                                  amount: CurrencyFormatter.format(
-                                    data.totalTunggakan,
-                                  ),
-                                  color: data.totalTunggakan > 0
-                                      ? AppColors.roseDanger
-                                      : const Color(0xFF10B981),
-                                  isDark: isDark,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   ),
 
                   // Menu Pintasan / Quick Actions
@@ -413,7 +572,7 @@ class HomeTab extends StatelessWidget {
                             color: isDark ? Colors.white60 : Colors.black54,
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        // Row 1: Keuangan & Koperasi
                         Row(
                           children: [
                             Expanded(
@@ -426,6 +585,45 @@ class HomeTab extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildQuickActionBtn(
+                                label: 'Tabungan',
+                                icon: Icons.account_balance_wallet_rounded,
+                                color: const Color(0xFF0D9488),
+                                onTap: () {
+                                  HapticHelper.light();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const TabunganScreen(),
+                                    ),
+                                  );
+                                },
+                                isDark: isDark,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildQuickActionBtn(
+                                label: 'Koperasi',
+                                icon: Icons.storefront_rounded,
+                                color: const Color(0xFFEA580C),
+                                onTap: () {
+                                  HapticHelper.light();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const KoperasiScreen(),
+                                    ),
+                                  );
+                                },
+                                isDark: isDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        // Row 2: Akademik, Presensi & Kedisiplinan
+                        Row(
+                          children: [
                             Expanded(
                               child: _buildQuickActionBtn(
                                 label: 'Presensi',
@@ -446,22 +644,41 @@ class HomeTab extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            Expanded(
-                              child: _buildQuickActionBtn(
-                                label: 'Bantuan',
-                                icon: Icons.headset_mic_rounded,
-                                color: AppColors.amberAccent,
-                                onTap: () {
-                                  HapticHelper.light();
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const HubungiAdminScreen(),
-                                    ),
-                                  );
-                                },
-                                isDark: isDark,
-                              ),
+                            Consumer<AkademikProvider>(
+                              builder: (ctx, akademik, _) {
+                                final rekap = akademik.rekapPelanggaran;
+                                String? badgeText;
+                                Color? badgeColor;
+                                if (rekap != null) {
+                                  if (rekap.totalPoin > 0) {
+                                    badgeText = '+${rekap.totalPoinFormatted}';
+                                    badgeColor = AppColors.roseDanger;
+                                  } else {
+                                    badgeText = '0';
+                                    badgeColor = const Color(0xFF10B981);
+                                  }
+                                }
+
+                                return Expanded(
+                                  child: _buildQuickActionBtn(
+                                    label: 'Buku Kasus',
+                                    icon: Icons.warning_amber_rounded,
+                                    color: AppColors.amberAccent,
+                                    badgeText: badgeText,
+                                    badgeColor: badgeColor,
+                                    onTap: () {
+                                      HapticHelper.light();
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const BukuKasusScreen(),
+                                        ),
+                                      );
+                                    },
+                                    isDark: isDark,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -470,94 +687,11 @@ class HomeTab extends StatelessWidget {
                   ),
                 ],
 
-                // Pengumuman Madrasah
-                if (dashboard.pengumumanList.isNotEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'PENGUMUMAN MADRASAH',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.8,
-                            color: isDark ? Colors.white60 : Colors.black54,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        ...dashboard.pengumumanList.map((p) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: GlassCard(
-                              padding: const EdgeInsets.all(16),
-                              borderRadius: 20,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 3,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.skyBlueAccent
-                                              .withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                        child: const Text(
-                                          'Pengumuman',
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.w900,
-                                            color: AppColors.skyBlueAccent,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    p['judul']?.toString() ??
-                                        'Pengumuman Resmi',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w800,
-                                      color: isDark
-                                          ? Colors.white
-                                          : Colors.black87,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    p['konten']?.toString() ?? '-',
-                                    maxLines: 3,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: isDark
-                                          ? Colors.white60
-                                          : Colors.black54,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                ],
+                // Jadwal Hari Ini / Jadwal Ujian
+                _buildJadwalHariIniSection(context, dashboard, isDark),
+
+                // Pengumuman Madrasah (Wali Murid)
+                _buildPengumumanSection(context, dashboard, isDark),
               ],
             ),
           ),
@@ -649,6 +783,8 @@ class HomeTab extends StatelessWidget {
     required Color color,
     required VoidCallback onTap,
     required bool isDark,
+    String? badgeText,
+    Color? badgeColor,
   }) {
     return InkWell(
       onTap: () {
@@ -657,32 +793,859 @@ class HomeTab extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(20),
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
         borderRadius: 20,
-        child: Column(
+        child: Stack(
+          alignment: Alignment.topCenter,
+          clipBehavior: Clip.none,
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: color, size: 20),
+            Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: isDark ? Colors.white : Colors.black87,
+            if (badgeText != null)
+              Positioned(
+                top: -6,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: badgeColor ?? color,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (badgeColor ?? color).withValues(alpha: 0.4),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    badgeText,
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
-            ),
           ],
         ),
       ),
     );
+  }
+
+  // =========================================================================
+  // JADWAL PELAJARAN HARI INI & JADWAL UJIAN
+  // =========================================================================
+  Widget _buildJadwalHariIniSection(
+    BuildContext context,
+    DashboardProvider dashboard,
+    bool isDark,
+  ) {
+    if (dashboard.selectedAnak == null) return const SizedBox.shrink();
+
+    final jadwalAnak = dashboard.jadwalAnak;
+    final isLoading = dashboard.isLoadingJadwal;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    jadwalAnak?.isUjian == true
+                        ? Icons.edit_calendar_rounded
+                        : Icons.calendar_today_rounded,
+                    size: 14,
+                    color: jadwalAnak?.isUjian == true
+                        ? AppColors.amberAccent
+                        : (isDark
+                              ? AppColors.primaryDark
+                              : AppColors.primaryLight),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    jadwalAnak?.isUjian == true
+                        ? 'JADWAL UJIAN HARI INI'
+                        : 'JADWAL PELAJARAN HARI INI',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.8,
+                      color: isDark ? Colors.white60 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+              InkWell(
+                onTap: () {
+                  HapticHelper.light();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const SemuaJadwalScreen(),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Lihat Semua >',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: isDark
+                        ? AppColors.primaryDark
+                        : AppColors.primaryLight,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          if (isLoading && jadwalAnak == null)
+            GlassCard(
+              padding: const EdgeInsets.all(20),
+              borderRadius: 20,
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: isDark
+                        ? AppColors.primaryDark
+                        : AppColors.primaryLight,
+                  ),
+                ),
+              ),
+            )
+          else if (jadwalAnak?.isLibur == true)
+            // Tampilan Hari Libur
+            GlassCard(
+              padding: const EdgeInsets.all(18),
+              borderRadius: 20,
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.amberAccent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.beach_access_rounded,
+                      color: AppColors.amberAccent,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hari Ini Tidak Ada KBM',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          jadwalAnak?.keteranganLibur ??
+                              'Libur Rutin Mingguan / Kalender Madrasah',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? Colors.white60 : Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (jadwalAnak?.isUjian == true)
+            // Tampilan Mode Ujian
+            GlassCard(
+              padding: const EdgeInsets.all(18),
+              borderRadius: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.roseDanger.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.timer_outlined,
+                          size: 13,
+                          color: AppColors.roseDanger,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          jadwalAnak?.namaUjian ?? 'Sesi Ujian Madrasah',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.roseDanger,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (jadwalAnak?.jadwalHariIni.isEmpty == true)
+                    Text(
+                      'Tidak ada jadwal ujian untuk ruangan ini hari ini.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white54 : Colors.black54,
+                      ),
+                    )
+                  else
+                    ...jadwalAnak!.jadwalHariIni.map((j) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.05)
+                                : Colors.black.withValues(alpha: 0.03),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: AppColors.roseDanger.withValues(
+                                alpha: 0.2,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: AppColors.roseDanger.withValues(
+                                    alpha: 0.15,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.menu_book_rounded,
+                                  size: 18,
+                                  color: AppColors.roseDanger,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      j.mapel,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w800,
+                                        color: isDark
+                                            ? Colors.white
+                                            : Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Pengawas: ${j.ustadz}',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: isDark
+                                            ? Colors.white54
+                                            : Colors.black54,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? Colors.white10
+                                      : Colors.black.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  j.waktu,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                ],
+              ),
+            )
+          else
+            // Tampilan Jadwal KBM Reguler Hari Ini
+            GlassCard(
+              padding: const EdgeInsets.all(16),
+              borderRadius: 20,
+              child: jadwalAnak?.jadwalHariIni.isEmpty == true
+                  ? Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 20,
+                          color: isDark ? Colors.white38 : Colors.black38,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Tidak ada jam pelajaran untuk hari ${jadwalAnak?.hariIni ?? "ini"}.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: isDark ? Colors.white54 : Colors.black54,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        ...?jadwalAnak?.jadwalHariIni.asMap().entries.map((
+                          entry,
+                        ) {
+                          final idx = entry.key;
+                          final j = entry.value;
+                          final isLast =
+                              idx == jadwalAnak.jadwalHariIni.length - 1;
+
+                          return Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          (isDark
+                                                  ? AppColors.primaryDark
+                                                  : AppColors.primaryLight)
+                                              .withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(
+                                      Icons.menu_book_rounded,
+                                      size: 18,
+                                      color: isDark
+                                          ? AppColors.primaryDark
+                                          : AppColors.primaryLight,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          j.mapel,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w800,
+                                            color: isDark
+                                                ? Colors.white
+                                                : Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '${j.jamKe ?? "Pelajaran"} • ${j.ustadz}',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                            color: isDark
+                                                ? Colors.white54
+                                                : Colors.black54,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          (isDark
+                                                  ? AppColors.primaryDark
+                                                  : AppColors.primaryLight)
+                                              .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      j.waktu,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        color: isDark
+                                            ? AppColors.primaryDark
+                                            : AppColors.primaryLight,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (!isLast)
+                                const Divider(height: 16, indent: 48),
+                            ],
+                          );
+                        }),
+                      ],
+                    ),
+            ),
+          const SizedBox(height: 10),
+          // Tombol Lihat Semua Jadwal
+          InkWell(
+            onTap: () {
+              HapticHelper.light();
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SemuaJadwalScreen()),
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              decoration: BoxDecoration(
+                color: (isDark ? AppColors.primaryDark : AppColors.primaryLight)
+                    .withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color:
+                      (isDark ? AppColors.primaryDark : AppColors.primaryLight)
+                          .withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.calendar_month_rounded,
+                    size: 16,
+                    color: isDark
+                        ? AppColors.primaryDark
+                        : AppColors.primaryLight,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Lihat Semua Jadwal Pelajaran (Mingguan)',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: isDark
+                          ? AppColors.primaryDark
+                          : AppColors.primaryLight,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 12,
+                    color: isDark
+                        ? AppColors.primaryDark
+                        : AppColors.primaryLight,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // PENGUMUMAN MADRASAH (UNTUK WALI MURID)
+  // =========================================================================
+  Widget _buildPengumumanSection(
+    BuildContext context,
+    DashboardProvider dashboard,
+    bool isDark,
+  ) {
+    final list = dashboard.pengumumanList;
+    if (list.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.campaign_rounded,
+                size: 16,
+                color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'PENGUMUMAN MADRASAH',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.8,
+                  color: isDark ? Colors.white60 : Colors.black54,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ...list.map((p) {
+            final tipe = p['tipe']?.toString() ?? 'Informasi';
+            Color badgeColor = AppColors.skyBlueAccent;
+            if (tipe == 'Penting') badgeColor = AppColors.roseDanger;
+            if (tipe == 'Kegiatan') badgeColor = const Color(0xFF10B981);
+            if (tipe == 'Libur') badgeColor = AppColors.amberAccent;
+
+            final hasPdf =
+                p['lampiran_pdf_url'] != null &&
+                p['lampiran_pdf_url'].toString().isNotEmpty;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: InkWell(
+                onTap: () {
+                  HapticHelper.light();
+                  _showPengumumanDetailSheet(context, p, isDark);
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: GlassCard(
+                  padding: const EdgeInsets.all(16),
+                  borderRadius: 20,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: badgeColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              tipe,
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                color: badgeColor,
+                              ),
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.event_note_rounded,
+                                size: 12,
+                                color: isDark ? Colors.white38 : Colors.black38,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                p['tanggal_mulai']?.toString() ?? '',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark
+                                      ? Colors.white38
+                                      : Colors.black38,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        p['judul']?.toString() ?? 'Pengumuman Resmi',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        p['konten']?.toString() ?? '-',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white60 : Colors.black54,
+                        ),
+                      ),
+                      if (hasPdf) ...[
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.roseDanger.withValues(
+                                  alpha: 0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.picture_as_pdf_rounded,
+                                    size: 13,
+                                    color: AppColors.roseDanger,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    p['nama_file_pdf']?.toString() ??
+                                        'Lampiran PDF',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.roseDanger,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  void _showPengumumanDetailSheet(
+    BuildContext context,
+    Map<String, dynamic> p,
+    bool isDark,
+  ) {
+    final tipe = p['tipe']?.toString() ?? 'Informasi';
+    Color badgeColor = AppColors.skyBlueAccent;
+    if (tipe == 'Penting') badgeColor = AppColors.roseDanger;
+    if (tipe == 'Kegiatan') badgeColor = const Color(0xFF10B981);
+    if (tipe == 'Libur') badgeColor = AppColors.amberAccent;
+
+    final pdfUrl = p['lampiran_pdf_url']?.toString();
+    final hasPdf = pdfUrl != null && pdfUrl.isNotEmpty;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceContainerDark : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : Colors.black12,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: badgeColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      tipe,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: badgeColor,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'Terbit: ${p["tanggal_mulai"] ?? "-"}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white54 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                p['judul']?.toString() ?? 'Pengumuman Resmi',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.3,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Text(
+                    p['konten']?.toString() ?? '',
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.6,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+              if (hasPdf) ...[
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _openUrl(pdfUrl, context),
+                    icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
+                    label: const Text('Buka / Unduh Lampiran Dokumen PDF'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.roseDanger,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openUrl(String? urlString, BuildContext context) async {
+    if (urlString == null || urlString.isEmpty) return;
+    HapticHelper.light();
+    final uri = Uri.parse(urlString);
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tidak dapat membuka tautan PDF.'),
+              backgroundColor: AppColors.roseDanger,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal membuka file: $e'),
+            backgroundColor: AppColors.roseDanger,
+          ),
+        );
+      }
+    }
   }
 }

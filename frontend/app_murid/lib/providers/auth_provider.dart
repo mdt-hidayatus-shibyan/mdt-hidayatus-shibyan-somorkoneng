@@ -11,7 +11,7 @@ class AuthProvider extends ChangeNotifier {
   String? _errorMessage;
   WaliModel? _currentWali;
   String _baseUrl = StorageService.getBaseUrl();
-  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode _themeMode = ThemeMode.light; // Default Light Mode
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -30,6 +30,15 @@ class AuthProvider extends ChangeNotifier {
       _currentWali = WaliModel.fromJson(waliJson);
     }
     _baseUrl = StorageService.getBaseUrl();
+
+    final savedTheme = StorageService.getThemeMode();
+    if (savedTheme == 'dark') {
+      _themeMode = ThemeMode.dark;
+    } else if (savedTheme == 'system') {
+      _themeMode = ThemeMode.system;
+    } else {
+      _themeMode = ThemeMode.light;
+    }
   }
 
   /// Step 1: Validasi keberadaan No. KK / NISM
@@ -103,6 +112,10 @@ class AuthProvider extends ChangeNotifier {
 
   void setThemeMode(ThemeMode mode) {
     _themeMode = mode;
+    String modeStr = 'light';
+    if (mode == ThemeMode.dark) modeStr = 'dark';
+    if (mode == ThemeMode.system) modeStr = 'system';
+    StorageService.setThemeMode(modeStr);
     notifyListeners();
   }
 }

@@ -258,7 +258,7 @@ class RbacSeeder extends Seeder
                 'name'        => 'Tabungan Madrasah',
                 'url'         => '#tabungan',
                 'category'    => 'KEUANGAN & TABUNGAN',
-                'icon'        => 'bi-piggy-bank-fill',
+                'icon'        => 'bi-wallet2',
                 'orders'      => 23,
                 'permissions' => ['read'],
                 'sub_menus'   => [

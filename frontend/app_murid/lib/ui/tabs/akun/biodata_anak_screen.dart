@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/anak_model.dart';
 import '../../widgets/glass_card.dart';
@@ -11,11 +12,12 @@ class BiodataAnakScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fotoUrl = ApiClient.resolveImageUrl(anak.foto);
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
       appBar: AppBar(
-        title: const Text('Biodata Santri'),
+        title: const Text('Biodata Murid'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => Navigator.of(context).pop(),
@@ -33,8 +35,8 @@ class BiodataAnakScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Container(
-                    width: 72,
-                    height: 72,
+                    width: 76,
+                    height: 76,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isDark
@@ -46,21 +48,31 @@ class BiodataAnakScreen extends StatelessWidget {
                             : AppColors.primaryLight,
                         width: 2.5,
                       ),
+                      image: fotoUrl != null
+                          ? DecorationImage(
+                              image: NetworkImage(fotoUrl),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                    child: Center(
-                      child: Text(
-                        anak.namaLengkap.isNotEmpty
-                            ? anak.namaLengkap.substring(0, 1).toUpperCase()
-                            : 'S',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: isDark
-                              ? AppColors.primaryDark
-                              : AppColors.primaryLight,
-                        ),
-                      ),
-                    ),
+                    child: fotoUrl == null
+                        ? Center(
+                            child: Text(
+                              anak.namaLengkap.isNotEmpty
+                                  ? anak.namaLengkap
+                                        .substring(0, 1)
+                                        .toUpperCase()
+                                  : 'M',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                color: isDark
+                                    ? AppColors.primaryDark
+                                    : AppColors.primaryLight,
+                              ),
+                            ),
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -98,7 +110,7 @@ class BiodataAnakScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'INFORMASI IDENTITAS SANTRI',
+                    'INFORMASI IDENTITAS MURID',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w900,

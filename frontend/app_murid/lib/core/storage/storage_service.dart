@@ -56,6 +56,15 @@ class StorageService {
         AppConstants.defaultBaseUrl;
   }
 
+  // Theme Mode
+  static Future<void> setThemeMode(String mode) async {
+    await _prefs?.setString(AppConstants.keyThemeMode, mode);
+  }
+
+  static String? getThemeMode() {
+    return _prefs?.getString(AppConstants.keyThemeMode);
+  }
+
   // Clear All on Logout
   static Future<void> clearAll() async {
     await _prefs?.remove(AppConstants.keyToken);

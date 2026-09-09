@@ -82,8 +82,11 @@ class LaporanProvider extends ChangeNotifier {
   }
 
   Future<void> fetchPresensiUstadz({
+    int? ruanganId,
     int? ustadzId,
     int? bulanHijriyahId,
+    String? semester,
+    String? status,
     String? startDate,
     String? endDate,
   }) async {
@@ -93,8 +96,11 @@ class LaporanProvider extends ChangeNotifier {
 
     try {
       _presensiUstadz = await _repository.getLaporanPresensiUstadz(
+        ruanganId: ruanganId,
         ustadzId: ustadzId,
         bulanHijriyahId: bulanHijriyahId,
+        semester: semester,
+        status: status,
         startDate: startDate,
         endDate: endDate,
       );
@@ -109,6 +115,7 @@ class LaporanProvider extends ChangeNotifier {
   Future<void> fetchPelanggaranMurid({
     int? ruanganId,
     String? kategori,
+    int? bulanHijriyahId,
     String? startDate,
     String? endDate,
   }) async {
@@ -120,6 +127,7 @@ class LaporanProvider extends ChangeNotifier {
       _pelanggaranMurid = await _repository.getLaporanPelanggaranMurid(
         ruanganId: ruanganId,
         kategori: kategori,
+        bulanHijriyahId: bulanHijriyahId,
         startDate: startDate,
         endDate: endDate,
       );

@@ -43,37 +43,11 @@ class ArsipDokumenController extends Controller
     }
 
     /**
-     * Download dokumen PDF langsung
+     * Download dokumen PDF langsung via browser print engine (100% visual fidelity)
      */
     public function download($id)
     {
         $arsip = ArsipDokumen::findOrFail($id);
-        $data = $arsip->snapshot_data;
-
-        $viewName = match ($arsip->tipe_dokumen) {
-            'rapor_murid' => 'cetak-baru.cetak_rapor_arsip',
-            'sk_keputusan' => 'cetak-baru.cetak_sk_arsip',
-            'ijazah' => 'cetak-baru.cetak_ijazah_arsip',
-            default => null,
-        };
-
-        if (!$viewName) {
-            abort(404, 'Tipe dokumen tidak didukung untuk unduhan PDF.');
-        }
-
-        $paper = $arsip->tipe_dokumen === 'ijazah' ? 'landscape' : 'portrait';
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($viewName, compact('data', 'arsip'))
-            ->setPaper('a4', $paper);
-
-        $namaMurid = \Illuminate\Support\Str::slug($data['nama_murid'] ?? $data['nama_murid'] ?? 'murid');
-        $namaDok = match ($arsip->tipe_dokumen) {
-            'rapor_murid' => 'Rapor-' . \Illuminate\Support\Str::slug($data['nama_ujian'] ?? 'ujian'),
-            'sk_keputusan' => 'SK-Kelulusan',
-            'ijazah' => 'Ijazah-Madrasah',
-            default => 'Dokumen',
-        };
-
-        $filename = "{$namaDok}-{$namaMurid}.pdf";
-        return $pdf->download($filename);
+        return redirect()->route('arsip.cetak', ['id' => $arsip->id, 'print' => 1]);
     }
 }

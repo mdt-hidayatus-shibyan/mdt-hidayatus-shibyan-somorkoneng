@@ -1,5 +1,37 @@
 import '../../core/network/api_client.dart';
 
+class TabunganKasModel {
+  final int id;
+  final String nomorRekening;
+  final String namaRekening;
+  final num saldo;
+  final num totalSetor;
+  final num totalTarik;
+  final String status;
+
+  TabunganKasModel({
+    required this.id,
+    required this.nomorRekening,
+    required this.namaRekening,
+    required this.saldo,
+    required this.totalSetor,
+    this.totalTarik = 0,
+    this.status = 'Aktif',
+  });
+
+  factory TabunganKasModel.fromJson(Map<String, dynamic> json) {
+    return TabunganKasModel(
+      id: json['id'] ?? 0,
+      nomorRekening: json['nomor_rekening'] ?? '',
+      namaRekening: json['nama_rekening'] ?? 'Tabungan Kas Ruangan',
+      saldo: json['saldo'] ?? 0,
+      totalSetor: json['total_setor'] ?? 0,
+      totalTarik: json['total_tarik'] ?? 0,
+      status: json['status'] ?? 'Aktif',
+    );
+  }
+}
+
 class RuanganKasItem {
   final int id;
   final String namaRuangan;
@@ -27,8 +59,11 @@ class KasRingkasanModel {
   final int totalMurid;
   final num totalTerkumpul;
   final num totalSudahDisetor;
+  final num totalMenungguVerifikasi;
+  final num totalDitarik;
   final num sisaDiTanganWali;
   final List<RuanganKasItem> ruanganList;
+  final TabunganKasModel? tabungan;
 
   KasRingkasanModel({
     required this.ruanganId,
@@ -37,8 +72,11 @@ class KasRingkasanModel {
     required this.totalMurid,
     required this.totalTerkumpul,
     required this.totalSudahDisetor,
+    this.totalMenungguVerifikasi = 0,
+    this.totalDitarik = 0,
     required this.sisaDiTanganWali,
     this.ruanganList = const [],
+    this.tabungan,
   });
 
   factory KasRingkasanModel.fromJson(Map<String, dynamic> json) {
@@ -49,10 +87,15 @@ class KasRingkasanModel {
       totalMurid: json['total_murid'] ?? json['total_Murid'] ?? 0,
       totalTerkumpul: json['total_terkumpul'] ?? 0,
       totalSudahDisetor: json['total_sudah_disetor'] ?? 0,
+      totalMenungguVerifikasi: json['total_menunggu_verifikasi'] ?? 0,
+      totalDitarik: json['total_ditarik'] ?? 0,
       sisaDiTanganWali: json['sisa_di_tangan_wali'] ?? 0,
       ruanganList: (json['ruangan_list'] as List? ?? [])
           .map((e) => RuanganKasItem.fromJson(e))
           .toList(),
+      tabungan: json['tabungan'] != null
+          ? TabunganKasModel.fromJson(json['tabungan'])
+          : null,
     );
   }
 }
@@ -176,10 +219,16 @@ class SetoranKasItem {
   final String tanggalSetor;
   final String? hariTanggal;
   final num jumlahSetor;
+  final String status; // Menunggu Verifikasi, Diterima, Ditolak
+  final String? catatanVerifikasi;
+  final String? diverifikasiOlehNama;
+  final String? diverifikasiPada;
   final String keterangan;
   final int? penerimaId;
   final String penerimaNama;
   final String disetorOlehNama;
+  final bool canEdit;
+  final bool canDelete;
 
   SetoranKasItem({
     required this.id,
@@ -187,11 +236,21 @@ class SetoranKasItem {
     required this.tanggalSetor,
     this.hariTanggal,
     required this.jumlahSetor,
+    this.status = 'Menunggu Verifikasi',
+    this.catatanVerifikasi,
+    this.diverifikasiOlehNama,
+    this.diverifikasiPada,
     required this.keterangan,
     this.penerimaId,
     required this.penerimaNama,
     required this.disetorOlehNama,
+    this.canEdit = true,
+    this.canDelete = true,
   });
+
+  bool get isMenungguVerifikasi => status == 'Menunggu Verifikasi';
+  bool get isDiterima => status == 'Diterima';
+  bool get isDitolak => status == 'Ditolak';
 
   factory SetoranKasItem.fromJson(Map<String, dynamic> json) {
     return SetoranKasItem(
@@ -200,10 +259,52 @@ class SetoranKasItem {
       tanggalSetor: json['tanggal_setor'] ?? '',
       hariTanggal: json['hari_tanggal'],
       jumlahSetor: json['jumlah_setor'] ?? 0,
+      status: json['status'] ?? 'Menunggu Verifikasi',
+      catatanVerifikasi: json['catatan_verifikasi'],
+      diverifikasiOlehNama: json['diverifikasi_oleh_nama'],
+      diverifikasiPada: json['diverifikasi_pada'],
       keterangan: json['keterangan'] ?? '-',
       penerimaId: json['penerima_id'],
-      penerimaNama: json['penerima_nama'] ?? 'Bendahara Madrasah',
+      penerimaNama: json['penerima_nama'] ?? 'Petugas Tabungan',
       disetorOlehNama: json['disetor_oleh_nama'] ?? 'Wali Ruangan',
+      canEdit: json['can_edit'] ?? (json['status'] == 'Menunggu Verifikasi'),
+      canDelete:
+          json['can_delete'] ?? (json['status'] == 'Menunggu Verifikasi'),
+    );
+  }
+}
+
+class PenarikanKasItem {
+  final int id;
+  final String kodeTransaksi;
+  final String tanggal;
+  final String? hariTanggal;
+  final num nominal;
+  final String keterangan;
+  final String kategori;
+  final String petugasNama;
+
+  PenarikanKasItem({
+    required this.id,
+    required this.kodeTransaksi,
+    required this.tanggal,
+    this.hariTanggal,
+    required this.nominal,
+    required this.keterangan,
+    required this.kategori,
+    required this.petugasNama,
+  });
+
+  factory PenarikanKasItem.fromJson(Map<String, dynamic> json) {
+    return PenarikanKasItem(
+      id: json['id'] ?? 0,
+      kodeTransaksi: json['kode_transaksi'] ?? '-',
+      tanggal: json['tanggal'] ?? '',
+      hariTanggal: json['hari_tanggal'],
+      nominal: json['nominal'] ?? 0,
+      keterangan: json['keterangan'] ?? '-',
+      kategori: json['kategori'] ?? 'Penarikan Kas',
+      petugasNama: json['petugas_nama'] ?? 'Petugas Tabungan',
     );
   }
 }
@@ -214,8 +315,11 @@ class RiwayatSetoranModel {
   final String levelNama;
   final num totalTerkumpul;
   final num totalDisetor;
+  final num totalMenungguVerifikasi;
   final num sisaDiTanganWali;
+  final TabunganKasModel? tabungan;
   final List<SetoranKasItem> list;
+  final List<PenarikanKasItem> penarikanList;
 
   RiwayatSetoranModel({
     required this.ruanganId,
@@ -223,8 +327,11 @@ class RiwayatSetoranModel {
     required this.levelNama,
     required this.totalTerkumpul,
     required this.totalDisetor,
+    this.totalMenungguVerifikasi = 0,
     required this.sisaDiTanganWali,
+    this.tabungan,
     required this.list,
+    this.penarikanList = const [],
   });
 
   factory RiwayatSetoranModel.fromJson(Map<String, dynamic> json) {
@@ -234,9 +341,16 @@ class RiwayatSetoranModel {
       levelNama: json['level_nama'] ?? '-',
       totalTerkumpul: json['total_terkumpul'] ?? 0,
       totalDisetor: json['total_disetor'] ?? 0,
+      totalMenungguVerifikasi: json['total_menunggu_verifikasi'] ?? 0,
       sisaDiTanganWali: json['sisa_di_tangan_wali'] ?? 0,
+      tabungan: json['tabungan'] != null
+          ? TabunganKasModel.fromJson(json['tabungan'])
+          : null,
       list: (json['list'] as List? ?? [])
           .map((e) => SetoranKasItem.fromJson(e))
+          .toList(),
+      penarikanList: (json['penarikan_list'] as List? ?? [])
+          .map((e) => PenarikanKasItem.fromJson(e))
           .toList(),
     );
   }

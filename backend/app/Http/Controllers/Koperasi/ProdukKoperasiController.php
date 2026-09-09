@@ -201,6 +201,118 @@ class ProdukKoperasiController extends Controller
     }
 
     /**
+     * Modal Dialog Cetak Barcode Produk Tunggal
+     */
+    public function cetakBarcodeSingle(ProdukKoperasi $produk)
+    {
+        $barcodeSvg = \App\Services\Koperasi\BarcodeService::getBarcodeSvg($produk->kode_produk, 2, 36, false);
+        return view('koperasi.produk.barcode_single', compact('produk', 'barcodeSvg'));
+    }
+
+    /**
+     * Halaman Cetak Barcode SKU Massal (Batch / Multi-Item)
+     */
+    public function cetakBarcodeMassal(Request $request)
+    {
+        $query = ProdukKoperasi::with('kategori')->where('status', 'Aktif');
+
+        if ($request->filled('kategori_id')) {
+            $query->where('kategori_id', $request->kategori_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_produk', 'like', "%{$search}%")
+                    ->orWhere('kode_produk', 'like', "%{$search}%");
+            });
+        }
+
+        $produks = $query->orderBy('nama_produk')->get();
+        $kategoris = KategoriProduk::where('is_active', true)->orderBy('nama_kategori')->get();
+
+        return view('koperasi.produk.barcode_massal', compact('produks', 'kategoris'));
+    }
+
+    /**
+     * Halaman Lembar Cetak Barcode Siap Print (Sheet / Thermal Layout)
+     */
+    public function printSheet(Request $request)
+    {
+        $layout = $request->get('layout', 'a4_3col');
+        $showHeader = $request->boolean('show_header', true);
+        $showName = $request->boolean('show_name', true);
+        $showPrice = $request->boolean('show_price', true);
+        $showCode = $request->boolean('show_code', true);
+        $showBorder = $request->boolean('show_border', true);
+        $autoPrint = $request->boolean('auto_print', false);
+
+        $options = [
+            'show_header' => $showHeader,
+            'show_name'   => $showName,
+            'show_price'  => $showPrice,
+            'show_code'   => $showCode,
+            'show_border' => $showBorder,
+            'auto_print'  => $autoPrint,
+        ];
+
+        $labels = [];
+
+        // 1. Jika cetak single via produk_id + qty
+        if ($request->filled('produk_id')) {
+            $produk = ProdukKoperasi::findOrFail($request->produk_id);
+            $qty = max(1, (int) $request->get('qty', 1));
+            $svg = \App\Services\Koperasi\BarcodeService::getBarcodeSvg($produk->kode_produk, 2, 36, false);
+
+            for ($i = 0; $i < $qty; $i++) {
+                $labels[] = [
+                    'produk' => $produk,
+                    'svg'    => $svg,
+                ];
+            }
+        }
+        // 2. Jika cetak batch dari items array
+        elseif ($request->has('items') && is_array($request->items)) {
+            $produkIds = array_keys($request->items);
+            $produks = ProdukKoperasi::whereIn('id', $produkIds)->get()->keyBy('id');
+
+            foreach ($request->items as $id => $itemData) {
+                $qty = is_array($itemData) ? (int) ($itemData['qty'] ?? 0) : (int) $itemData;
+                if ($qty > 0 && isset($produks[$id])) {
+                    $p = $produks[$id];
+                    $svg = \App\Services\Koperasi\BarcodeService::getBarcodeSvg($p->kode_produk, 2, 36, false);
+                    for ($i = 0; $i < $qty; $i++) {
+                        $labels[] = [
+                            'produk' => $p,
+                            'svg'    => $svg,
+                        ];
+                    }
+                }
+            }
+        }
+        // 3. Fallback jika selected_ids
+        elseif ($request->filled('selected_ids')) {
+            $ids = explode(',', $request->selected_ids);
+            $defaultQty = max(1, (int) $request->get('default_qty', 1));
+            $produks = ProdukKoperasi::whereIn('id', $ids)->get();
+
+            foreach ($produks as $p) {
+                $svg = \App\Services\Koperasi\BarcodeService::getBarcodeSvg($p->kode_produk, 2, 36, false);
+                for ($i = 0; $i < $defaultQty; $i++) {
+                    $labels[] = [
+                        'produk' => $p,
+                        'svg'    => $svg,
+                    ];
+                }
+            }
+        }
+
+        $totalLabels = count($labels);
+
+        return view('koperasi.produk.barcode_sheet', compact('labels', 'layout', 'options', 'totalLabels'));
+    }
+
+    /**
      * Simpan Kategori Baru via AJAX / Form Modal
      */
     public function storeKategori(Request $request)

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BulanHijriyah;
+use App\Models\JadwalPelajaran;
 use App\Models\Level;
 use App\Models\PelanggaranMurid;
 use App\Models\PengaturanAkademik;
@@ -191,11 +192,52 @@ class LaporanController extends Controller
     {
         $user = $request->user();
         $currentUstadz = $user->ustadz;
-        $tahunAktif = TahunPelajaran::where('is_active', true)->first();
-        $tahunId = $tahunAktif->id ?? 1;
+        [$tahunAktif, $tahunId, $accessibleRuangans, $ruangan, $ustadzId] = $this->getContextRuangans($request);
 
-        $targetUstadzId = $request->ustadz_id ?? ($currentUstadz->id ?? null);
-        $ustadz = Ustadz::find($targetUstadzId) ?? $currentUstadz;
+        if (!$ruangan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ruangan tidak ditemukan.'
+            ], 404);
+        }
+
+        // 1. Ambil daftar Ustadz yang mengajar di ruangan tersebut (via Jadwal Pelajaran atau Wali Ruangan)
+        $teacherIdsFromJadwal = JadwalPelajaran::where('ruangan_id', $ruangan->id)
+            ->whereNotNull('ustadz_id')
+            ->pluck('ustadz_id')
+            ->toArray();
+
+        $teacherIds = $teacherIdsFromJadwal;
+        if ($ruangan->ustadz_id) {
+            $teacherIds[] = $ruangan->ustadz_id;
+        }
+
+        // Ambil ustadz dari riwayat presensi yang jadwalnya di ruangan ini
+        $presensiTeacherIds = PresensiUstadz::whereHas('jadwalPelajaran', function ($q) use ($ruangan) {
+            $q->where('ruangan_id', $ruangan->id);
+        })->pluck('ustadz_id')->toArray();
+
+        $allTeacherIds = array_unique(array_filter(array_merge($teacherIds, $presensiTeacherIds)));
+
+        if (!empty($allTeacherIds)) {
+            $daftarUstadzQuery = Ustadz::whereIn('id', $allTeacherIds)->where('is_active', true)->orderBy('nama_lengkap', 'asc')->get();
+        } else {
+            $daftarUstadzQuery = Ustadz::where('id', $ruangan->ustadz_id ?? ($currentUstadz->id ?? 0))->get();
+        }
+
+        if ($daftarUstadzQuery->isEmpty() && $currentUstadz) {
+            $daftarUstadzQuery = collect([$currentUstadz]);
+        }
+
+        // 2. Tentukan target Ustadz yang dipilih
+        $targetUstadzId = $request->ustadz_id;
+        if ($targetUstadzId && $daftarUstadzQuery->contains('id', $targetUstadzId)) {
+            $ustadz = $daftarUstadzQuery->firstWhere('id', $targetUstadzId);
+        } elseif ($currentUstadz && $daftarUstadzQuery->contains('id', $currentUstadz->id)) {
+            $ustadz = $daftarUstadzQuery->firstWhere('id', $currentUstadz->id);
+        } else {
+            $ustadz = $daftarUstadzQuery->first() ?? $currentUstadz ?? Ustadz::first();
+        }
 
         if (!$ustadz) {
             return response()->json([
@@ -208,7 +250,12 @@ class LaporanController extends Controller
             ->orderBy('urutan', 'asc')
             ->get();
 
-        $query = PresensiUstadz::where('ustadz_id', $ustadz->id);
+        // 3. Query presensi ustadz KHUSUS yang mengajar di ruangan tersebut
+        $query = PresensiUstadz::with(['jadwalPelajaran.mataPelajaran', 'jadwalPelajaran.ruangan'])
+            ->where('ustadz_id', $ustadz->id)
+            ->whereHas('jadwalPelajaran', function ($q) use ($ruangan) {
+                $q->where('ruangan_id', $ruangan->id);
+            });
 
         $minDate = $bulanList->min('tanggal_mulai_masehi');
         $maxDate = $bulanList->max('tanggal_selesai_masehi');
@@ -221,8 +268,24 @@ class LaporanController extends Controller
             if ($bulan && $bulan->tanggal_mulai_masehi && $bulan->tanggal_selesai_masehi) {
                 $query->whereBetween('tanggal', [$bulan->tanggal_mulai_masehi, $bulan->tanggal_selesai_masehi]);
             }
+        } elseif ($request->filled('semester')) {
+            $sem = (string)$request->semester;
+            $bulanSem = $bulanList->filter(function ($b) use ($sem) {
+                return $sem === '1'
+                    ? in_array((string)$b->semester, ['1', 'Ganjil', 'Semester 1'])
+                    : in_array((string)$b->semester, ['2', 'Genap', 'Semester 2']);
+            });
+            $tglMulai = $bulanSem->min('tanggal_mulai_masehi');
+            $tglSelesai = $bulanSem->max('tanggal_selesai_masehi');
+            if ($tglMulai && $tglSelesai) {
+                $query->whereBetween('tanggal', [$tglMulai, $tglSelesai]);
+            }
         } elseif ($request->filled('start_date') && $request->filled('end_date')) {
             $query->whereBetween('tanggal', [$request->start_date, $request->end_date]);
+        }
+
+        if ($request->filled('status') && $request->status !== 'Semua') {
+            $query->where('status', $request->status);
         }
 
         $presensiList = $query->orderBy('tanggal', 'desc')->get();
@@ -235,7 +298,7 @@ class LaporanController extends Controller
         $totalSesi = $presensiList->count();
         $persen = $totalSesi > 0 ? round((($h + $t) / $totalSesi) * 100, 1) : 0;
 
-        $riwayat = $presensiList->map(function ($p) {
+        $riwayat = $presensiList->map(function ($p) use ($ruangan) {
             $hariTgl = null;
             try {
                 $hariTgl = Carbon::parse($p->tanggal)->locale('id')->isoFormat('dddd, D MMMM YYYY');
@@ -249,13 +312,14 @@ class LaporanController extends Controller
                 'status' => $p->status,
                 'jam_masuk' => $p->jam_masuk ? substr($p->jam_masuk, 0, 5) : '-',
                 'jam_keluar' => $p->jam_keluar ? substr($p->jam_keluar, 0, 5) : null,
+                'mapel' => $p->jadwalPelajaran->mataPelajaran->nama_mapel ?? '-',
+                'nama_ruangan' => $p->jadwalPelajaran->ruangan->nama_ruangan ?? $ruangan->nama_ruangan,
                 'keterangan' => $p->keterangan ?? '-',
                 'foto' => $p->foto ? asset('storage/' . $p->foto) : null,
             ];
         });
 
-        // Daftar Ustadz untuk switcher (jika pengurus/wali kelas)
-        $daftarUstadz = Ustadz::where('is_active', true)->orderBy('nama_lengkap', 'asc')->get()->map(fn($u) => [
+        $daftarUstadz = $daftarUstadzQuery->map(fn($u) => [
             'id' => $u->id,
             'nama' => $u->nama_lengkap,
             'niup' => $u->niup ?? '-',
@@ -265,6 +329,8 @@ class LaporanController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
+                'ruangan_id' => $ruangan->id,
+                'nama_ruangan' => $ruangan->nama_ruangan,
                 'ustadz' => [
                     'id' => $ustadz->id,
                     'nama' => $ustadz->nama_lengkap,
@@ -308,14 +374,22 @@ class LaporanController extends Controller
         $muridIds = $murids->pluck('id');
 
         $pelanggaranQuery = PelanggaranMurid::with(['murid', 'referensiPelanggaran', 'penginput'])
-            ->where('ruangan_id', $ruangan->id)
+            ->where(function ($q) use ($ruangan, $muridIds) {
+                $q->where('ruangan_id', $ruangan->id)
+                    ->orWhereIn('murid_id', $muridIds);
+            })
             ->where('tahun_pelajaran_id', $tahunId);
 
-        if ($request->filled('start_date') && $request->filled('end_date')) {
+        if ($request->filled('bulan_hijriyah_id')) {
+            $bulan = BulanHijriyah::where('tahun_pelajaran_id', $tahunId)->find($request->bulan_hijriyah_id);
+            if ($bulan && $bulan->tanggal_mulai_masehi && $bulan->tanggal_selesai_masehi) {
+                $pelanggaranQuery->whereBetween('tanggal', [$bulan->tanggal_mulai_masehi, $bulan->tanggal_selesai_masehi]);
+            }
+        } elseif ($request->filled('start_date') && $request->filled('end_date')) {
             $pelanggaranQuery->whereBetween('tanggal', [$request->start_date, $request->end_date]);
         }
 
-        if ($request->filled('kategori')) {
+        if ($request->filled('kategori') && $request->kategori !== 'Semua') {
             $kategori = $request->kategori;
             $pelanggaranQuery->whereHas('referensiPelanggaran', function ($q) use ($kategori) {
                 $q->where('kategori', $kategori);
@@ -367,7 +441,7 @@ class LaporanController extends Controller
             return [
                 'id' => $p->id,
                 'murid_id' => $p->murid_id,
-                'nama_murid' => $p->murid->nama_lengkap ?? '-',
+                'nama_murid' => $p->murid->nama_lengkap ?? $p->murid->nama ?? '-',
                 'nism' => $p->murid->nism ?? '-',
                 'tanggal' => (string)$p->tanggal,
                 'hari_tanggal' => $hariTgl,
@@ -419,12 +493,23 @@ class LaporanController extends Controller
             ], 404);
         }
 
+        $levelNama = $ruangan->level->nama_level ?? '';
+        $isKelasAkhir = in_array($levelNama, ['3 TPQ', '6 IBT', '3 TSA']);
+        $allowedTipe = $isKelasAkhir ? ['IMDA 1', 'IMNI'] : ['IMDA 1', 'IMDA 2'];
+
         $daftarUjian = Ujian::where('tahun_pelajaran_id', $tahunId)
-            ->orderBy('id', 'desc')
+            ->whereIn('tipe_ujian', $allowedTipe)
+            ->orderBy('id', 'asc')
             ->get();
 
-        $selectedUjianId = $request->ujian_id ?? ($daftarUjian->first()->id ?? null);
-        $ujian = $daftarUjian->firstWhere('id', $selectedUjianId) ?? $daftarUjian->first();
+        if ($daftarUjian->isEmpty()) {
+            $daftarUjian = Ujian::where('tahun_pelajaran_id', $tahunId)
+                ->orderBy('id', 'asc')
+                ->get();
+        }
+
+        $selectedUjianId = $request->ujian_id;
+        $ujian = ($selectedUjianId ? $daftarUjian->firstWhere('id', $selectedUjianId) : null) ?? $daftarUjian->first();
 
         if (!$ujian) {
             return response()->json([
@@ -436,12 +521,27 @@ class LaporanController extends Controller
         $murids = $this->muridRuanganRepo->getMuridByRuanganAndTahun($ruangan->id, $tahunId, 'Aktif');
         $muridIds = $murids->pluck('id');
 
-        $nilaiList = NilaiUjian::with('mataPelajaran')
+        $nilaiList = NilaiUjian::with(['jadwalUjian.mataPelajaran', 'mataPelajaran'])
             ->where('ruangan_id', $ruangan->id)
             ->where('ujian_id', $ujian->id)
             ->get();
 
-        $mapelList = $nilaiList->pluck('mataPelajaran')->filter()->unique('id')->values();
+        $mapelList = $nilaiList->map(function ($n) {
+            $mpl = $n->jadwalUjian?->mataPelajaran ?? $n->mataPelajaran;
+            if ($mpl) {
+                return [
+                    'id' => $mpl->id,
+                    'nama_mapel' => $mpl->nama_mapel,
+                ];
+            }
+            if ($n->jadwalUjian?->nama_mata_pelajaran_custom) {
+                return [
+                    'id' => $n->jadwal_ujian_id,
+                    'nama_mapel' => $n->jadwalUjian->nama_mata_pelajaran_custom,
+                ];
+            }
+            return null;
+        })->filter()->unique('id')->values();
 
         $rekapMurid = [];
         $semuaRataRata = [];
@@ -455,10 +555,14 @@ class LaporanController extends Controller
 
             $mapelNilai = [];
             foreach ($mapelList as $mpl) {
-                $item = $nMurid->firstWhere('mata_pelajaran_id', $mpl->id);
+                $item = $nMurid->first(function ($n) use ($mpl) {
+                    return ($n->jadwalUjian?->mata_pelajaran_id == $mpl['id']) ||
+                        ($n->mata_pelajaran_id == $mpl['id']) ||
+                        ($n->jadwal_ujian_id == $mpl['id']);
+                });
                 $mapelNilai[] = [
-                    'mapel_id' => $mpl->id,
-                    'nama_mapel' => $mpl->nama_mapel,
+                    'mapel_id' => $mpl['id'],
+                    'nama_mapel' => $mpl['nama_mapel'],
                     'nilai' => $item ? (float)$item->nilai : 0,
                 ];
             }
@@ -497,6 +601,7 @@ class LaporanController extends Controller
                 'ruangan_id' => $ruangan->id,
                 'nama_ruangan' => $ruangan->nama_ruangan,
                 'level_nama' => $ruangan->level->nama_level ?? '-',
+                'is_kelas_akhir' => $isKelasAkhir,
                 'ujian' => [
                     'id' => $ujian->id,
                     'nama_ujian' => $ujian->nama_ujian,
@@ -522,8 +627,8 @@ class LaporanController extends Controller
                     'level_nama' => $r->level->nama_level ?? '-',
                 ]),
                 'mapel_header' => $mapelList->map(fn($m) => [
-                    'id' => $m->id,
-                    'nama_mapel' => $m->nama_mapel,
+                    'id' => $m['id'],
+                    'nama_mapel' => $m['nama_mapel'],
                 ]),
                 'rekap_murid' => $rekapMurid,
             ]

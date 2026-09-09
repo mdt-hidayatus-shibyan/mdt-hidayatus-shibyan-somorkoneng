@@ -58,6 +58,11 @@ class Tabungan extends Model
         return $this->hasMany(RiwayatBukuTabungan::class, 'tabungan_id')->orderBy('id', 'desc');
     }
 
+    public function komplains()
+    {
+        return $this->hasMany(TabunganKomplain::class, 'tabungan_id')->orderBy('id', 'desc');
+    }
+
     /**
      * Nama identitas tampilan pemilik rekening
      */

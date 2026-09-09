@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/storage/storage_service.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode _themeMode = ThemeMode.light; // Default Light Mode
 
   ThemeMode get themeMode => _themeMode;
   bool get isDarkMode => _themeMode == ThemeMode.dark;
@@ -15,10 +15,10 @@ class ThemeProvider extends ChangeNotifier {
     final savedMode = await StorageService.getThemeMode();
     if (savedMode == 'dark') {
       _themeMode = ThemeMode.dark;
-    } else if (savedMode == 'light') {
-      _themeMode = ThemeMode.light;
-    } else {
+    } else if (savedMode == 'system') {
       _themeMode = ThemeMode.system;
+    } else {
+      _themeMode = ThemeMode.light; // Default Light Mode
     }
     notifyListeners();
   }

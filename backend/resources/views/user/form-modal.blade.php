@@ -1,16 +1,20 @@
 @php
     $isEdit = isset($user) && $user->exists;
     $actionUrl = $isEdit ? route('pengguna.update', $user->id) : route('pengguna.store');
-    $userRole = $isEdit ? ($user->roles->first()->name ?? '') : 'staff';
+    $userRole = $isEdit ? $user->roles->first()->name ?? '' : 'staff';
 @endphp
 
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in" id="userFormModal">
-    <div class="m3-glass-card !bg-white dark:!bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden transform transition-all animate-in zoom-in-95 duration-200">
-        
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
+    id="userFormModal">
+    <div
+        class="m3-glass-card !bg-white dark:!bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden transform transition-all animate-in zoom-in-95 duration-200">
+
         <!-- Modal Header -->
-        <div class="px-6 py-5 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-800/30">
+        <div
+            class="px-6 py-5 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-800/30">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark flex items-center justify-center font-black text-lg border border-primary/20">
+                <div
+                    class="w-10 h-10 rounded-2xl bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark flex items-center justify-center font-black text-lg border border-primary/20">
                     <i class="bi {{ $isEdit ? 'bi-person-gear' : 'bi-person-plus-fill' }}"></i>
                 </div>
                 <div>
@@ -22,31 +26,37 @@
                     </p>
                 </div>
             </div>
-            <button type="button" onclick="closeUserModal()" class="w-8 h-8 rounded-xl flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+            <button type="button" onclick="closeUserModal()"
+                class="w-8 h-8 rounded-xl flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
                 <i class="bi bi-x-lg text-xs font-bold"></i>
             </button>
         </div>
 
         <!-- Modal Body (Scrollable) -->
-        <form id="userForm" action="{{ $actionUrl }}" method="POST" class="overflow-y-auto p-6 space-y-4 flex-1 custom-scrollbar">
+        <form id="userForm" action="{{ $actionUrl }}" method="POST"
+            class="overflow-y-auto p-6 space-y-4 flex-1 custom-scrollbar">
             @csrf
-            @if($isEdit)
+            @if ($isEdit)
                 @method('PUT')
             @endif
 
             <!-- Alert Error Container -->
-            <div id="formErrorAlert" class="hidden p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold space-y-1"></div>
+            <div id="formErrorAlert"
+                class="hidden p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold space-y-1">
+            </div>
 
             <!-- 1. Nama Lengkap -->
             <div>
-                <label class="block text-xs font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
+                <label
+                    class="block text-xs font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
                     Nama Lengkap <span class="text-rose-500">*</span>
                 </label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
                         <i class="bi bi-person-badge text-sm"></i>
                     </div>
-                    <input type="text" name="name" value="{{ old('name', $user->name ?? '') }}" required placeholder="Contoh: UST. AHMAD FAUZI"
+                    <input type="text" name="name" value="{{ old('name', $user->name ?? '') }}" required
+                        placeholder="Contoh: UST. AHMAD FAUZI"
                         class="m3-input-glass w-full !pl-10 text-xs font-bold uppercase tracking-wider">
                 </div>
             </div>
@@ -54,27 +64,33 @@
             <!-- 2. Username & Email (Grid 2 Kolom) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                    <label class="block text-xs font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
+                    <label
+                        class="block text-xs font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
                         Username <span class="text-rose-500">*</span>
                     </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 font-mono text-xs">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 font-mono text-xs">
                             @
                         </div>
-                        <input type="text" name="username" value="{{ old('username', $user->username ?? '') }}" required placeholder="ahmad_fauzi"
+                        <input type="text" name="username" value="{{ old('username', $user->username ?? '') }}"
+                            required placeholder="ahmad_fauzi"
                             class="m3-input-glass w-full !pl-9 text-xs font-bold font-mono lowercase">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
+                    <label
+                        class="block text-xs font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
                         Alamat Email <span class="text-zinc-400 text-[10px] font-normal">(Opsional)</span>
                     </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
                             <i class="bi bi-envelope text-xs"></i>
                         </div>
-                        <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}" placeholder="ahmad@hidas.sch.id"
+                        <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}"
+                            placeholder="ahmad@hidas.sch.id"
                             class="m3-input-glass w-full !pl-10 text-xs font-bold font-mono">
                     </div>
                 </div>
@@ -82,7 +98,8 @@
 
             <!-- 3. Peran / Role (RBAC) -->
             <div>
-                <label class="block text-xs font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
+                <label
+                    class="block text-xs font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
                     Peran Pengguna (Role RBAC) <span class="text-rose-500">*</span>
                 </label>
                 <div class="relative">
@@ -92,8 +109,9 @@
                     <select name="role" id="roleSelect" required onchange="handleRoleChange(this.value)"
                         class="m3-input-glass w-full !pl-10 text-xs font-black uppercase tracking-wider cursor-pointer">
                         <option value="">-- Pilih Peran / Role --</option>
-                        @foreach($roles as $r)
-                            <option value="{{ $r->name }}" {{ old('role', $userRole) === $r->name ? 'selected' : '' }}>
+                        @foreach ($roles as $r)
+                            <option value="{{ $r->name }}"
+                                {{ old('role', $userRole) === $r->name ? 'selected' : '' }}>
                                 {{ strtoupper($r->name) }}
                             </option>
                         @endforeach
@@ -105,8 +123,10 @@
             </div>
 
             <!-- 4. Penugasan Tingkat (Kondisional) -->
-            <div id="tingkatContainer" class="{{ in_array(old('role', $userRole), ['administrator', 'petugas-tabungan', 'bendahara']) ? 'hidden' : '' }}">
-                <label class="block text-xs font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
+            <div id="tingkatContainer"
+                class="{{ in_array(old('role', $userRole), ['administrator', 'petugas-tabungan', 'bendahara']) ? 'hidden' : '' }}">
+                <label
+                    class="block text-xs font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
                     Penugasan Tingkat Madrasah
                 </label>
                 <div class="relative">
@@ -116,8 +136,9 @@
                     <select name="tingkat_id" id="tingkatSelect"
                         class="m3-input-glass w-full !pl-10 text-xs font-bold cursor-pointer">
                         <option value="">-- Semua Tingkat (Global) --</option>
-                        @foreach($tingkats as $t)
-                            <option value="{{ $t->id }}" {{ old('tingkat_id', $user->tingkat_id ?? '') == $t->id ? 'selected' : '' }}>
+                        @foreach ($tingkats as $t)
+                            <option value="{{ $t->id }}"
+                                {{ old('tingkat_id', $user->tingkat_id ?? '') == $t->id ? 'selected' : '' }}>
                                 {{ $t->nama_tingkat }} ({{ $t->kode_tingkat }})
                             </option>
                         @endforeach
@@ -129,41 +150,62 @@
             </div>
 
             <!-- 5. Password Section -->
-            <div class="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
+            <div
+                class="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <span
+                        class="text-xs font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
                         <i class="bi bi-key-fill text-amber-500"></i>
                         {{ $isEdit ? 'Ubah Password (Opsional)' : 'Password Akun' }}
                     </span>
                     <button type="button" onclick="generateRandomPassword()"
-                        class="text-[11px] font-black text-primary dark:text-primary-dark hover:underline flex items-center gap-1">
+                        class="text-[11px] font-black text-primary dark:text-primary-dark hover:underline flex items-center gap-1 transition-colors">
                         <i class="bi bi-shuffle"></i> Acak Password
                     </button>
                 </div>
 
+                @if ($isEdit)
+                    <p class="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium -mt-1">
+                        Kosongkan jika tidak ingin mengubah password.
+                    </p>
+                @endif
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
+                    <div class="relative">
                         <input type="password" name="password" id="inputPassword" {{ $isEdit ? '' : 'required' }}
-                            placeholder="{{ $isEdit ? 'Kosongkan jika tidak diubah' : 'Password minimal 6 digit' }}"
-                            class="m3-input-glass w-full text-xs font-mono">
+                            placeholder="{{ $isEdit ? 'Password baru...' : 'Password minimal 6 digit' }}"
+                            class="m3-input-glass w-full !pr-10 text-xs font-mono">
+                        <button type="button" onclick="togglePasswordVisibility('inputPassword', this)"
+                            class="absolute inset-y-0 right-0 w-9 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
+                            <i class="bi bi-eye text-xs"></i>
+                        </button>
                     </div>
-                    <div>
-                        <input type="password" name="password_confirmation" id="inputPasswordConfirm" {{ $isEdit ? '' : 'required' }}
-                            placeholder="Ulangi password"
-                            class="m3-input-glass w-full text-xs font-mono">
+                    <div class="relative">
+                        <input type="password" name="password_confirmation" id="inputPasswordConfirm"
+                            {{ $isEdit ? '' : 'required' }} placeholder="Ulangi password"
+                            class="m3-input-glass w-full !pr-10 text-xs font-mono">
+                        <button type="button" onclick="togglePasswordVisibility('inputPasswordConfirm', this)"
+                            class="absolute inset-y-0 right-0 w-9 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
+                            <i class="bi bi-eye text-xs"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- 6. Status Aktif Toggle -->
-            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800">
+            <div
+                class="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800">
                 <div>
                     <h4 class="text-xs font-black text-zinc-900 dark:text-white">Status Akun Aktif</h4>
-                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Pengguna nonaktif tidak akan dapat login ke dalam sistem</p>
+                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Pengguna nonaktif tidak akan dapat login ke
+                        dalam sistem</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', $user->is_active ?? true) ? 'checked' : '' }} class="sr-only peer">
-                    <div class="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-emerald-500"></div>
+                    <input type="checkbox" name="is_active" value="1"
+                        {{ old('is_active', $user->is_active ?? true) ? 'checked' : '' }} class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-emerald-500">
+                    </div>
                 </label>
             </div>
 

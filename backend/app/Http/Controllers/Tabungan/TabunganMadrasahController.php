@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tabungan;
 
 use App\Http\Controllers\Controller;
+use App\Models\KasRuangan\SetoranKasRuangan;
 use App\Models\Murid;
 use App\Models\Ruangan;
 use App\Models\Tabungan\KategoriPenarikan;
@@ -487,7 +488,20 @@ class TabunganMadrasahController extends Controller
             ->limit(10)
             ->get();
 
-        return view('tabungan.setor.index', compact('daftarTahun', 'tahunAktif', 'prefix', 'riwayatSetoran'));
+        // Pengajuan Setoran Kas Ruangan Menunggu Verifikasi
+        $pendingSetoranKas = SetoranKasRuangan::with(['ruangan.level', 'penyetor.ustadz', 'penerima.ustadz'])
+            ->where('status', 'Menunggu Verifikasi')
+            ->orderBy('tanggal_setor', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $ruanganIds = $pendingSetoranKas->pluck('ruangan_id')->unique();
+        $tabungansKas = Tabungan::where('jenis_nasabah', 'Kas Ruangan')
+            ->whereIn('ruangan_id', $ruanganIds)
+            ->get()
+            ->keyBy('ruangan_id');
+
+        return view('tabungan.setor.index', compact('daftarTahun', 'tahunAktif', 'prefix', 'riwayatSetoran', 'pendingSetoranKas', 'tabungansKas'));
     }
 
     /**

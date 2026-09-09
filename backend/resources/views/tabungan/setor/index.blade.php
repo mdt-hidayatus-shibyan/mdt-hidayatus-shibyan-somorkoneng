@@ -27,6 +27,32 @@
     </div>
 
 
+    <!-- Alert Pending Verifikasi Kas Ruangan -->
+    @if (isset($pendingSetoranKas) && $pendingSetoranKas->count() > 0)
+        <div
+            class="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-emerald-500/10 border-2 border-amber-500/30 dark:border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs font-bold relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg shrink-0 font-black border border-amber-500/30">
+                    <i class="bi bi-bell-fill animate-bounce"></i>
+                </div>
+                <div>
+                    <div class="font-black text-sm text-amber-800 dark:text-amber-300">
+                        Antrean Verifikasi Setoran Kas Ruangan ({{ $pendingSetoranKas->count() }} Pengajuan)
+                    </div>
+                    <p class="text-xs font-medium text-amber-700/90 dark:text-amber-300/90 mt-0.5">
+                        Wali kelas telah mengajukan setoran kas ruangan ke Tabungan Madrasah. Silakan periksa dan
+                        verifikasi fisik uangnya.
+                    </p>
+                </div>
+            </div>
+            <a href="#antrean-kas-ruangan"
+                class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-xl shadow-2xs transition-all shrink-0 text-center">
+                Lihat Antrean
+            </a>
+        </div>
+    @endif
+
     <!-- Alert Error -->
     @if (session('error'))
         <div
@@ -313,9 +339,130 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- KOLOM KANAN: RIWAYAT SETORAN TERKINI       -->
+        <!-- KOLOM KANAN: ANTREAN & RIWAYAT SETORAN     -->
         <!-- ========================================== -->
-        <div class="lg:col-span-7 space-y-4">
+        <div class="lg:col-span-7 space-y-6">
+
+            <!-- 1. ANTREAN VERIFIKASI SETORAN KAS RUANGAN -->
+            <div id="antrean-kas-ruangan"
+                class="m3-glass-card p-5 sm:p-6 rounded-3xl space-y-4 shadow-2xs {{ isset($pendingSetoranKas) && $pendingSetoranKas->count() > 0 ? 'border-amber-500/30 dark:border-amber-500/40 bg-gradient-to-b from-amber-500/5 via-transparent to-transparent' : '' }}">
+                <div class="flex items-center justify-between pb-3 border-b border-zinc-200/80 dark:border-zinc-800">
+                    <div class="flex items-center gap-2.5">
+                        <div
+                            class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm font-black border border-amber-500/20">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-black text-zinc-900 dark:text-white">
+                                    Antrean Setor Kas Ruangan
+                                </h3>
+                                @if (isset($pendingSetoranKas) && $pendingSetoranKas->count() > 0)
+                                    <span
+                                        class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 animate-pulse">
+                                        {{ $pendingSetoranKas->count() }} Menunggu
+                                    </span>
+                                @endif
+                            </div>
+                            <p class="text-[11px] text-zinc-500 dark:text-zinc-400">
+                                Verifikasi pengajuan setor kas kelas dari Wali Ruangan / Ustadz
+                            </p>
+                        </div>
+                    </div>
+                    <a href="{{ route('setoran-kas-ruangan.index') }}"
+                        class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1">
+                        <span>Kelola Kas</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="space-y-3 max-h-[380px] overflow-y-auto custom-scrollbar pr-1">
+                    @forelse ($pendingSetoranKas ?? [] as $item)
+                        @php
+                            $ruanganTab = $tabungansKas[$item->ruangan_id] ?? null;
+                            $penyetorNama =
+                                $item->penyetor?->ustadz?->nama_lengkap ?? ($item->penyetor?->name ?? 'Wali Ruangan');
+                            $ruanganNama = $item->ruangan?->nama_ruangan ?? 'Ruangan';
+                            $levelNama = $item->ruangan?->level?->nama_level ?? 'Kelas';
+                        @endphp
+                        <div
+                            class="p-4 rounded-2xl bg-amber-500/5 dark:bg-amber-500/5 border border-amber-500/20 dark:border-amber-500/30 hover:border-amber-500/40 transition-all space-y-3 shadow-2xs">
+                            <div
+                                class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-amber-500/15">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span
+                                        class="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                                        <i class="bi bi-door-open-fill mr-1"></i>{{ $levelNama }} &bull;
+                                        {{ $ruanganNama }}
+                                    </span>
+                                    <span class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                                        <i
+                                            class="bi bi-calendar3 mr-1"></i>{{ \Carbon\Carbon::parse($item->tanggal_setor)->format('d M Y') }}
+                                    </span>
+                                </div>
+                                <div class="text-left sm:text-right">
+                                    <span
+                                        class="text-base font-black font-mono text-emerald-600 dark:text-emerald-400">
+                                        Rp {{ number_format($item->jumlah_setor, 0, ',', '.') }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <span class="text-[11px] text-zinc-400 block font-semibold">Penyetor (Wali):</span>
+                                    <span
+                                        class="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 mt-0.5">
+                                        <i class="bi bi-person-circle text-zinc-400"></i>
+                                        <span>{{ $penyetorNama }}</span>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-zinc-400 block font-semibold">Rekening Kas
+                                        Tujuan:</span>
+                                    <span class="font-mono font-bold text-zinc-800 dark:text-zinc-200 mt-0.5 block">
+                                        {{ $ruanganTab?->nomor_rekening ?? 'Dibuat Otomatis' }}
+                                        @if ($ruanganTab)
+                                            <span class="text-[10px] font-normal text-zinc-500">(Saldo: Rp
+                                                {{ number_format($ruanganTab->saldo, 0, ',', '.') }})</span>
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+
+                            @if ($item->keterangan)
+                                <div
+                                    class="text-[11px] text-zinc-600 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/60 p-2.5 rounded-xl border border-zinc-200/50 dark:border-zinc-700/50 italic">
+                                    <i class="bi bi-chat-left-text text-zinc-400 mr-1.5"></i>"{{ $item->keterangan }}"
+                                </div>
+                            @endif
+
+                            <div class="flex items-center justify-between gap-2 pt-1">
+                                <a href="{{ route('setoran-kas-ruangan.riwayat', $item->ruangan_id) }}"
+                                    class="text-[11px] font-bold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors flex items-center gap-1">
+                                    <i class="bi bi-clock-history"></i>
+                                    <span>Riwayat Kas</span>
+                                </a>
+                                <div class="flex items-center gap-2">
+                                    <button type="button"
+                                        onclick="bukaModalVerifikasiKas({{ $item->id }}, '{{ number_format($item->jumlah_setor, 0, ',', '.') }}', '{{ addslashes($ruanganNama) }}', '{{ addslashes($penyetorNama) }}', '{{ $ruanganTab?->nomor_rekening ?? '-' }}')"
+                                        class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-2xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer">
+                                        <i class="bi bi-shield-check text-xs"></i>
+                                        <span>Verifikasi & Terima</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-6 text-center text-zinc-400 text-xs">
+                            <i class="bi bi-check2-circle text-2xl text-emerald-500/60 block mb-1.5"></i>
+                            Tidak ada antrean setoran kas ruangan yang menunggu verifikasi.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- 2. RIWAYAT SETORAN TERKINI -->
             <div class="m3-glass-card p-5 sm:p-6 rounded-3xl space-y-4 shadow-2xs">
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-200/80 dark:border-zinc-800">
                     <div class="flex items-center gap-2.5">
@@ -339,7 +486,7 @@
                     </a>
                 </div>
 
-                <div id="data-grid-container" class="space-y-2.5 max-h-[720px] overflow-y-auto custom-scrollbar pr-1">
+                <div id="data-grid-container" class="space-y-2.5 max-h-[480px] overflow-y-auto custom-scrollbar pr-1">
                     @php
                         $badgeColors = [
                             'Murid' => 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20',
@@ -430,6 +577,112 @@
                         </div>
                     @endforelse
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL VERIFIKASI SETORAN KAS RUANGAN       -->
+    <!-- ========================================== -->
+    <div id="modalVerifikasiKasRuangan"
+        class="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center hidden backdrop-blur-sm p-4 transition-all print:hidden">
+        <div class="m3-glass-card !bg-white dark:!bg-[#0c0c0e] w-full max-w-md p-6 rounded-3xl shadow-xl border border-zinc-200 dark:border-zinc-800 mx-auto relative overflow-hidden transform scale-95 opacity-0 transition-all duration-300"
+            id="modalVerifikasiKasContent">
+
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-4">
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xs shrink-0">
+                        <i class="bi bi-shield-check text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight leading-tight">
+                            Verifikasi Setoran Kas Ruangan
+                        </h3>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                            Validasi fisik uang kas dan setujui masuk ke Tabungan Madrasah
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    class="p-4 rounded-2xl bg-zinc-100/70 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/60 mb-4 space-y-2">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-zinc-500">Ruangan Kelas:</span>
+                        <span class="font-bold text-zinc-900 dark:text-white" id="verifKasRuangan">-</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-zinc-500">Wali Penyetor:</span>
+                        <span class="font-bold text-zinc-900 dark:text-white" id="verifKasPenyetor">-</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-zinc-500">No. Rekening Tabungan:</span>
+                        <span class="font-mono font-bold text-zinc-900 dark:text-white" id="verifKasRekening">-</span>
+                    </div>
+                    <div
+                        class="flex justify-between items-center text-xs pt-1.5 border-t border-zinc-200/60 dark:border-zinc-700/60">
+                        <span class="text-zinc-500 font-semibold">Nominal Diajukan:</span>
+                        <span class="font-black font-mono text-emerald-600 dark:text-emerald-400 text-base"
+                            id="verifKasNominal">Rp 0</span>
+                    </div>
+                </div>
+
+                <form id="formVerifikasiKasRuangan" method="POST" class="space-y-4">
+                    @csrf
+
+                    <!-- Status Pilihan -->
+                    <div>
+                        <label
+                            class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+                            Keputusan Verifikasi
+                        </label>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="status" value="Diterima" checked class="peer sr-only">
+                                <div
+                                    class="p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 peer-checked:border-emerald-500 peer-checked:bg-emerald-500/10 text-center transition-all">
+                                    <i class="bi bi-check-circle-fill text-lg text-emerald-600 block mb-0.5"></i>
+                                    <span class="text-xs font-black text-zinc-800 dark:text-zinc-200">Terima
+                                        Setoran</span>
+                                    <span class="text-[10px] text-zinc-500 block">Masuk ke Tabungan</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="status" value="Ditolak" class="peer sr-only">
+                                <div
+                                    class="p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 peer-checked:border-rose-500 peer-checked:bg-rose-500/10 text-center transition-all">
+                                    <i class="bi bi-x-circle-fill text-lg text-rose-600 block mb-0.5"></i>
+                                    <span class="text-xs font-black text-zinc-800 dark:text-zinc-200">Tolak
+                                        Setoran</span>
+                                    <span class="text-[10px] text-zinc-500 block">Kembalikan ke Wali</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Catatan Verifikasi -->
+                    <div>
+                        <label
+                            class="block text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 ml-1">
+                            Catatan Verifikasi (Opsional)
+                        </label>
+                        <input type="text" name="catatan_verifikasi"
+                            placeholder="Misal: Uang fisik sesuai dan telah dihitung..."
+                            class="m3-input-glass w-full text-xs font-bold">
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-2.5 pt-3 border-t border-zinc-200/80 dark:border-zinc-800">
+                        <button type="button" onclick="tutupModalVerifikasiKas()"
+                            class="flex-1 h-10 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-black text-xs rounded-xl shadow-2xs transition-all outline-none active:scale-95 cursor-pointer">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="flex-1 h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-2xs transition-all active:scale-95 outline-none cursor-pointer">
+                            Proses Verifikasi
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -556,6 +809,34 @@
                         this.nominal = cur + val;
                     }
                 };
+            }
+
+            function bukaModalVerifikasiKas(id, nominal, ruangan, penyetor, nomorRekening) {
+                const form = document.getElementById('formVerifikasiKasRuangan');
+                form.action = `{{ url('setoran-kas-ruangan') }}/${id}/verifikasi`;
+
+                document.getElementById('verifKasRuangan').innerText = ruangan || '-';
+                document.getElementById('verifKasPenyetor').innerText = penyetor || '-';
+                document.getElementById('verifKasNominal').innerText = 'Rp ' + nominal;
+                document.getElementById('verifKasRekening').innerText = nomorRekening || '-';
+
+                const modal = document.getElementById('modalVerifikasiKasRuangan');
+                const content = document.getElementById('modalVerifikasiKasContent');
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+
+            function tutupModalVerifikasiKas() {
+                const modal = document.getElementById('modalVerifikasiKasRuangan');
+                const content = document.getElementById('modalVerifikasiKasContent');
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
             }
         </script>
     @endpush

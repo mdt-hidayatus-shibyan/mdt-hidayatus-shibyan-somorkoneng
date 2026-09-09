@@ -146,7 +146,7 @@ class _GantiPinAwalScreenState extends State<GantiPinAwalScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Assalamu\'alaikum, ${wali?.namaKepalaKeluarga ?? "Wali Murid"}.\nDemi keamanan akun dan data santri, silakan ubah PIN default (112233) menjadi 6 digit PIN baru pilihan Anda.',
+                    'Assalamu\'alaikum, ${wali?.namaKepalaKeluarga ?? "Wali Murid"}.\nDemi keamanan akun dan data murid, silakan ubah PIN default (112233) menjadi 6 digit PIN baru pilihan Anda.',
                     style: TextStyle(
                       fontSize: 13,
                       height: 1.45,

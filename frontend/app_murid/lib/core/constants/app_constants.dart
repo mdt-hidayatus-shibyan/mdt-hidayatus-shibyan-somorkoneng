@@ -3,7 +3,7 @@ class AppConstants {
 
   static const String appName = 'Wali MDTHS';
   static const String appVersion = '1.0.0';
-  static const String appTagline = 'Portal Monitoring Santri & Wali Murid';
+  static const String appTagline = 'Portal Monitoring Murid & Wali Murid';
 
   // Storage Keys
   static const String keyToken = 'auth_token';

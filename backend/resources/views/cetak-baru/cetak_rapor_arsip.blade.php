@@ -71,14 +71,15 @@
 <body class="bg-white">
 
     <!-- TOMBOL CETAK & INDIKATOR ARSIP -->
-    <div class="print:hidden flex justify-center items-center py-4 bg-slate-100 gap-4 border-b mb-6 no-print">
+    <div
+        class="print:hidden sticky top-0 z-50 flex flex-wrap justify-center items-center py-3 px-4 bg-slate-900 text-white gap-3 border-b mb-6 no-print shadow-md">
         <div
-            class="px-4 py-2 bg-amber-100 text-amber-800 border border-amber-300 rounded-lg text-xs font-bold flex items-center shadow-sm">
-            <i class="bi bi-shield-lock-fill mr-2 text-amber-600"></i> MODE ARSIP DIGITAL (DOKUMEN BEKU)
+            class="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-400/40 rounded-lg text-xs font-bold flex items-center shadow-2xs">
+            <i class="bi bi-shield-lock-fill mr-1.5 text-amber-400"></i> ARSIP DIGITAL RESMI
         </div>
         <button onclick="window.print()"
-            class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-md">
-            <i class="bi bi-printer-fill mr-1"></i> Cetak Dokumen Arsip
+            class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black flex items-center gap-1.5 transition-all shadow-md active:scale-95">
+            <i class="bi bi-printer-fill"></i> Cetak / Simpan PDF
         </button>
     </div>
 
@@ -420,6 +421,16 @@
             </td>
         </tr>
     </table>
+
+    @if (request()->has('print') || request()->has('auto_print') || request()->has('download'))
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    window.print();
+                }, 600);
+            });
+        </script>
+    @endif
 
 </body>
 

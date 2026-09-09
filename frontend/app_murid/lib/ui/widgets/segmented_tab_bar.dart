@@ -74,17 +74,23 @@ class SegmentedTabBar extends StatelessWidget {
                                 ? (isDark ? Colors.black : Colors.white)
                                 : (isDark ? Colors.white60 : Colors.black54),
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            tab.label,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: isSelected
-                                  ? FontWeight.w900
-                                  : FontWeight.w600,
-                              color: isSelected
-                                  ? (isDark ? Colors.black : Colors.white)
-                                  : (isDark ? Colors.white60 : Colors.black54),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              tab.label,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: isSelected
+                                    ? FontWeight.w900
+                                    : FontWeight.w600,
+                                color: isSelected
+                                    ? (isDark ? Colors.black : Colors.white)
+                                    : (isDark
+                                          ? Colors.white60
+                                          : Colors.black54),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],

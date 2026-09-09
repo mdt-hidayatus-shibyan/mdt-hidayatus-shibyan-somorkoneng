@@ -247,6 +247,15 @@
                                     x-text="accountData?.periode_nama"></span>
                             </div>
                         </div>
+
+                        <template x-if="accountData?.jenis_nasabah === 'Kas Ruangan'">
+                            <div
+                                class="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-800 dark:text-sky-300 text-[11px] font-semibold flex items-center gap-2">
+                                <i class="bi bi-info-circle-fill text-sky-600 dark:text-sky-400 shrink-0 text-sm"></i>
+                                <span>Penarikan kas ruangan diserahkan langsung ke Wali Ruangan dan otomatis
+                                    mengembalikan uang fisik ke tangan Wali.</span>
+                            </div>
+                        </template>
                     </div>
 
                     <!-- 3. State: Not Found -->

@@ -27,4 +27,32 @@ class ApiClient {
   }
 
   Dio get dio => _dio;
+
+  static String? resolveImageUrl(String? rawUrl) {
+    if (rawUrl == null || rawUrl.trim().isEmpty) return null;
+    final trimmed = rawUrl.trim();
+    final activeBase = StorageService.getBaseUrl();
+    final baseUri = Uri.tryParse(activeBase);
+    if (baseUri == null || !baseUri.hasScheme || !baseUri.hasAuthority) {
+      return trimmed;
+    }
+
+    final targetHostAuthority = '${baseUri.scheme}://${baseUri.authority}';
+
+    final rawUri = Uri.tryParse(trimmed);
+    if (rawUri != null &&
+        rawUri.hasScheme &&
+        (rawUri.host == 'localhost' || rawUri.host == '127.0.0.1')) {
+      final pathAndQuery =
+          '${rawUri.path}${rawUri.hasQuery ? '?${rawUri.query}' : ''}';
+      return '$targetHostAuthority$pathAndQuery';
+    }
+
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+      final cleanPath = trimmed.startsWith('/') ? trimmed : '/$trimmed';
+      return '$targetHostAuthority$cleanPath';
+    }
+
+    return trimmed;
+  }
 }
