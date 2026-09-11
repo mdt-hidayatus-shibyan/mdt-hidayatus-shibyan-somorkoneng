@@ -9,7 +9,7 @@
                 Ruangan
             </h2>
             <p class="text-[13px] font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5 transition-colors duration-300">
-                Kelola data ruang kelas, kapasitas, dan wali ruangan.
+                Kelola data ruang kelas, gedung, kamar asrama, kapasitas, dan wali ruangan.
             </p>
         </div>
 
@@ -36,6 +36,23 @@
                     </div>
                 </div>
 
+                <!-- Filter Gedung -->
+                <div class="relative w-full sm:w-auto min-w-[150px] group/filter">
+                    <select name="gedung_id" onchange="this.form.submit()"
+                        class="m3-input-glass w-full appearance-none cursor-pointer !pr-9">
+                        <option value="">-- Semua Gedung --</option>
+                        @foreach ($gedungs as $gd)
+                            <option value="{{ $gd->id }}" {{ request('gedung_id') == $gd->id ? 'selected' : '' }}>
+                                {{ $gd->nama_gedung }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-zinc-400 group-focus-within/filter:text-primary dark:group-focus-within/filter:text-primary-dark transition-colors">
+                        <i class="bi bi-chevron-down text-xs font-bold"></i>
+                    </div>
+                </div>
+
                 <!-- Search Input -->
                 <div class="relative w-full sm:w-72 group/search">
                     <div
@@ -44,11 +61,11 @@
                     </div>
 
                     <!-- Input Pencarian -->
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari ruangan..."
-                        class="m3-input-glass w-full !pl-10 !pr-10">
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        placeholder="Cari ruangan / kamar..." class="m3-input-glass w-full !pl-10 !pr-10">
 
                     <!-- Tombol Reset -->
-                    @if (request('search') || request('tahun_pelajaran_id'))
+                    @if (request('search') || request('gedung_id') || request('tahun_pelajaran_id'))
                         <a href="{{ route('ruangan.index') }}"
                             class="absolute inset-y-0 right-0 w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-800 rounded-xl transition-colors duration-200 outline-none"
                             title="Reset Filter">

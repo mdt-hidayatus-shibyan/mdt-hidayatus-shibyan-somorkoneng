@@ -2,7 +2,7 @@
 <x-app-layout>
 
     <!-- Header Action Buttons -->
-    <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4 relative z-10">
+    <div class="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
         <div>
             <h2 class="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
                 Tabungan Madrasah
@@ -13,41 +13,35 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
-            <a href="{{ route('tabungan.komplain.index') }}"
-                class="inline-flex items-center justify-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/20 font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-xs shadow-2xs active:scale-95 transition-all relative">
-                <i class="bi bi-chat-square-dots-fill text-sm"></i>
-                <span>Komplain Setoran</span>
+            <x-button :href="route('tabungan.komplain.index')" variant="secondary" size="sm" icon="bi-chat-square-dots-fill">
+                <span>Komplain</span>
                 @if (($ringkasan['komplain_pending'] ?? 0) > 0)
                     <span
                         class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-black bg-rose-600 text-white rounded-full ml-1 animate-pulse">
                         {{ $ringkasan['komplain_pending'] }}
                     </span>
                 @endif
-            </a>
-            <a href="{{ route('tabungan.cek-mutasi.index') }}"
-                class="inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-xs shadow-sm active:scale-95 transition-all">
-                <i class="bi bi-shield-check text-sm"></i>
-                <span>Cek Mutasi & Verifikasi</span>
-            </a>
-            <a href="{{ route('tabungan.setor.index') }}"
-                class="inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-xs shadow-sm active:scale-95 transition-all">
-                <i class="bi bi-arrow-down-circle-fill text-sm"></i>
+            </x-button>
+
+            <x-button :href="route('tabungan.cek-mutasi.index')" variant="outline" size="sm" icon="bi-shield-check">
+                <span>Cek Mutasi</span>
+            </x-button>
+
+            <x-button :href="route('tabungan.setor.index')" variant="primary" size="sm" icon="bi-arrow-down-circle-fill">
                 <span>Setor Tunai</span>
-            </a>
-            <a href="{{ route('tabungan.tarik.index') }}"
-                class="inline-flex items-center justify-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-xs shadow-2xs active:scale-95 transition-all">
-                <i class="bi bi-arrow-up-circle-fill text-sm"></i>
+            </x-button>
+
+            <x-button :href="route('tabungan.tarik.index')" variant="secondary" size="sm" icon="bi-arrow-up-circle-fill">
                 <span>Tarik Tunai</span>
-            </a>
-            <a href="{{ route('tabungan.rincian.index') }}"
-                class="inline-flex items-center justify-center gap-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-500/20 font-bold rounded-xl md:rounded-2xl min-h-[40px] px-4 py-2 text-xs shadow-2xs active:scale-95 transition-all">
-                <i class="bi bi-bar-chart-line-fill text-sm"></i>
+            </x-button>
+
+            <x-button :href="route('tabungan.rincian.index')" variant="secondary" size="sm" icon="bi-bar-chart-line-fill">
                 <span>Rincian Kas</span>
-            </a>
-            <a href="{{ route('tabungan.rekening.create') }}" class="m3-btn-secondary text-xs">
-                <i class="bi bi-plus-circle-fill text-sm"></i>
+            </x-button>
+
+            <x-button :href="route('tabungan.rekening.create')" variant="secondary" size="sm" icon="bi-plus-circle-fill">
                 <span>Buka Rekening</span>
-            </a>
+            </x-button>
         </div>
     </div>
 
@@ -70,10 +64,9 @@
                     </p>
                 </div>
             </div>
-            <a href="{{ route('tabungan.komplain.index') }}"
-                class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl transition-colors shrink-0 text-center shadow-sm">
+            <x-button :href="route('tabungan.komplain.index')" variant="danger" size="sm">
                 Buka Halaman Komplain
-            </a>
+            </x-button>
         </div>
     @endif
 
@@ -93,19 +86,16 @@
                     <p class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5">
                         Mulai: <span
                             class="font-bold text-zinc-700 dark:text-zinc-300">{{ $periodeAktif->tanggal_mulai->format('d M Y') }}</span>
-                        •
-                        Penutupan: <span
+                        • Penutupan: <span
                             class="font-bold text-rose-500">{{ $periodeAktif->tanggal_penutupan->format('d M Y') }}</span>
-                        •
-                        Rencana Pembagian: <span
+                        • Rencana Pembagian: <span
                             class="font-bold text-emerald-600 dark:text-emerald-400">{{ $periodeAktif->tanggal_pembagian->format('d M Y') }}</span>
                     </p>
                 </div>
             </div>
-            <a href="{{ route('tabungan.pembagian.index', ['periode_id' => $periodeAktif->id]) }}"
-                class="px-3.5 py-2 bg-primary/10 hover:bg-primary/20 text-primary dark:text-primary-dark text-xs font-black rounded-xl transition-colors shrink-0 text-center border border-primary/20">
+            <x-button :href="route('tabungan.pembagian.index', ['periode_id' => $periodeAktif->id])" variant="outline" size="sm">
                 Lihat Simulasi Pembagian
-            </a>
+            </x-button>
         </div>
     @endif
 
@@ -122,7 +112,7 @@
                     <i class="bi bi-safe2-fill"></i>
                 </div>
             </div>
-            <h3 class="text-xl md:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+            <h3 class="text-xl md:text-2xl font-black text-zinc-900 dark:text-white tracking-tight font-mono">
                 Rp {{ number_format($ringkasan['total_saldo'], 0, ',', '.') }}
             </h3>
             <div class="flex items-center gap-2 mt-2.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
@@ -144,8 +134,7 @@
                     <i class="bi bi-people-fill"></i>
                 </div>
             </div>
-            <h3
-                class="text-xl md:text-2xl font-black text-zinc-900 dark:text-white tracking-tight text-blue-600 dark:text-blue-400">
+            <h3 class="text-xl md:text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight font-mono">
                 Rp {{ number_format($ringkasan['saldo_murid'], 0, ',', '.') }}
             </h3>
             <p class="text-[11px] font-bold text-zinc-400 mt-2.5">
@@ -164,8 +153,7 @@
                     <i class="bi bi-person-badge-fill"></i>
                 </div>
             </div>
-            <h3
-                class="text-xl md:text-2xl font-black text-zinc-900 dark:text-white tracking-tight text-indigo-600 dark:text-indigo-400">
+            <h3 class="text-xl md:text-2xl font-black text-indigo-600 dark:text-indigo-400 tracking-tight font-mono">
                 Rp {{ number_format($ringkasan['saldo_ustadz'], 0, ',', '.') }}
             </h3>
             <p class="text-[11px] font-bold text-zinc-400 mt-2.5">
@@ -184,8 +172,7 @@
                     <i class="bi bi-door-open-fill"></i>
                 </div>
             </div>
-            <h3
-                class="text-xl md:text-2xl font-black text-zinc-900 dark:text-white tracking-tight text-teal-600 dark:text-teal-400">
+            <h3 class="text-xl md:text-2xl font-black text-teal-600 dark:text-teal-400 tracking-tight font-mono">
                 Rp {{ number_format($ringkasan['saldo_kas'] + $ringkasan['saldo_umum'], 0, ',', '.') }}
             </h3>
             <p class="text-[11px] font-bold text-zinc-400 mt-2.5 truncate"
@@ -208,44 +195,40 @@
                     <i class="bi bi-clock-history text-primary text-sm"></i>
                     Mutasi Transaksi Terakhir
                 </span>
-                <a href="{{ route('tabungan.rekening.index') }}"
-                    class="text-xs font-bold text-primary dark:text-primary-dark hover:underline flex items-center gap-1">
-                    <span>Lihat Semua</span>
-                    <i class="bi bi-arrow-right"></i>
-                </a>
+                <x-button :href="route('tabungan.rekening.index')" variant="text" size="sm" icon="bi-arrow-right" icon-position="right">
+                    Lihat Semua
+                </x-button>
             </div>
 
             <div class="overflow-x-auto custom-scrollbar">
-                <table class="w-full text-left border-collapse text-xs">
+                <table class="m3-table">
                     <thead>
-                        <tr
-                            class="border-b border-zinc-200/80 dark:border-zinc-800 text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 bg-zinc-50/40 dark:bg-zinc-950/20">
-                            <th class="py-3 px-4">Kode & Tanggal</th>
-                            <th class="py-3 px-3">Nasabah</th>
-                            <th class="py-3 px-3">Jenis</th>
-                            <th class="py-3 px-3 text-right">Nominal Kotor</th>
-                            <th class="py-3 px-3 text-right">Potongan</th>
-                            <th class="py-3 px-4 text-right">Nominal Bersih</th>
+                        <tr>
+                            <th>Kode & Tanggal</th>
+                            <th>Nasabah</th>
+                            <th class="text-center">Jenis</th>
+                            <th class="text-right">Nominal Kotor</th>
+                            <th class="text-right">Potongan</th>
+                            <th class="text-right">Nominal Bersih</th>
                         </tr>
                     </thead>
-                    <tbody
-                        class="divide-y divide-zinc-100 dark:divide-zinc-800/60 font-medium text-zinc-700 dark:text-zinc-300">
+                    <tbody>
                         @forelse ($transaksiTerbaru as $trx)
-                            <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                <td class="py-3 px-4">
-                                    <span class="font-mono font-bold text-zinc-900 dark:text-white block">
+                            <tr>
+                                <td>
+                                    <span class="font-mono font-bold text-zinc-900 dark:text-white text-xs block">
                                         {{ $trx->kode_transaksi }}
                                     </span>
                                     <span class="text-[10px] text-zinc-400">
                                         {{ $trx->tanggal->format('d M Y') }} • {{ $trx->petugas->name ?? 'Admin' }}
                                     </span>
                                 </td>
-                                <td class="py-3 px-3">
-                                    <div class="flex items-center gap-2">
+                                <td>
+                                    <div class="flex items-center gap-2.5">
                                         <x-avatar :name="$trx->tabungan->nama_nasabah ?? 'Nasabah'" size="xs" />
                                         <div class="min-w-0">
                                             <span
-                                                class="font-bold text-zinc-900 dark:text-white block truncate max-w-[150px]">
+                                                class="font-bold text-zinc-900 dark:text-white block truncate max-w-[150px] text-xs">
                                                 {{ $trx->tabungan->nama_nasabah ?? '-' }}
                                             </span>
                                             <span class="text-[10px] text-zinc-400 font-mono">
@@ -254,7 +237,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="py-3 px-3">
+                                <td class="text-center">
                                     @if ($trx->jenis_transaksi == 'Setor')
                                         <span
                                             class="px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
@@ -272,23 +255,23 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="py-3 px-3 text-right font-mono font-bold">
+                                <td class="text-right font-mono font-bold text-xs">
                                     Rp {{ number_format($trx->nominal_kotor, 0, ',', '.') }}
                                 </td>
-                                <td class="py-3 px-3 text-right font-mono text-[11px] text-rose-500">
+                                <td class="text-right font-mono text-[11px] text-rose-500">
                                     {{ $trx->nominal_potongan > 0 ? '-Rp ' . number_format($trx->nominal_potongan, 0, ',', '.') : '-' }}
                                 </td>
                                 <td
-                                    class="py-3 px-4 text-right font-mono font-black {{ $trx->jenis_transaksi == 'Setor' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-900 dark:text-white' }}">
+                                    class="text-right font-mono font-black text-xs {{ $trx->jenis_transaksi == 'Setor' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-900 dark:text-white' }}">
                                     {{ $trx->jenis_transaksi == 'Setor' ? '+' : '' }}Rp
                                     {{ number_format($trx->nominal_bersih, 0, ',', '.') }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="py-12 text-center text-zinc-400">
-                                    <i class="bi bi-inbox text-3xl block mb-2 opacity-50"></i>
-                                    Belum ada mutasi transaksi tabungan yang tercatat.
+                                <td colspan="6" class="p-8">
+                                    <x-empty-state icon="bi-inbox" title="Tidak Ada Mutasi"
+                                        message="Belum ada mutasi transaksi tabungan yang tercatat." />
                                 </td>
                             </tr>
                         @endforelse
@@ -370,11 +353,10 @@
                     </div>
                 </div>
                 <div class="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/60 text-right">
-                    <a href="{{ route('tabungan.pengaturan.index') }}"
-                        class="text-xs font-bold text-primary dark:text-primary-dark hover:underline inline-flex items-center gap-1">
-                        <span>Ubah Pengaturan Potongan</span>
-                        <i class="bi bi-arrow-right"></i>
-                    </a>
+                    <x-button :href="route('tabungan.pengaturan.index')" variant="text" size="sm" icon="bi-arrow-right"
+                        icon-position="right">
+                        Ubah Pengaturan Potongan
+                    </x-button>
                 </div>
             </div>
         </div>

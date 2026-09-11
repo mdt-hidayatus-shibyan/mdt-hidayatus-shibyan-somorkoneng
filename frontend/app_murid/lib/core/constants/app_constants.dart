@@ -1,7 +1,7 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'Wali MDTHS';
+  static const String appName = 'Wali Murid - MDTHS';
   static const String appVersion = '1.0.0';
   static const String appTagline = 'Portal Monitoring Murid & Wali Murid';
 

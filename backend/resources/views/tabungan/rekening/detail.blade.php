@@ -232,7 +232,7 @@
 
     <!-- TABEL MUTASI BUKU TABUNGAN -->
     @if ($transaksis->isNotEmpty())
-        <div id="data-grid-container" class="m3-glass-card rounded-2xl overflow-hidden shadow-2xs">
+        <div id="data-grid-container" class="m3-glass-card rounded-2xl md:rounded-3xl overflow-hidden shadow-2xs">
             <div
                 class="p-4 bg-zinc-50/80 dark:bg-zinc-950/70 border-b border-zinc-200/80 dark:border-zinc-800 flex justify-between items-center">
                 <span
@@ -243,63 +243,61 @@
             </div>
 
             <div class="overflow-x-auto custom-scrollbar">
-                <table class="w-full text-left border-collapse text-xs">
+                <table class="m3-table">
                     <thead>
-                        <tr
-                            class="border-b border-zinc-200/80 dark:border-zinc-800 text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500">
-                            <th class="py-3 px-4 w-12 text-center">No</th>
-                            <th class="py-3 px-3">Tanggal & Kode</th>
-                            <th class="py-3 px-3">Jenis Mutasi</th>
-                            <th class="py-3 px-3 text-right">Nominal Kotor</th>
-                            <th class="py-3 px-3 text-right">Potongan</th>
-                            <th class="py-3 px-3 text-right">Nominal Bersih</th>
-                            <th class="py-3 px-3 text-right">Saldo Buku</th>
-                            <th class="py-3 px-3">Petugas / Ket</th>
-                            <th class="py-3 px-4 text-center">Aksi</th>
+                        <tr>
+                            <th class="w-12 text-center">No</th>
+                            <th>Tanggal & Kode</th>
+                            <th>Jenis Mutasi</th>
+                            <th class="text-right">Nominal Kotor</th>
+                            <th class="text-right">Potongan</th>
+                            <th class="text-right">Nominal Bersih</th>
+                            <th class="text-right">Saldo Buku</th>
+                            <th>Petugas / Ket</th>
+                            <th class="text-center w-20">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody
-                        class="divide-y divide-zinc-100 dark:divide-zinc-800/60 font-medium text-zinc-700 dark:text-zinc-300">
+                    <tbody>
                         @foreach ($transaksis as $trx)
-                            <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                <td class="py-3 px-4 text-center font-bold text-zinc-400">
+                            <tr>
+                                <td class="text-center font-bold text-zinc-400">
                                     {{ ($transaksis->currentPage() - 1) * $transaksis->perPage() + $loop->iteration }}
                                 </td>
-                                <td class="py-3 px-3">
-                                    <span class="font-bold text-zinc-900 dark:text-white block">
+                                <td>
+                                    <span class="font-bold text-zinc-900 dark:text-white block text-xs">
                                         {{ \Carbon\Carbon::parse($trx->tanggal)->format('d/m/Y') }}
                                     </span>
                                     <span class="text-[10px] font-mono text-zinc-400">
                                         {{ $trx->kode_transaksi }}
                                     </span>
                                 </td>
-                                <td class="py-3 px-3">
+                                <td>
                                     @if ($trx->jenis_transaksi == 'Setor')
                                         <span
-                                            class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                            class="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                                             <i class="bi bi-arrow-down-left"></i> Setor
                                         </span>
                                     @elseif ($trx->jenis_transaksi == 'Tarik')
                                         <span
-                                            class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                                            class="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                                             <i class="bi bi-arrow-up-right"></i> Tarik
                                         </span>
                                     @elseif ($trx->jenis_transaksi == 'Bagi Tabungan')
                                         <span
-                                            class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                                            class="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
                                             <i class="bi bi-gift"></i> Pembagian
                                         </span>
                                     @else
                                         <span
-                                            class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                            class="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                                             Potongan
                                         </span>
                                     @endif
                                 </td>
-                                <td class="py-3 px-3 text-right font-mono font-bold">
+                                <td class="text-right font-mono font-bold text-xs">
                                     Rp {{ number_format($trx->nominal_kotor, 0, ',', '.') }}
                                 </td>
-                                <td class="py-3 px-3 text-right font-mono text-rose-600 dark:text-rose-400">
+                                <td class="text-right font-mono text-xs text-rose-600 dark:text-rose-400">
                                     @if ($trx->nominal_potongan > 0)
                                         Rp {{ number_format($trx->nominal_potongan, 0, ',', '.') }}
                                         <span
@@ -309,14 +307,14 @@
                                     @endif
                                 </td>
                                 <td
-                                    class="py-3 px-3 text-right font-mono font-black {{ $trx->jenis_transaksi == 'Setor' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-900 dark:text-white' }}">
+                                    class="text-right font-mono font-black text-xs {{ $trx->jenis_transaksi == 'Setor' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-900 dark:text-white' }}">
                                     Rp {{ number_format($trx->nominal_bersih, 0, ',', '.') }}
                                 </td>
                                 <td
-                                    class="py-3 px-3 text-right font-mono font-black text-primary dark:text-primary-dark">
+                                    class="text-right font-mono font-black text-xs text-primary dark:text-primary-dark">
                                     Rp {{ number_format($trx->saldo_setelah, 0, ',', '.') }}
                                 </td>
-                                <td class="py-3 px-3 text-zinc-500 text-[11px]">
+                                <td class="text-zinc-500 text-xs">
                                     <div class="font-bold text-zinc-900 dark:text-white">
                                         {{ $trx->keterangan ?? '-' }}
                                     </div>
@@ -332,7 +330,7 @@
                                     <div class="text-[10px] text-zinc-400 mt-0.5">Petugas:
                                         {{ $trx->petugas?->name ?? 'Sistem' }}</div>
                                 </td>
-                                <td class="py-3 px-4 text-center">
+                                <td class="text-center">
                                     @if ($trx->jenis_transaksi == 'Setor')
                                         <div class="flex items-center justify-center gap-1">
                                             <a href="{{ route('tabungan.setor.edit', $trx->id) }}"
@@ -372,7 +370,7 @@
                                             </form>
                                         </div>
                                     @else
-                                        <span class="text-zinc-400 text-[10px]">-</span>
+                                        <span class="text-zinc-400 text-xs">-</span>
                                     @endif
                                 </td>
                             </tr>
@@ -383,13 +381,15 @@
 
             @if ($transaksis->hasPages())
                 <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
-                    {{ $transaksis->links() }}
+                    {{ $transaksis->links('vendor.pagination.custom') }}
                 </div>
             @endif
         </div>
     @else
-        <x-empty-state icon="bi-clock-history" title="Belum Ada Transaksi"
-            message="Belum ada riwayat mutasi setoran atau penarikan pada rekening ini." />
+        <div class="p-8">
+            <x-empty-state icon="bi-journal-x" title="Belum Ada Mutasi"
+                message="Rekening ini belum memiliki catatan riwayat mutasi setor atau tarik tunai." />
+        </div>
     @endif
 
     <!-- MODAL SETOR TUNAI -->

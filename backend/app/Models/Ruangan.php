@@ -25,7 +25,7 @@ class Ruangan extends Model
             return $query->whereRaw('0 = 1');
         }
 
-        if ($user->hasAnyRole(['administrator'])) {
+        if ($user->hasAnyRole(['administrator', 'petugas-koperasi'])) {
             return $query;
         }
         if ($user->hasRole('staff')) {
@@ -59,6 +59,16 @@ class Ruangan extends Model
     public function level()
     {
         return $this->belongsTo(Level::class);
+    }
+
+    public function gedung()
+    {
+        return $this->belongsTo(Gedung::class, 'gedung_id');
+    }
+
+    public function sarpras()
+    {
+        return $this->hasMany(Sarpras::class, 'ruangan_id');
     }
 
     public function waliRuangan()

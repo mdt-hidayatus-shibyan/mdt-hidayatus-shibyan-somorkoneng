@@ -11,10 +11,19 @@
             </span>
 
             <div class="flex-1 overflow-hidden">
-                <h3
-                    class="text-base font-black text-zinc-900 dark:text-white tracking-tight leading-snug mb-1 truncate">
-                    {{ $ruangan->nama_ruangan }}
-                </h3>
+                <div class="flex items-center gap-2">
+                    <h3
+                        class="text-base font-black text-zinc-900 dark:text-white tracking-tight leading-snug mb-0.5 truncate">
+                        {{ $ruangan->nama_ruangan }}
+                    </h3>
+                    @if ($ruangan->nama_kamar)
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold tracking-wider border border-indigo-200/80 dark:border-indigo-800/40">
+                            <i class="bi bi-door-closed text-[10px]"></i>
+                            {{ $ruangan->nama_kamar }}
+                        </span>
+                    @endif
+                </div>
 
                 <div class="flex flex-wrap items-center gap-2 mt-0.5">
                     <!-- Badge Tingkat -->
@@ -23,6 +32,15 @@
                         style="background-color: {{ $ruangan->level->tingkat->kode_warna ?? '#146C2E' }};">
                         {{ $ruangan->level->tingkat->nama_tingkat ?? '-' }}
                     </span>
+
+                    <!-- Badge Gedung -->
+                    @if ($ruangan->gedung)
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 text-[10px] font-bold uppercase tracking-wider border border-purple-200/80 dark:border-purple-800/40">
+                            <i class="bi bi-buildings text-xs"></i>
+                            {{ $ruangan->gedung->nama_gedung }}
+                        </span>
+                    @endif
 
                     <!-- Badge Jumlah Murid -->
                     <span
@@ -118,4 +136,3 @@
     <x-empty-state icon="bi-door-closed" title="Data Ruangan Kosong"
         message="Anda belum mengatur Ruangan pada tahun pelajaran ini." />
 @endforelse
-

@@ -21,7 +21,6 @@ class DatabaseSeeder extends Seeder
             TingkatSeeder::class,
             LevelSeeder::class,
             RuanganSeeder::class,
-            PengaturanPotonganTabunganSeeder::class,
         ]);
     }
 }

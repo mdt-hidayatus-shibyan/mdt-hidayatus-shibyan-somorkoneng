@@ -22,18 +22,18 @@ use App\Http\Controllers\Api\TabunganApiController;
 */
 
 // =========================================================================
-// 1. PUBLIC ROUTES
+// 1. PUBLIC ROUTES (Dilindungi Rate Limiter Throttle)
 // =========================================================================
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/wali/login', [AuthController::class, 'loginWali']);
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
-Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/wali/login', [AuthController::class, 'loginWali'])->middleware('throttle:5,1');
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:5,1');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
 
 // =========================================================================
-// 2. PROTECTED ROUTES (auth:sanctum)
+// 2. PROTECTED ROUTES (auth:sanctum + throttle)
 // =========================================================================
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     // 2.1 Autentikasi & Akun
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/profile', [AuthController::class, 'profile']);
@@ -152,6 +152,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/tabungan/komplain/{murid_id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getRiwayatKomplain']);
         Route::post('/tabungan/komplain/{id}/batal', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'batalkanKomplain']);
         Route::get('/koperasi/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getKoperasiAnak']);
+        Route::get('/kas-ruangan/{id}', [\App\Http\Controllers\Api\WaliMuridApiController::class, 'getKasRuanganAnak']);
         Route::post('/update-pin', [\App\Http\Controllers\Api\AuthController::class, 'updatePinWali']);
     });
 });

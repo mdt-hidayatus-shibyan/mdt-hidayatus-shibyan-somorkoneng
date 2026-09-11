@@ -6,8 +6,8 @@
         <div>
             <div class="flex items-center gap-2 mb-1.5">
                 <span
-                    class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary dark:text-primary-dark border border-primary/20 inline-flex items-center gap-1">
-                    <i class="bi bi-shield-lock text-xs"></i>
+                    class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary dark:text-primary-dark border border-primary/20 inline-flex items-center gap-1.5 shadow-2xs">
+                    <i class="bi bi-shield-lock-fill text-xs"></i>
                     <span>Sistem & Hak Akses</span>
                 </span>
             </div>
@@ -15,7 +15,7 @@
                 Manajemen Akun Pengguna
             </h2>
             <p class="text-xs md:text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Monitoring status online, manajemen sesi login, kredensial password, dan wewenang pengguna sistem.
+                Monitoring status online, manajemen sesi login aktif, reset kredensial, dan hak akses pengguna sistem.
             </p>
         </div>
 
@@ -32,7 +32,7 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 md:gap-4 mb-6 relative z-10">
         <!-- Card 1: Total Users (Klik untuk Reset Semua Filter) -->
         <button type="button" onclick="filterByStat('all')"
-            class="stat-filter-card text-left m3-glass-card p-4 md:p-4.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 shadow-2xs hover:scale-[1.02] active:scale-[0.98] {{ !request('status') && !request('online') ? 'border-indigo-500/50 dark:border-indigo-500/60 ring-2 ring-indigo-500/10' : 'border-zinc-200/80 dark:border-zinc-800 hover:border-indigo-500/30' }}">
+            class="stat-filter-card text-left m3-glass-card p-4 md:p-4.5 rounded-2xl md:rounded-3xl border transition-all duration-200 flex items-center gap-3.5 shadow-2xs hover:scale-[1.02] active:scale-[0.98] {{ !request('status') && !request('online') ? 'border-indigo-500/50 dark:border-indigo-500/60 ring-2 ring-indigo-500/10' : 'border-zinc-200/80 dark:border-zinc-800 hover:border-indigo-500/30' }}">
             <div
                 class="w-11 h-11 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl font-black border border-indigo-500/20 flex-shrink-0 shadow-2xs">
                 <i class="bi bi-people-fill"></i>
@@ -40,8 +40,9 @@
             <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between">
                     <span
-                        class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block truncate">Total
-                        Pengguna</span>
+                        class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block truncate">
+                        Total Pengguna
+                    </span>
                     <i class="bi bi-funnel text-[10px] text-zinc-400 opacity-0 group-hover:opacity-100"></i>
                 </div>
                 <span class="text-xl md:text-2xl font-black text-zinc-900 dark:text-white"
@@ -51,7 +52,7 @@
 
         <!-- Card 2: Sedang Online (Klik untuk Filter Online) -->
         <button type="button" onclick="filterByStat('online')"
-            class="stat-filter-card text-left m3-glass-card p-4 md:p-4.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 shadow-2xs hover:scale-[1.02] active:scale-[0.98] {{ request('online') === 'online' ? 'border-emerald-500/50 dark:border-emerald-500/60 ring-2 ring-emerald-500/10 bg-emerald-500/5' : 'border-zinc-200/80 dark:border-zinc-800 hover:border-emerald-500/30' }}">
+            class="stat-filter-card text-left m3-glass-card p-4 md:p-4.5 rounded-2xl md:rounded-3xl border transition-all duration-200 flex items-center gap-3.5 shadow-2xs hover:scale-[1.02] active:scale-[0.98] {{ request('online') === 'online' ? 'border-emerald-500/50 dark:border-emerald-500/60 ring-2 ring-emerald-500/10 bg-emerald-500/5' : 'border-zinc-200/80 dark:border-zinc-800 hover:border-emerald-500/30' }}">
             <div
                 class="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl font-black border border-emerald-500/20 flex-shrink-0 relative shadow-2xs">
                 <i class="bi bi-broadcast"></i>
@@ -60,8 +61,9 @@
             </div>
             <div class="min-w-0 flex-1">
                 <span
-                    class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block truncate">Sedang
-                    Online</span>
+                    class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block truncate">
+                    Sedang Online
+                </span>
                 <span class="text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400"
                     id="statOnlineUsers">{{ $onlineUsers }}</span>
             </div>
@@ -69,15 +71,16 @@
 
         <!-- Card 3: Akun Aktif (Klik untuk Filter Aktif) -->
         <button type="button" onclick="filterByStat('active')"
-            class="stat-filter-card text-left m3-glass-card p-4 md:p-4.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 shadow-2xs hover:scale-[1.02] active:scale-[0.98] {{ request('status') === '1' ? 'border-sky-500/50 dark:border-sky-500/60 ring-2 ring-sky-500/10 bg-sky-500/5' : 'border-zinc-200/80 dark:border-zinc-800 hover:border-sky-500/30' }}">
+            class="stat-filter-card text-left m3-glass-card p-4 md:p-4.5 rounded-2xl md:rounded-3xl border transition-all duration-200 flex items-center gap-3.5 shadow-2xs hover:scale-[1.02] active:scale-[0.98] {{ request('status') === '1' ? 'border-sky-500/50 dark:border-sky-500/60 ring-2 ring-sky-500/10 bg-sky-500/5' : 'border-zinc-200/80 dark:border-zinc-800 hover:border-sky-500/30' }}">
             <div
                 class="w-11 h-11 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center text-xl font-black border border-sky-500/20 flex-shrink-0 shadow-2xs">
                 <i class="bi bi-check-circle-fill"></i>
             </div>
             <div class="min-w-0 flex-1">
                 <span
-                    class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block truncate">Akun
-                    Aktif</span>
+                    class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block truncate">
+                    Akun Aktif
+                </span>
                 <span class="text-xl md:text-2xl font-black text-zinc-900 dark:text-white"
                     id="statActiveUsers">{{ $activeUsers }}</span>
             </div>
@@ -85,14 +88,16 @@
 
         <!-- Card 4: Akun Nonaktif (Klik untuk Filter Nonaktif) -->
         <button type="button" onclick="filterByStat('inactive')"
-            class="stat-filter-card text-left m3-glass-card p-4 md:p-4.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 shadow-2xs hover:scale-[1.02] active:scale-[0.98] {{ request('status') === '0' ? 'border-rose-500/50 dark:border-rose-500/60 ring-2 ring-rose-500/10 bg-rose-500/5' : 'border-zinc-200/80 dark:border-zinc-800 hover:border-rose-500/30' }}">
+            class="stat-filter-card text-left m3-glass-card p-4 md:p-4.5 rounded-2xl md:rounded-3xl border transition-all duration-200 flex items-center gap-3.5 shadow-2xs hover:scale-[1.02] active:scale-[0.98] {{ request('status') === '0' ? 'border-rose-500/50 dark:border-rose-500/60 ring-2 ring-rose-500/10 bg-rose-500/5' : 'border-zinc-200/80 dark:border-zinc-800 hover:border-rose-500/30' }}">
             <div
                 class="w-11 h-11 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl font-black border border-rose-500/20 flex-shrink-0 shadow-2xs">
                 <i class="bi bi-dash-circle-fill"></i>
             </div>
             <div class="min-w-0 flex-1">
                 <span
-                    class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block truncate">Nonaktif</span>
+                    class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block truncate">
+                    Nonaktif
+                </span>
                 <span class="text-xl md:text-2xl font-black text-rose-600 dark:text-rose-400"
                     id="statInactiveUsers">{{ $inactiveUsers }}</span>
             </div>
@@ -101,7 +106,7 @@
 
     <!-- 3. Toolbar & Filter Section -->
     <div
-        class="m3-glass-card p-3.5 md:p-4 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 mb-5 relative z-10 shadow-2xs">
+        class="m3-glass-card p-3.5 md:p-4 rounded-2xl md:rounded-3xl border border-zinc-200/80 dark:border-zinc-800 mb-5 relative z-10 shadow-2xs">
         <form id="filterForm" action="{{ route('pengguna.index') }}" method="GET"
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-center">
 
@@ -114,7 +119,7 @@
                     placeholder="Cari nama, username, atau email..."
                     class="m3-input-glass w-full !pl-9 !pr-8 text-xs font-bold">
                 <button type="button" id="btnClearSearch" onclick="clearSearch()"
-                    class="{{ request('search') ? '' : 'hidden' }} absolute inset-y-0 right-0 w-8 flex items-center justify-center text-zinc-400 hover:text-rose-600 transition-colors">
+                    class="{{ request('search') ? '' : 'hidden' }} absolute inset-y-0 right-0 w-8 flex items-center justify-center text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
                     <i class="bi bi-x-lg text-xs"></i>
                 </button>
             </div>
@@ -126,7 +131,7 @@
                     <option value="">-- Semua Peran (Role) --</option>
                     @foreach ($roles as $r)
                         <option value="{{ $r->name }}" {{ request('role') === $r->name ? 'selected' : '' }}>
-                            {{ strtoupper($r->name) }}
+                            {{ strtoupper(str_replace('-', ' ', $r->name)) }}
                         </option>
                     @endforeach
                 </select>
@@ -149,7 +154,7 @@
             <div class="lg:col-span-3 flex items-center gap-2">
                 <select name="status" id="statusFilter" onchange="applyFilters()"
                     class="m3-input-glass w-full text-xs font-bold cursor-pointer">
-                    <option value="">-- Semua Status --</option>
+                    <option value="">-- Status Akun --</option>
                     <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Aktif</option>
                     <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Tidak Aktif</option>
                 </select>
@@ -165,7 +170,7 @@
                     $hasFilter = request()->hasAny(['search', 'role', 'status', 'online', 'tingkat_id']);
                 @endphp
                 <button type="button" id="btnResetFilter" onclick="resetAllFilters()" title="Reset Semua Filter"
-                    class="{{ $hasFilter ? '' : 'hidden' }} w-9 h-9 rounded-xl flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-500 hover:text-rose-600 transition-all flex-shrink-0 shadow-2xs active:scale-90">
+                    class="{{ $hasFilter ? '' : 'hidden' }} w-9 h-9 rounded-xl md:rounded-2xl flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 transition-all flex-shrink-0 shadow-2xs active:scale-90">
                     <i class="bi bi-arrow-counterclockwise text-sm font-bold"></i>
                 </button>
             </div>
@@ -320,8 +325,8 @@
     // BUKA MODAL RESET PASSWORD
     function openResetPasswordModal(userId, userName) {
         const modalHtml = `
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in" id="userResetPasswordModal">
-            <div class="bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl w-full max-w-md flex flex-col shadow-2xl overflow-hidden transform transition-all animate-in zoom-in-95 duration-200">
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md transition-opacity duration-300 animate-in fade-in" id="userResetPasswordModal">
+            <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl w-full max-w-md flex flex-col shadow-2xl overflow-hidden transform transition-all animate-in zoom-in-95 duration-200">
                 <div class="px-6 py-5 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-800/30">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black text-lg border border-amber-500/20 shadow-2xs">
@@ -339,8 +344,9 @@
                 <form id="resetPasswordForm" action="{{ url('pengguna') }}/${userId}/reset-password" method="POST" class="p-6 space-y-4">
                     <input type="hidden" name="_token" value="${csrfToken}">
                     <div id="resetErrorAlert" class="hidden p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold"></div>
-                    <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-[11px] font-medium leading-relaxed">
-                        <i class="bi bi-exclamation-circle-fill mr-1 text-amber-600"></i> Sesi login user ini akan otomatis diputus setelah reset password.
+                    <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-medium leading-relaxed flex items-start gap-2">
+                        <i class="bi bi-exclamation-circle-fill text-amber-600 mt-0.5 flex-shrink-0"></i>
+                        <span>Sesi login user ini akan otomatis diputus setelah reset password dan wajib login ulang.</span>
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
@@ -356,8 +362,8 @@
                         <input type="text" name="password_confirmation" id="resetNewPasswordConfirm" required placeholder="Ulangi password baru" class="m3-input-glass w-full text-xs font-mono font-bold">
                     </div>
                     <div class="pt-4 border-t border-zinc-200/80 dark:border-zinc-800 flex items-center justify-end gap-2.5">
-                        <button type="button" onclick="closeResetModal()" class="h-10 px-5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-xs font-black text-zinc-700 dark:text-zinc-300 transition-all">Batal</button>
-                        <button type="submit" id="btnSubmitReset" class="h-10 px-6 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black shadow-md flex items-center gap-1.5 transition-all active:scale-95">
+                        <button type="button" onclick="closeResetModal()" class="h-10 px-5 rounded-xl md:rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-xs font-black text-zinc-700 dark:text-zinc-300 transition-all">Batal</button>
+                        <button type="submit" id="btnSubmitReset" class="h-10 px-6 rounded-xl md:rounded-2xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black shadow-md flex items-center gap-1.5 transition-all active:scale-95">
                             <i class="bi bi-key-fill"></i> Reset Password
                         </button>
                     </div>
@@ -456,7 +462,7 @@
             confirmButtonText: '<i class="bi bi-box-arrow-right mr-1"></i> Ya, Keluarkan!',
             cancelButtonText: 'Batal',
             customClass: {
-                popup: '!rounded-3xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl p-6 !bg-white/80 dark:!bg-zinc-900/60 !backdrop-blur-xl',
+                popup: '!rounded-3xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl p-6 !bg-white/90 dark:!bg-zinc-900/90 !backdrop-blur-2xl',
                 confirmButton: 'h-10 px-5 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-xl ml-2 shadow-md transition-all active:scale-95',
                 cancelButton: 'h-10 px-5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-black text-xs rounded-xl transition-all'
             },
@@ -497,7 +503,7 @@
             confirmButtonText: '<i class="bi bi-trash3-fill mr-1"></i> Ya, Hapus!',
             cancelButtonText: 'Batal',
             customClass: {
-                popup: '!rounded-3xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl p-6 !bg-white/80 dark:!bg-zinc-900/60 !backdrop-blur-xl',
+                popup: '!rounded-3xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl p-6 !bg-white/90 dark:!bg-zinc-900/90 !backdrop-blur-2xl',
                 confirmButton: 'h-10 px-5 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded-xl ml-2 shadow-md transition-all active:scale-95',
                 cancelButton: 'h-10 px-5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-black text-xs rounded-xl transition-all'
             },

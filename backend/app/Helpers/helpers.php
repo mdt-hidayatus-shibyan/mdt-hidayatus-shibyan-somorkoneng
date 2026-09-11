@@ -93,6 +93,9 @@ if (!function_exists('user')) {
 
 if (!function_exists('canAccessMenu')) {
     /**
+     * Memeriksa apakah user yang sedang login memiliki hak akses ke menu tertentu.
+     *
+     * @param \App\Models\KonfigurasiMenu\Menu $menu
      * @return bool
      */
     function canAccessMenu($menu)
@@ -100,32 +103,37 @@ if (!function_exists('canAccessMenu')) {
         $user = auth()->user();
         if (!$user) return false;
 
-        // Jika ini adalah Menu Tunggal / Sub-Menu yang memiliki URL asli (bukan '#')
-        if ($menu->url !== '#') {
-            // Cek langsung dengan format trait Anda: "read {url}"
-            if ($user->can('read ' . $menu->url)) {
-                return true;
-            }
-
-            // Fallback: Jika dia tidak punya 'read', tapi punya 'create' / 'update', izinkan juga
-            $menuPerms = $menu->permissions->pluck('name')->toArray();
-            if (!empty($menuPerms) && $user->hasAnyPermission($menuPerms)) {
-                return true;
-            }
-        }
-
-        // Jika ini Menu Utama (Dropdown) yang URL-nya '#'
-        if ($menu->url === '#' && $menu->subMenus && $menu->subMenus->count() > 0) {
+        // 1. Jika ini Menu Dropdown (URL berupa '#' atau berawalan '#') dan memiliki Sub-Menu
+        $isDropdown = ($menu->url === '#' || str_starts_with($menu->url, '#')) && $menu->subMenus && $menu->subMenus->count() > 0;
+        if ($isDropdown) {
+            // Cek rekursif ke seluruh sub-menu: jika ada MINIMAL 1 yang bisa diakses, dropdown dibuka
             foreach ($menu->subMenus as $sub) {
-                // Lakukan pengecekan rekursif ke anak-anaknya
-                // Jika ADA MINIMAL 1 anak yang bisa diakses, BUKA Menu Utama ini!
                 if (canAccessMenu($sub)) {
                     return true;
                 }
             }
+
+            // Cek juga jika role memiliki permission langsung untuk menu parent
+            $menuPerms = $menu->permissions->pluck('name')->toArray();
+            if (!empty($menuPerms) && $user->hasAnyPermission($menuPerms)) {
+                return true;
+            }
+
+            return false;
         }
 
-        // Jika menu ini tidak dipasangi permission apa pun di DB (bersifat menu publik)
+        // 2. Jika Menu Tunggal / Sub-Menu dengan URL rute aktif
+        if ($user->can('read ' . $menu->url)) {
+            return true;
+        }
+
+        // Fallback: Jika tidak punya 'read', tapi punya 'create' / 'update' / 'delete'
+        $menuPerms = $menu->permissions->pluck('name')->toArray();
+        if (!empty($menuPerms) && $user->hasAnyPermission($menuPerms)) {
+            return true;
+        }
+
+        // 3. Jika menu bersifat publik tanpa konfigurasi permission apapun
         if ($menu->permissions->count() == 0 && (!isset($menu->subMenus) || $menu->subMenus->count() == 0)) {
             return true;
         }
@@ -249,5 +257,18 @@ if (!function_exists('terbilang')) {
         }
 
         return trim($temp);
+    }
+}
+
+if (!function_exists('getTahunPelajaranAktif')) {
+    /**
+     * Mengambil Tahun Pelajaran yang sedang aktif.
+     *
+     * @return \App\Models\TahunPelajaran|null
+     */
+    function getTahunPelajaranAktif()
+    {
+        return \App\Models\TahunPelajaran::where('is_active', true)->first()
+            ?? \App\Models\TahunPelajaran::latest()->first();
     }
 }

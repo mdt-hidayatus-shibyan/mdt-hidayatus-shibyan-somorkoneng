@@ -17,7 +17,7 @@
                 </h2>
                 <p
                     class="text-[13px] font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5 transition-colors duration-300">
-                    Anda dapat menambahkan satu atau banyak ruangan sekaligus.
+                    Anda dapat menambahkan satu atau banyak ruangan sekaligus beserta alokasi gedung & kamar.
                 </p>
             </div>
         </div>
@@ -43,7 +43,8 @@
                     <i class="bi bi-calendar-event-fill text-lg"></i>
                 </div>
                 <div>
-                    <h3 class="text-xs md:text-sm font-extrabold text-zinc-900 dark:text-white tracking-wider uppercase">
+                    <h3
+                        class="text-xs md:text-sm font-extrabold text-zinc-900 dark:text-white tracking-wider uppercase">
                         Tahun Pelajaran <span class="text-rose-500">*</span>
                     </h3>
                     <p class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5">
@@ -68,7 +69,8 @@
                 </div>
 
                 @error('tahun_pelajaran_id')
-                    <p class="text-[11px] font-bold text-rose-500 dark:text-rose-400 mt-1.5 ml-1 flex items-center absolute">
+                    <p
+                        class="text-[11px] font-bold text-rose-500 dark:text-rose-400 mt-1.5 ml-1 flex items-center absolute">
                         <i class="bi bi-exclamation-circle-fill mr-1.5"></i> {{ $message }}
                     </p>
                 @enderror
@@ -83,8 +85,7 @@
 
             @foreach ($oldRuangans as $index => $item)
                 <!-- CARD TEMPLATE BARIS -->
-                <div
-                    class="baris-ruangan m3-glass-card p-4 sm:p-5 relative overflow-hidden group">
+                <div class="baris-ruangan m3-glass-card p-4 sm:p-5 relative overflow-hidden group">
 
                     <!-- Header Kartu Baris -->
                     <div
@@ -94,7 +95,8 @@
                                 class="nomor-urut w-7 h-7 flex items-center justify-center bg-zinc-100/80 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-lg text-xs font-black shrink-0">
                                 {{ $loop->iteration }}
                             </span>
-                            <span class="text-xs font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">Data
+                            <span
+                                class="text-xs font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">Data
                                 Ruangan</span>
                         </div>
 
@@ -105,7 +107,7 @@
                     </div>
 
                     <!-- Isi Input Kartu Baris -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
 
                         <!-- Kelas / Level -->
                         <div class="space-y-1.5">
@@ -152,6 +154,50 @@
                             @enderror
                         </div>
 
+                        <!-- Gedung -->
+                        <div class="space-y-1.5">
+                            <label
+                                class="block text-[11px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">
+                                Gedung (Opsional)
+                            </label>
+                            <div class="relative group">
+                                <select name="ruangan[{{ $index }}][gedung_id]"
+                                    class="m3-select2 w-full {{ $errors->has("ruangan.$index.gedung_id") ? '!border-red-500 !ring-red-500/20' : '' }}">
+                                    <option value="">-- Tanpa Gedung --</option>
+                                    @foreach ($gedungs as $gd)
+                                        <option value="{{ $gd->id }}"
+                                            {{ old("ruangan.$index.gedung_id") == $gd->id ? 'selected' : '' }}>
+                                            {{ $gd->kode_gedung }} - {{ $gd->nama_gedung }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @error("ruangan.$index.gedung_id")
+                                <p
+                                    class="error-msg text-[11px] font-bold text-rose-500 dark:text-rose-400 mt-1 ml-1 flex items-center">
+                                    <i class="bi bi-exclamation-circle-fill mr-1"></i> {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <!-- Nama Kamar / Asrama -->
+                        <div class="space-y-1.5">
+                            <label
+                                class="block text-[11px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">
+                                Nama Kamar / Asrama (Opsional)
+                            </label>
+                            <input type="text" name="ruangan[{{ $index }}][nama_kamar]"
+                                value="{{ old("ruangan.$index.nama_kamar") }}"
+                                placeholder="Cth: Asrama A-01 / Kobong 2"
+                                class="m3-input-glass w-full {{ $errors->has("ruangan.$index.nama_kamar") ? '!border-red-500 !ring-red-500/20' : '' }}">
+                            @error("ruangan.$index.nama_kamar")
+                                <p
+                                    class="error-msg text-[11px] font-bold text-rose-500 dark:text-rose-400 mt-1 ml-1 flex items-center">
+                                    <i class="bi bi-exclamation-circle-fill mr-1"></i> {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
                         <!-- Wali Ruangan -->
                         <div class="space-y-1.5">
                             <label
@@ -159,18 +205,18 @@
                                 Wali Ruangan (Opsional)
                             </label>
                             <div class="relative group">
-                                <select name="ruangan[{{ $index }}][asatidz_id]"
-                                    class="m3-select2 w-full {{ $errors->has("ruangan.$index.asatidz_id") ? '!border-red-500 !ring-red-500/20' : '' }}">
+                                <select name="ruangan[{{ $index }}][ustadz_id]"
+                                    class="m3-select2 w-full {{ $errors->has("ruangan.$index.ustadz_id") ? '!border-red-500 !ring-red-500/20' : '' }}">
                                     <option value="">-- Belum Ditunjuk --</option>
                                     @foreach ($dataAsatidz as $guru)
                                         <option value="{{ $guru->id }}"
-                                            {{ old("ruangan.$index.asatidz_id") == $guru->id ? 'selected' : '' }}>
+                                            {{ old("ruangan.$index.ustadz_id", old("ruangan.$index.asatidz_id")) == $guru->id ? 'selected' : '' }}>
                                             {{ $guru->nigm }} - {{ $guru->nama_lengkap }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
-                            @error("ruangan.$index.asatidz_id")
+                            @error("ruangan.$index.ustadz_id")
                                 <p
                                     class="error-msg text-[11px] font-bold text-rose-500 dark:text-rose-400 mt-1 ml-1 flex items-center">
                                     <i class="bi bi-exclamation-circle-fill mr-1"></i> {{ $message }}
@@ -244,9 +290,7 @@
                 const $newRow = $templateRow.clone();
 
                 // 1. BERSIHKAN SELECT2 DARI HASIL CLONING
-                // Hapus elemen DOM tambahan yang di-generate oleh Select2
                 $newRow.find('.select2-container').remove();
-                // Hapus atribut sisa pada select aslinya agar bersih
                 $newRow.find('.m3-select2').removeClass('select2-hidden-accessible').removeAttr(
                     'data-select2-id tabindex aria-hidden');
                 $newRow.find('option').removeAttr('data-select2-id');
@@ -258,7 +302,6 @@
                 $newRow.find('input, select').each(function() {
                     let name = $(this).attr('name');
                     if (name) {
-                        // Ubah [0] menjadi [indexTerbaru]
                         $(this).attr('name', name.replace(/\[\d+\]/, `[${rowIndexCounter}]`));
                     }
 
@@ -267,13 +310,13 @@
 
                     // Kosongkan nilai input
                     if ($(this).is('input[type="text"]')) $(this).val('');
-                    if ($(this).is('select')) $(this).prop('selectedIndex', 0); // Kembali ke default
+                    if ($(this).is('select')) $(this).prop('selectedIndex', 0);
                     if ($(this).is('input[type="number"]')) $(this).val('30');
                 });
 
                 // 4. APPEND KE CONTAINER & INIT SELECT2 PADA BARIS BARU
                 $container.append($newRow);
-                initSelect2($newRow.find('.m3-select2')); // Init ulang Select2 khusus di baris baru
+                initSelect2($newRow.find('.m3-select2'));
 
                 rowIndexCounter++;
                 perbaruiNomorUrut();

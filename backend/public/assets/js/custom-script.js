@@ -116,6 +116,12 @@ const Toast = Swal.mixin({
 
 // Fungsi Helper untuk Menutup Modal
 window.closeDialogModal = function () {
+    if (typeof window.cleanupCameraAndCropper === "function") {
+        try {
+            window.cleanupCameraAndCropper();
+        } catch (e) {}
+    }
+
     const $modal = $("#modal-action");
     const $backdrop = $modal.find("el-dialog-backdrop");
     const $panel = $modal.find("el-dialog-panel");
@@ -275,25 +281,35 @@ $(document).on(
                     });
                 }
 
-                // AUTO REFRESH DATA GRID
-                $.get(window.location.href, function (htmlResponse) {
-                    const $newContainer = $(htmlResponse).find(
-                        "#data-grid-container",
-                    );
+                // AUTO REFRESH DATA GRID / DATA TABLE (SEAMLESS AJAX)
+                let refreshTarget =
+                    form.data("refresh-target") ||
+                    form.attr("data-refresh-target");
 
-                    if ($newContainer.length) {
-                        $("#data-grid-container")
-                            .hide()
-                            .html($newContainer.html())
-                            .attr(
-                                "data-events",
-                                $newContainer.attr("data-events"),
-                            )
-                            .fadeIn(400, function () {
-                                // Panggil trigger agar script matriks (generateFalakMatrix) bisa merender ulang
-                                $(document).trigger("dataGridRefreshed");
-                            });
-                    } else {
+                $.get(window.location.href, function (htmlResponse) {
+                    let targets = refreshTarget
+                        ? [refreshTarget]
+                        : ["#data-grid-container", "#data-table-container"];
+                    let targetFound = false;
+
+                    for (let target of targets) {
+                        const $newContainer = $(htmlResponse).find(target);
+                        if ($newContainer.length && $(target).length) {
+                            $(target)
+                                .hide()
+                                .html($newContainer.html())
+                                .attr(
+                                    "data-events",
+                                    $newContainer.attr("data-events"),
+                                )
+                                .fadeIn(300, function () {
+                                    $(document).trigger("dataGridRefreshed");
+                                });
+                            targetFound = true;
+                        }
+                    }
+
+                    if (!targetFound) {
                         location.reload();
                     }
                 });
@@ -376,11 +392,20 @@ $(document).on(
 // Fungsi ini bisa dipanggil kapan saja untuk me-refresh tabel/grid tanpa reload halaman
 window.refreshDataGrid = function (targetSelector = "#data-grid-container") {
     $.get(window.location.href, function (htmlResponse) {
-        const $newContainer = $(htmlResponse).find(targetSelector);
+        let activeSelector = targetSelector;
+        let $newContainer = $(htmlResponse).find(activeSelector);
 
-        if ($newContainer.length) {
+        if (
+            !$newContainer.length &&
+            activeSelector === "#data-grid-container"
+        ) {
+            activeSelector = "#data-table-container";
+            $newContainer = $(htmlResponse).find(activeSelector);
+        }
+
+        if ($newContainer.length && $(activeSelector).length) {
             // Animasi Opacity agar aman untuk Grid & Flexbox
-            $(targetSelector).animate({ opacity: 0 }, 200, function () {
+            $(activeSelector).animate({ opacity: 0 }, 200, function () {
                 $(this)
                     .html($newContainer.html())
                     .attr("data-events", $newContainer.attr("data-events"));

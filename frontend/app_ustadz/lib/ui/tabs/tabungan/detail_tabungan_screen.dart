@@ -134,7 +134,7 @@ class _DetailTabunganScreenState extends State<DetailTabunganScreen> {
                         Expanded(
                           child: _buildSummaryBox(
                             'Total Setor',
-                            'Rp ${DateHelper.formatRupiah(rekening.totalSetor)}',
+                            ' ${DateHelper.formatRupiah(rekening.totalSetor)}',
                             isDark
                                 ? const Color(0xFF0F2313)
                                 : const Color(0xFFE8F5E9),
@@ -148,7 +148,7 @@ class _DetailTabunganScreenState extends State<DetailTabunganScreen> {
                         Expanded(
                           child: _buildSummaryBox(
                             'Total Tarik',
-                            'Rp ${DateHelper.formatRupiah(rekening.totalTarik)}',
+                            ' ${DateHelper.formatRupiah(rekening.totalTarik)}',
                             isDark
                                 ? const Color(0xFF380C14)
                                 : const Color(0xFFFFE4E6),
@@ -160,7 +160,7 @@ class _DetailTabunganScreenState extends State<DetailTabunganScreen> {
                         Expanded(
                           child: _buildSummaryBox(
                             'Dapat Ditarik',
-                            'Rp ${DateHelper.formatRupiah(rekening.saldoDapatDitarik)}',
+                            ' ${DateHelper.formatRupiah(rekening.saldoDapatDitarik)}',
                             isDark
                                 ? const Color(0xFF0C243B)
                                 : const Color(0xFFE0F2FE),
@@ -331,7 +331,7 @@ class _DetailTabunganScreenState extends State<DetailTabunganScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Rp ${DateHelper.formatRupiah(rekening.saldo)}',
+            ' ${DateHelper.formatRupiah(rekening.saldo)}',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 26,
@@ -370,7 +370,7 @@ class _DetailTabunganScreenState extends State<DetailTabunganScreen> {
                     style: TextStyle(color: Colors.white60, fontSize: 10),
                   ),
                   Text(
-                    '${rekening.persentasePotongan}% (Rp ${DateHelper.formatRupiah(rekening.totalPotongan)})',
+                    '${rekening.persentasePotongan}% ( ${DateHelper.formatRupiah(rekening.totalPotongan)})',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -512,7 +512,7 @@ class _DetailTabunganScreenState extends State<DetailTabunganScreen> {
                       ),
                     ),
                     Text(
-                      '${isSetor ? "+" : "-"}Rp ${DateHelper.formatRupiah(trx.nominal)}',
+                      '${isSetor ? "+" : "-"} ${DateHelper.formatRupiah(trx.nominal)}',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w900,
@@ -548,7 +548,7 @@ class _DetailTabunganScreenState extends State<DetailTabunganScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Saldo: Rp ${DateHelper.formatRupiah(trx.saldoAkhir)}',
+                      'Saldo:  ${DateHelper.formatRupiah(trx.saldoAkhir)}',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,

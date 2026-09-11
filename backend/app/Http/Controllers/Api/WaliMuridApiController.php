@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BulanHijriyah;
+use App\Models\KasRuangan\PembayaranKasRuangan;
+use App\Models\KasRuangan\PengaturanKasRuangan;
+use App\Models\KasRuangan\SetoranKasRuangan;
 use App\Models\Murid;
 use App\Models\PelanggaranMurid;
 use App\Models\PresensiMurid;
@@ -22,25 +25,65 @@ use Illuminate\Support\Facades\Validator;
 class WaliMuridApiController extends Controller
 {
     /**
-     * Dapatkan data Wali Murid berdasarkan user session atau parameter
+     * Dapatkan data Wali Murid berdasarkan user session atau parameter (untuk Admin)
      */
-    private function resolveWali(Request $request)
+    private function resolveWali(Request $request): ?WaliMurid
     {
         $user = $request->user();
 
-        // Cek jika usernamewali
+        // 1. Akun Wali Murid yang sedang login via token
         if (str_starts_with($user->username ?? '', 'wali_')) {
             $noReg = substr($user->username, 5);
             $wali = WaliMurid::where('no_registrasi', $noReg)->first();
             if ($wali) return $wali;
         }
 
-        if ($request->filled('wali_id')) {
-            return WaliMurid::find($request->wali_id);
+        // 2. Jika user adalah administrator / staff
+        if ($user && $user->hasAnyRole(['administrator', 'staff'])) {
+            if ($request->filled('wali_id')) {
+                return WaliMurid::find($request->wali_id);
+            }
+            return WaliMurid::where('is_active', true)->first();
         }
 
-        // Fallback wali pertama untuk testing jika admin
-        return WaliMurid::where('is_active', true)->first();
+        return null;
+    }
+
+    /**
+     * Helper validasi otorisasi kepemilikan murid oleh Wali Murid yang sedang login (Pencegahan IDOR)
+     */
+    private function authorizeMuridForWali(Request $request, $muridId, array $with = []): Murid
+    {
+        $wali = $this->resolveWali($request);
+
+        if (!$wali) {
+            abort(response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Profil wali murid tidak ditemukan.'
+            ], 403));
+        }
+
+        $query = Murid::where('id', $muridId);
+
+        $user = $request->user();
+        if (!$user || !$user->hasAnyRole(['administrator', 'staff'])) {
+            $query->where('wali_murid_id', $wali->id);
+        }
+
+        if (!empty($with)) {
+            $query->with($with);
+        }
+
+        $murid = $query->first();
+
+        if (!$murid) {
+            abort(response()->json([
+                'success' => false,
+                'message' => 'Data santri/murid tidak ditemukan atau Anda tidak memiliki akses ke data murid ini.'
+            ], 403));
+        }
+
+        return $murid;
     }
 
     /**
@@ -136,7 +179,7 @@ class WaliMuridApiController extends Controller
      */
     public function getDetailAnak($id, Request $request)
     {
-        $murid = Murid::with(['waliMurid.kampung', 'ruangans', 'levelMasuk', 'tahunMasuk'])->findOrFail($id);
+        $murid = $this->authorizeMuridForWali($request, $id, ['waliMurid.kampung', 'ruangans', 'levelMasuk', 'tahunMasuk']);
 
         return response()->json([
             'success' => true,
@@ -169,7 +212,7 @@ class WaliMuridApiController extends Controller
      */
     public function getTagihanAnak($id, Request $request)
     {
-        $murid = Murid::findOrFail($id);
+        $murid = $this->authorizeMuridForWali($request, $id);
         $tahunAktif = TahunPelajaran::where('is_active', true)->first();
         $tahunId = $tahunAktif?->id;
 
@@ -206,6 +249,15 @@ class WaliMuridApiController extends Controller
             ];
         });
 
+        $sppTagihans = $tagihans->where('pengaturanTagihan.tipe', 'bulanan');
+        $nonSppTagihans = $tagihans->where('pengaturanTagihan.tipe', '!=', 'bulanan');
+
+        $totalSpp = (int) $sppTagihans->sum('nominal_tagihan');
+        $totalSppLunas = (int) $sppTagihans->where('status_bayar', 'Lunas')->sum('nominal_tagihan');
+
+        $totalNonSpp = (int) $nonSppTagihans->sum('nominal_tagihan');
+        $totalNonSppLunas = (int) $nonSppTagihans->where('status_bayar', 'Lunas')->sum('nominal_tagihan');
+
         $totalTagihan = $tagihans->sum('nominal_tagihan');
         $totalLunas = $tagihans->where('status_bayar', 'Lunas')->sum('nominal_tagihan');
 
@@ -218,9 +270,15 @@ class WaliMuridApiController extends Controller
                     'nism'         => $murid->nism,
                 ],
                 'summary' => [
-                    'total_tagihan'   => (int) $totalTagihan,
-                    'total_lunas'     => (int) $totalLunas,
-                    'total_tunggakan' => (int) max(0, $totalTagihan - $totalLunas),
+                    'total_tagihan'           => (int) $totalTagihan,
+                    'total_lunas'             => (int) $totalLunas,
+                    'total_tunggakan'         => (int) max(0, $totalTagihan - $totalLunas),
+                    'total_spp'               => $totalSpp,
+                    'total_spp_lunas'         => $totalSppLunas,
+                    'total_spp_tunggakan'     => (int) max(0, $totalSpp - $totalSppLunas),
+                    'total_non_spp'           => $totalNonSpp,
+                    'total_non_spp_lunas'     => $totalNonSppLunas,
+                    'total_non_spp_tunggakan' => (int) max(0, $totalNonSpp - $totalNonSppLunas),
                 ],
                 'spp'     => $sppList,
                 'non_spp' => $nonSppList,
@@ -233,7 +291,7 @@ class WaliMuridApiController extends Controller
      */
     public function getPresensiAnak($id, Request $request)
     {
-        $murid = Murid::findOrFail($id);
+        $murid = $this->authorizeMuridForWali($request, $id);
 
         $presensiQuery = PresensiMurid::with(['jadwalPelajaran.mataPelajaran'])
             ->where('murid_id', $murid->id);
@@ -291,7 +349,7 @@ class WaliMuridApiController extends Controller
      */
     public function getPelanggaranAnak($id, Request $request)
     {
-        $murid = Murid::findOrFail($id);
+        $murid = $this->authorizeMuridForWali($request, $id);
 
         $pelanggarans = PelanggaranMurid::with(['referensiPelanggaran', 'ruangan', 'penginput'])
             ->where('murid_id', $murid->id)
@@ -342,11 +400,15 @@ class WaliMuridApiController extends Controller
      */
     public function getNilaiAnak($id, Request $request)
     {
-        $murid = Murid::findOrFail($id);
+        $murid = $this->authorizeMuridForWali($request, $id);
         $tahunAktif = TahunPelajaran::where('is_active', true)->first();
         $tahunId = $tahunAktif?->id;
 
-        $nilais = NilaiUjian::with(['ujian.semester', 'mataPelajaran', 'ruangan'])
+        $nilais = NilaiUjian::with([
+            'ujian.semester',
+            'jadwalUjian.mataPelajaran',
+            'ruangan'
+        ])
             ->where('murid_id', $murid->id)
             ->where('is_published', true)
             ->when($tahunId, function ($q) use ($tahunId) {
@@ -361,31 +423,33 @@ class WaliMuridApiController extends Controller
             $ruangan = $first->ruangan;
 
             $mapelList = $items->map(function ($n) {
-                $kkm = $n->kkm ?? 65;
-                $angka = $n->nilai_angka ?? 0;
-                $huruf = $n->nilai_huruf ?? ($angka >= 85 ? 'A' : ($angka >= 75 ? 'B' : ($angka >= 65 ? 'C' : 'D')));
+                $kkm = 65;
+                $angka = $n->nilai !== null ? (float) $n->nilai : 0.0;
+                $huruf = $n->getPredikatHuruf();
+                $namaMapel = $n->jadwalUjian?->nama_mapel ?: ($n->jadwalUjian?->nama_mata_pelajaran_custom ?: 'Mata Pelajaran');
+
                 return [
                     'id'             => $n->id,
-                    'mapel'          => $n->mataPelajaran->nama_mapel ?? 'Mata Pelajaran',
+                    'mapel'          => $namaMapel,
                     'kkm'            => $kkm,
-                    'nilai_angka'    => (float) $angka,
+                    'nilai_angka'    => $angka,
                     'nilai_huruf'    => $huruf,
                     'is_lulus'       => $angka >= $kkm,
-                    'catatan'        => $n->catatan ?: '-',
+                    'catatan'        => $n->getCatatanGuru(),
                 ];
             });
 
-            $rataRata = $items->count() > 0 ? round($items->avg('nilai_angka'), 2) : 0;
-            $totalNilai = $items->sum('nilai_angka');
+            $rataRata = $items->count() > 0 ? round($items->avg('nilai'), 2) : 0;
+            $totalNilai = (float) $items->sum('nilai');
 
             return [
                 'ujian_id'       => $ujian->id ?? null,
                 'nama_ujian'     => $ujian->nama_ujian ?? 'Ujian Madrasah',
                 'tipe_ujian'     => $ujian->tipe_ujian ?? $ujian->jenis_ujian ?? 'IMDA',
                 'semester'       => $ujian->semester->nama_semester ?? 'Semester Aktif',
-                'ruangan'        => $ruangan->nama_ruangan ?? '-',
+                'ruangan'        => $ruangan->nama_ruangan ?? ($murid->nama_ruangan_aktif ?? '-'),
                 'total_mapel'    => $items->count(),
-                'total_nilai'    => (float) $totalNilai,
+                'total_nilai'    => $totalNilai,
                 'rata_rata'      => (float) $rataRata,
                 'daftar_nilai'   => $mapelList,
             ];
@@ -410,7 +474,7 @@ class WaliMuridApiController extends Controller
      */
     public function getJadwalAnak($id, Request $request)
     {
-        $murid = Murid::findOrFail($id);
+        $murid = $this->authorizeMuridForWali($request, $id);
         $tahunAktif = TahunPelajaran::where('is_active', true)->first();
         $tahunId = $tahunAktif?->id;
 
@@ -565,7 +629,7 @@ class WaliMuridApiController extends Controller
      */
     public function getKenaikanAnak($id, Request $request)
     {
-        $murid = Murid::with(['ruangans.level'])->findOrFail($id);
+        $murid = $this->authorizeMuridForWali($request, $id, ['ruangans.level']);
         $tahunAktif = TahunPelajaran::where('is_active', true)->first();
         $tahunId = $tahunAktif?->id;
 
@@ -679,7 +743,7 @@ class WaliMuridApiController extends Controller
      */
     public function getDokumenAnak($id, Request $request)
     {
-        $murid = Murid::with(['ruangans.level'])->findOrFail($id);
+        $murid = $this->authorizeMuridForWali($request, $id, ['ruangans.level']);
         $tahunAktif = TahunPelajaran::where('is_active', true)->first();
         $tahunId = $tahunAktif?->id;
 
@@ -768,7 +832,7 @@ class WaliMuridApiController extends Controller
      */
     public function getTabunganAnak($id, Request $request)
     {
-        $murid = Murid::findOrFail($id);
+        $murid = $this->authorizeMuridForWali($request, $id);
         $semuaTabungan = \App\Models\Tabungan\Tabungan::with(['periodeTabungan'])
             ->where('murid_id', $murid->id)
             ->orderBy('id', 'asc')
@@ -918,6 +982,16 @@ class WaliMuridApiController extends Controller
             ], 400);
         }
 
+        // Validasi Otorisasi Kepemilikan Rekening / Transaksi
+        $wali = $this->resolveWali($request);
+        $user = $request->user();
+        if ((!$user || !$user->hasAnyRole(['administrator', 'staff'])) && (!$wali || $trx->tabungan?->murid?->wali_murid_id !== $wali->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki otorisasi untuk mengajukan komplain pada transaksi rekening ini.'
+            ], 403);
+        }
+
         if ((float) $request->nominal_klaim == (float) $trx->nominal_bersih) {
             return response()->json([
                 'success' => false,
@@ -937,7 +1011,6 @@ class WaliMuridApiController extends Controller
             ], 400);
         }
 
-        $user = $request->user();
         $nominalTercatat = (float) $trx->nominal_bersih;
         $nominalKlaim = (float) $request->nominal_klaim;
         $selisih = $nominalKlaim - $nominalTercatat;
@@ -947,7 +1020,7 @@ class WaliMuridApiController extends Controller
             'transaksi_tabungan_id' => $trx->id,
             'tabungan_id' => $trx->tabungan_id,
             'murid_id' => $trx->tabungan->murid_id,
-            'wali_id' => $user?->id,
+            'wali_id' => $wali?->id ?? $user?->id,
             'nominal_tercatat' => $nominalTercatat,
             'nominal_klaim' => $nominalKlaim,
             'selisih' => $selisih,
@@ -978,7 +1051,7 @@ class WaliMuridApiController extends Controller
      */
     public function getRiwayatKomplain($murid_id, Request $request)
     {
-        $murid = Murid::findOrFail($murid_id);
+        $murid = $this->authorizeMuridForWali($request, $murid_id);
         $komplains = TabunganKomplain::with(['transaksiTabungan.petugas', 'diverifikasiOleh'])
             ->where('murid_id', $murid->id)
             ->orderBy('id', 'desc')
@@ -1020,7 +1093,17 @@ class WaliMuridApiController extends Controller
      */
     public function batalkanKomplain($id, Request $request)
     {
-        $komplain = TabunganKomplain::findOrFail($id);
+        $komplain = TabunganKomplain::with(['tabungan.murid'])->findOrFail($id);
+
+        // Validasi otorisasi pembatalan komplain
+        $wali = $this->resolveWali($request);
+        $user = $request->user();
+        if ((!$user || !$user->hasAnyRole(['administrator', 'staff'])) && (!$wali || ($komplain->wali_id !== $wali->id && $komplain->tabungan?->murid?->wali_murid_id !== $wali->id))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki otorisasi untuk membatalkan komplain ini.'
+            ], 403);
+        }
 
         if ($komplain->status !== 'Menunggu_Verifikasi') {
             return response()->json([
@@ -1045,7 +1128,7 @@ class WaliMuridApiController extends Controller
      */
     public function getKoperasiAnak($id, Request $request)
     {
-        $murid = Murid::findOrFail($id);
+        $murid = $this->authorizeMuridForWali($request, $id);
 
         $penjualans = \App\Models\Koperasi\PenjualanKoperasi::with(['details.produk', 'details.paket', 'petugas'])
             ->where('murid_id', $murid->id)
@@ -1106,6 +1189,114 @@ class WaliMuridApiController extends Controller
                     'total_item' => (int) $totalItem,
                 ],
                 'riwayat' => $riwayat,
+            ]
+        ], 200);
+    }
+
+    /**
+     * Informasi Kas Ruangan / Kelas per Santri (app_murid)
+     * Menampilkan total kas yang telah terkumpul per anak dan riwayat pembayarannya.
+     */
+    public function getKasRuanganAnak($id, Request $request)
+    {
+        $murid = $this->authorizeMuridForWali($request, $id);
+        $tahunAktif = TahunPelajaran::where('is_active', true)->first();
+        $tahunId = $tahunAktif?->id;
+
+        $ruanganAktif = $murid->ruangans()
+            ->with(['waliRuangan', 'level', 'pengaturanKas'])
+            ->when($tahunId, fn($q) => $q->where('murid_ruangans.tahun_pelajaran_id', $tahunId))
+            ->first();
+
+        if (!$ruanganAktif) {
+            $ruanganAktif = $murid->ruanganMasuk()
+                ->with(['waliRuangan', 'level', 'pengaturanKas'])
+                ->first();
+        }
+
+        if (!$ruanganAktif) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'has_kas' => false,
+                    'pesan' => 'Santri belum ditempatkan pada ruangan kelas aktif.',
+                    'murid' => [
+                        'id' => $murid->id,
+                        'nama_lengkap' => $murid->nama_lengkap,
+                        'nism' => $murid->nism,
+                        'jenis_kelamin' => $murid->jenis_kelamin,
+                        'total_kas_terkumpul' => 0,
+                        'total_transaksi' => 0,
+                    ],
+                    'ruangan' => null,
+                    'riwayat_pembayaran' => [],
+                ]
+            ], 200);
+        }
+
+        $pengaturan = PengaturanKasRuangan::where('ruangan_id', $ruanganAktif->id)->first();
+        $nominalLaki = (int) ($pengaturan->nominal_laki ?? 0);
+        $nominalPerempuan = (int) ($pengaturan->nominal_perempuan ?? 0);
+        $targetKas = ($murid->jenis_kelamin === 'P') ? $nominalPerempuan : $nominalLaki;
+        $hasPengaturan = $pengaturan && (($nominalLaki > 0) || ($nominalPerempuan > 0));
+
+        $pembayaranMurid = PembayaranKasRuangan::where('ruangan_id', $ruanganAktif->id)
+            ->where('murid_id', $murid->id)
+            ->orderBy('tanggal_bayar', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $totalTerkumpul = (int) $pembayaranMurid->sum('jumlah_bayar');
+        $kurangKas = max(0, $targetKas - $totalTerkumpul);
+
+        $hasKas = $hasPengaturan || ($totalTerkumpul > 0) || PembayaranKasRuangan::where('ruangan_id', $ruanganAktif->id)->exists();
+
+        if ($targetKas > 0) {
+            if ($totalTerkumpul >= $targetKas) {
+                $status = 'Lunas';
+            } elseif ($totalTerkumpul > 0) {
+                $status = 'Sebagian';
+            } else {
+                $status = 'Belum Bayar';
+            }
+        } else {
+            $status = $totalTerkumpul > 0 ? 'Lunas' : 'Bebas Kas';
+        }
+
+        $riwayat = $pembayaranMurid->map(function ($p) {
+            return [
+                'id' => $p->id,
+                'tanggal_bayar' => $p->tanggal_bayar ? Carbon::parse($p->tanggal_bayar)->format('d-m-Y') : '-',
+                'tanggal_bayar_formatted' => $p->tanggal_bayar ? Carbon::parse($p->tanggal_bayar)->translatedFormat('d F Y') : '-',
+                'jumlah_bayar' => (int) $p->jumlah_bayar,
+                'is_disetor' => (bool) $p->is_disetor,
+                'status_setor' => $p->is_disetor ? 'Telah Disetor ke Madrasah' : 'Tersimpan di Wali Ruangan',
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'has_kas' => $hasKas,
+                'pesan' => $hasKas ? null : 'Ruangan kelas santri saat ini belum memiliki catatan kas ruangan.',
+                'murid' => [
+                    'id' => $murid->id,
+                    'nama_lengkap' => $murid->nama_lengkap,
+                    'nism' => $murid->nism,
+                    'jenis_kelamin' => $murid->jenis_kelamin,
+                    'target_kas' => $targetKas,
+                    'total_kas_terkumpul' => $totalTerkumpul,
+                    'kurang_kas' => $kurangKas,
+                    'status' => $status,
+                    'total_transaksi' => $pembayaranMurid->count(),
+                ],
+                'ruangan' => [
+                    'id' => $ruanganAktif->id,
+                    'nama_ruangan' => $ruanganAktif->nama_ruangan,
+                    'level' => $ruanganAktif->level->nama_level ?? '-',
+                    'wali_ruangan' => $ruanganAktif->waliRuangan->nama_lengkap ?? $ruanganAktif->waliRuangan->nama ?? 'Ustadz Wali Ruangan',
+                ],
+                'riwayat_pembayaran' => $riwayat,
             ]
         ], 200);
     }

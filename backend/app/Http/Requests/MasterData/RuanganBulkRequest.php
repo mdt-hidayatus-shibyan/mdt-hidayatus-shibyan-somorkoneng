@@ -18,7 +18,10 @@ class RuanganBulkRequest extends FormRequest
             'tahun_pelajaran_id' => 'required|exists:tahun_pelajarans,id',
             'ruangan'                 => 'required|array|min:1',
             'ruangan.*.level_id'      => 'required|exists:levels,id',
-            'ruangan.*.ustadz_id'    => 'nullable|exists:ustadzs,id',
+            'ruangan.*.gedung_id'     => 'nullable|exists:gedungs,id',
+            'ruangan.*.ustadz_id'     => 'nullable|exists:ustadzs,id',
+            'ruangan.*.asatidz_id'    => 'nullable|exists:ustadzs,id',
+            'ruangan.*.nama_kamar'    => 'nullable|string|max:100',
             'ruangan.*.kapasitas'     => 'required|integer|min:1|max:100',
 
             // Logika Unik Ganda: Nama ruangan unik di dalam Tahun Pelajaran yang sama

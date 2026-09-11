@@ -7,26 +7,26 @@
 @section('title', $isEdit ? 'Edit Pengguna' : 'Tambah Pengguna Baru')
 
 <x-app-layout>
-    <div class="max-w-2xl mx-auto">
+    <div class="max-w-2xl mx-auto relative z-10">
         <!-- Header -->
-        <div class="mb-6 flex items-center justify-between">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <a href="{{ route('pengguna.index') }}"
-                    class="text-xs font-black text-primary dark:text-primary-dark hover:underline flex items-center gap-1.5 mb-2">
+                    class="text-xs font-black text-primary dark:text-primary-dark hover:underline inline-flex items-center gap-1.5 mb-2 transition-colors">
                     <i class="bi bi-arrow-left"></i> Kembali ke Daftar Pengguna
                 </a>
-                <h2 class="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+                <h2 class="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
                     {{ $isEdit ? 'Edit Akun Pengguna' : 'Tambah Pengguna Baru' }}
                 </h2>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
+                <p class="text-xs md:text-[13px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
                     {{ $isEdit ? 'Perbarui informasi akun dan wewenang pengguna sistem' : 'Daftarkan akun pengguna baru ke dalam sistem madrasah' }}
                 </p>
             </div>
         </div>
 
-        <!-- Form Card -->
+        <!-- Form Card Container -->
         <div
-            class="m3-glass-card p-6 md:p-8 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-xl bg-white dark:bg-zinc-900">
+            class="m3-glass-card p-6 md:p-8 rounded-3xl border border-zinc-200/80 dark:border-zinc-800 shadow-xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl">
             <form action="{{ $actionUrl }}" method="POST" class="space-y-4">
                 @csrf
                 @if ($isEdit)
@@ -111,11 +111,14 @@
                             @foreach ($roles as $r)
                                 <option value="{{ $r->name }}"
                                     {{ old('role', $userRole) === $r->name ? 'selected' : '' }}>
-                                    {{ strtoupper($r->name) }}
+                                    {{ strtoupper(str_replace('-', ' ', $r->name)) }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
+                    <p class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">
+                        Hak akses menu dan fitur akan ditentukan secara otomatis berdasarkan peran yang dipilih.
+                    </p>
                 </div>
 
                 <!-- 4. Penugasan Tingkat (Kondisional) -->
@@ -141,11 +144,14 @@
                             @endforeach
                         </select>
                     </div>
+                    <p class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">
+                        Khusus Staff/Admin Tingkat untuk memfilter data murid, rombel, dan nilai sesuai tingkatnya.
+                    </p>
                 </div>
 
                 <!-- 5. Password Section -->
                 <div
-                    class="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
+                    class="p-4 rounded-2xl md:rounded-3xl bg-zinc-50/80 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800/80 space-y-3">
                     <div class="flex items-center justify-between">
                         <span
                             class="text-xs font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
@@ -160,7 +166,7 @@
 
                     @if ($isEdit)
                         <p class="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium -mt-1">
-                            Kosongkan jika tidak ingin mengubah password.
+                            Kosongkan jika tidak ingin mengubah password akun ini.
                         </p>
                     @endif
 
@@ -169,7 +175,7 @@
                             <input type="password" name="password" id="inputPassword" {{ $isEdit ? '' : 'required' }}
                                 placeholder="{{ $isEdit ? 'Password baru...' : 'Password minimal 6 digit' }}"
                                 class="m3-input-glass w-full !pr-10 text-xs font-mono">
-                            <button type="button" onclick="togglePwdVis('inputPassword', this)"
+                            <button type="button" onclick="togglePasswordVisibility('inputPassword', this)"
                                 class="absolute inset-y-0 right-0 w-9 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
                                 <i class="bi bi-eye text-xs"></i>
                             </button>
@@ -178,7 +184,7 @@
                             <input type="password" name="password_confirmation" id="inputPasswordConfirm"
                                 {{ $isEdit ? '' : 'required' }} placeholder="Ulangi password"
                                 class="m3-input-glass w-full !pr-10 text-xs font-mono">
-                            <button type="button" onclick="togglePwdVis('inputPasswordConfirm', this)"
+                            <button type="button" onclick="togglePasswordVisibility('inputPasswordConfirm', this)"
                                 class="absolute inset-y-0 right-0 w-9 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
                                 <i class="bi bi-eye text-xs"></i>
                             </button>
@@ -186,28 +192,22 @@
                     </div>
                 </div>
 
-                <!-- 6. Status Aktif Toggle -->
+                {{-- 6. Status Aktif Toggle Menggunakan Komponen Toggle --}}
                 <div
-                    class="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800">
+                    class="flex items-center justify-between p-3.5 rounded-2xl md:rounded-3xl bg-zinc-50/80 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800/80">
                     <div>
                         <h4 class="text-xs font-black text-zinc-900 dark:text-white">Status Akun Aktif</h4>
                         <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Pengguna nonaktif tidak akan dapat login
                             ke sistem</p>
                     </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="is_active" value="1"
-                            {{ old('is_active', $user->is_active ?? true) ? 'checked' : '' }} class="sr-only peer">
-                        <div
-                            class="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-emerald-500">
-                        </div>
-                    </label>
+                    <x-toggle name="is_active" value="1" :checked="old('is_active', $user->is_active ?? true)" />
                 </div>
 
                 <!-- Action Buttons -->
                 <div
                     class="pt-4 border-t border-zinc-200/80 dark:border-zinc-800 flex items-center justify-end gap-2.5">
                     <a href="{{ route('pengguna.index') }}"
-                        class="h-10 px-5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-black transition-all flex items-center">
+                        class="h-10 px-5 rounded-xl md:rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-black transition-all flex items-center">
                         Batal
                     </a>
                     <button type="submit"
@@ -244,7 +244,7 @@
             document.getElementById('inputPasswordConfirm').value = pass;
         }
 
-        function togglePwdVis(inputId, btn) {
+        function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
             if (!input) return;
             const icon = btn.querySelector('i');

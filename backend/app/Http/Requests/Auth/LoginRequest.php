@@ -69,7 +69,7 @@ class LoginRequest extends FormRequest
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if (!$user->hasAnyRole(['administrator', 'staff', 'petugas-tabungan'])) {
+        if (!$user->hasAnyRole(['administrator', 'staff', 'petugas-tabungan', 'petugas-koperasi'])) {
             Auth::logout();
             RateLimiter::hit($this->throttleKey());
 
@@ -78,39 +78,6 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        // if ($user->hasRole('ustadz')) {
-        //     $ruanganWali = null; // Ganti nama variabel biar tidak bingung
-
-        //     // Ambil data Ustadz berdasarkan user_id
-        //     $ustadz = Ustadz::where('user_id', $user->id)->first();
-
-        //     // Ambil Tahun Pelajaran yang sedang aktif
-        //     $tahunAktif = TahunPelajaran::where('is_active', true)->first();
-
-        //     // Jika data Ustadz dan Tahun Aktif ditemukan, ambil data ruangannya!
-        //     if ($ustadz && $tahunAktif) {
-        //         // GUNAKAN first() bukan exists()
-        //         $ruanganWali = Ruangan::where('tahun_pelajaran_id', $tahunAktif->id)
-        //             ->where('ustadz_id', $ustadz->id)
-        //             ->first();
-        //     }
-
-        //     // Simpan hasil pengecekan ke dalam Session
-        //     if ($ruanganWali) { // Jika objek ruangan ketemu
-        //         session([
-        //             'akses_sebagai'  => 'Wali Ruangan',
-        //             'wali_ruangan'   => $ruanganWali->nama_ruangan, // Sekarang ini AMAN dan BISA dipanggil
-        //             'is_waliruangan' => true
-        //         ]);
-        //     } else {
-        //         session([
-        //             'akses_sebagai'  => 'Ustadz',
-        //             'is_waliruangan' => false
-        //         ]);
-        //         // (Opsional) Jika ustadz bukan wali kelas, hapus session wali_ruangan yang mungkin tersisa
-        //         session()->forget('wali_ruangan');
-        //     }
-        // }
 
         RateLimiter::clear($this->throttleKey());
     }
@@ -144,5 +111,24 @@ class LoginRequest extends FormRequest
     public function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->string('login')) . '|' . $this->ip());
+    }
+
+    /**
+     * Tentukan route tujuan redirect setelah login berhasil berdasarkan role
+     */
+    public function redirectRoute(): string
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        if ($user && $user->hasRole('petugas-tabungan') && !$user->hasRole('administrator')) {
+            return route('tabungan.dashboard', absolute: false);
+        }
+
+        if ($user && $user->hasRole('petugas-koperasi') && !$user->hasRole('administrator')) {
+            return route('koperasi.dashboard', absolute: false);
+        }
+
+        return route('dashboard', absolute: false);
     }
 }

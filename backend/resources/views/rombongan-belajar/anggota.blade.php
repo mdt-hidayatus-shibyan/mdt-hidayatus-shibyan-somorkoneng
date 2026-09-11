@@ -90,8 +90,7 @@
                     </div>
 
                     <input type="text" name="search" value="{{ request('search') }}"
-                        placeholder="Cari NISM, Nama..."
-                        class="m3-input-glass w-full !pl-10 !pr-10">
+                        placeholder="Cari NISM, Nama..." class="m3-input-glass w-full !pl-10 !pr-10">
 
                     @if (request('search'))
                         <a href="{{ route('rombongan-belajar.anggota', $ruangan->id) }}"
@@ -150,8 +149,9 @@
                             <td>
                                 <div class="flex items-center gap-3">
                                     @can('update murid')
-                                        <div onclick="openModalFoto('{{ $murid->id }}', '{{ asset('storage/' . $fotoPath) }}')"
-                                            class="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-white dark:bg-zinc-900 p-0.5 border border-zinc-200 dark:border-zinc-700 shadow-sm relative cursor-pointer group/avatar">
+                                        <a href="{{ route('rombongan-belajar.uploadFoto', [$ruangan->id, $murid->id]) }}"
+                                            class="action-modal w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-white dark:bg-zinc-900 p-0.5 border border-zinc-200 dark:border-zinc-700 shadow-sm relative cursor-pointer group/avatar block"
+                                            title="Ubah Foto {{ $murid->nama_panggilan }}">
                                             <img src="{{ asset('storage/' . $fotoPath) }}"
                                                 alt="Foto {{ $murid->nama_panggilan }}"
                                                 class="w-full h-full object-cover rounded-lg">
@@ -160,7 +160,7 @@
                                                 class="absolute inset-0.5 rounded-lg bg-black/60 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300">
                                                 <i class="bi bi-camera-fill text-white text-base"></i>
                                             </div>
-                                        </div>
+                                        </a>
                                     @else
                                         <div
                                             class="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-white dark:bg-zinc-900 p-0.5 border border-zinc-200 dark:border-zinc-700 shadow-sm relative">
@@ -394,7 +394,8 @@
                     class="shrink-0 px-5 sm:px-6 py-4.5 border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-black/40">
                     <div class="flex justify-between items-start mb-4">
                         <div>
-                            <h3 class="text-lg font-black text-zinc-900 dark:text-white tracking-tight">Pilih Murid</h3>
+                            <h3 class="text-lg font-black text-zinc-900 dark:text-white tracking-tight">Pilih Murid
+                            </h3>
                             <p class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5">Pilih dari
                                 antrean kelas kosong.</p>
                         </div>
@@ -461,15 +462,18 @@
                                     class="w-12 h-12 bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl flex items-center justify-center mb-3">
                                     <i class="bi bi-person-check-fill text-xl text-zinc-400 dark:text-zinc-500"></i>
                                 </div>
-                                <h4 class="text-sm font-bold text-zinc-900 dark:text-white tracking-tight">Semua Masuk Kelas</h4>
-                                <p class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mt-1 px-4">Seluruh murid aktif telah terdaftar ke dalam rombongan belajar.</p>
+                                <h4 class="text-sm font-bold text-zinc-900 dark:text-white tracking-tight">Semua Masuk
+                                    Kelas</h4>
+                                <p class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mt-1 px-4">Seluruh
+                                    murid aktif telah terdaftar ke dalam rombongan belajar.</p>
                             </div>
                         @endforelse
                     </div>
                 </div>
 
                 <!-- Footer Drawer -->
-                <div class="shrink-0 p-4 border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-black/40">
+                <div
+                    class="shrink-0 p-4 border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-black/40">
                     <button type="submit" class="m3-btn-primary w-full py-3 group/btn outline-none">
                         <i class="bi bi-person-plus-fill text-sm"></i>
                         <span>Tambahkan Terpilih</span>
@@ -559,70 +563,13 @@
     </div>
 
 
-    <!-- ============================================== -->
-    <!-- MODAL UPLOAD FOTO -->
-    <!-- ============================================== -->
-    @can('update murid')
-        <div id="modalUploadFoto" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
-            <div class="absolute inset-0 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
-                onclick="closeModalFoto()"></div>
 
-            <div
-                class="relative bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/90 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-[modalFadeIn_0.2s_ease-out]">
-
-                <form id="formUploadFoto" action="" method="POST" enctype="multipart/form-data">
-                    @csrf @method('PATCH')
-
-                    <div
-                        class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80 flex justify-between items-center bg-zinc-50/80 dark:bg-black/40">
-                        <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight">Perbarui Foto</h3>
-                        <button type="button" onclick="closeModalFoto()"
-                            class="text-zinc-400 hover:text-red-500 transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 shrink-0 outline-none">
-                            <i class="bi bi-x-lg text-xs font-bold"></i>
-                        </button>
-                    </div>
-
-                    <div class="p-6 flex flex-col items-center justify-center">
-                        <div
-                            class="w-28 h-28 rounded-2xl overflow-hidden border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 relative group p-1 mb-3">
-                            <img id="previewFotoModal" src=""
-                                class="w-full h-full object-cover rounded-xl bg-white dark:bg-black">
-
-                            <label for="inputFotoMurid"
-                                class="absolute inset-1 rounded-xl bg-black/60 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity duration-200">
-                                <i class="bi bi-cloud-arrow-up-fill text-xl mb-0.5"></i>
-                                <span class="text-[9px] font-black uppercase tracking-wider">Pilih Foto</span>
-                            </label>
-                        </div>
-
-                        <input type="file" name="foto" id="inputFotoMurid"
-                            accept="image/png, image/jpeg, image/jpg" class="hidden" onchange="gantiPreview(this)"
-                            required>
-                        <p
-                            class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-center">
-                            Maksimal 2MB (JPG/PNG)</p>
-                    </div>
-
-                    <div
-                        class="px-5 py-3.5 border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-black/40 flex justify-end gap-2">
-                        <button type="button" onclick="closeModalFoto()"
-                            class="px-4 py-2 rounded-xl font-bold text-xs bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors outline-none">
-                            Batal
-                        </button>
-                        <button type="submit" class="m3-btn-primary px-5 py-2 outline-none">
-                            <i class="bi bi-check2-circle text-xs"></i>
-                            <span>Simpan</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    @endcan
 
     <!-- MODAL UPDATE STATUS -->
     <div id="modalUpdateStatus" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity" onclick="tutupModalStatus()">
+        <div class="absolute inset-0 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
+            onclick="tutupModalStatus()">
         </div>
 
         <div
@@ -632,7 +579,8 @@
                 @csrf
                 @method('PATCH')
 
-                <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between bg-zinc-50/80 dark:bg-black/40">
+                <div
+                    class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between bg-zinc-50/80 dark:bg-black/40">
                     <h3 class="text-base font-black text-zinc-900 dark:text-white tracking-tight">
                         Update Status Murid
                     </h3>
@@ -644,7 +592,9 @@
 
                 <div class="p-5 space-y-4">
                     <div class="space-y-1">
-                        <p class="text-[11px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">Nama Murid</p>
+                        <p
+                            class="text-[11px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">
+                            Nama Murid</p>
                         <div id="modalStatusNama"
                             class="text-sm font-black text-zinc-900 dark:text-white bg-zinc-50 dark:bg-zinc-900 px-3.5 py-2.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800">
                             -
@@ -773,28 +723,7 @@
                 document.getElementById('modalPindahRuangan').classList.add('hidden');
             }
 
-            // === FUNGSI MODAL UBAH FOTO ===
-            function openModalFoto(muridId, currentFotoPath) {
-                document.getElementById('modalUploadFoto').classList.remove('hidden');
-                document.getElementById('previewFotoModal').src = currentFotoPath;
-                const form = document.getElementById('formUploadFoto');
-                form.action = `/murid/${muridId}/update-foto`;
-            }
 
-            function closeModalFoto() {
-                document.getElementById('modalUploadFoto').classList.add('hidden');
-                document.getElementById('inputFotoMurid').value = '';
-            }
-
-            function gantiPreview(input) {
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('previewFotoModal').src = e.target.result;
-                    }
-                    reader.readAsDataURL(input.files[0]);
-                }
-            }
 
             // === FUNGSI KONFIRMASI HAPUS ANGGOTA (SWEETALERT) ===
             function confirmDetach(muridId, namaMurid) {

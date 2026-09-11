@@ -16,9 +16,8 @@ class BackupController extends Controller
 
     public function index()
     {
-
-        if (auth()->user()?->getRoleNames()->first() !== 'administrator') {
-            abort(403, 'Akses Ditolak. Hanya Superadmin yang diizinkan.');
+        if (!auth()->user()?->hasRole('administrator')) {
+            abort(403, 'Akses Ditolak. Hanya Administrator yang diizinkan.');
         }
         return view('backup.index');
     }
@@ -29,8 +28,8 @@ class BackupController extends Controller
     public function process()
     {
         // Proteksi ekstra ganda
-        if (auth()->user()?->getRoleNames()->first() !== 'administrator') {
-            abort(403, 'Akses Ditolak.');
+        if (!auth()->user()?->hasRole('administrator')) {
+            abort(403, 'Akses Ditolak. Hanya Administrator yang diizinkan.');
         }
 
         try {
@@ -44,14 +43,13 @@ class BackupController extends Controller
                 File::makeDirectory($storagePath, 0755, true);
             }
 
-            // 2. Ambil kredensial database dari file .env
-            $host = env('DB_HOST');
-            $username = env('DB_USERNAME');
-            $password = env('DB_PASSWORD');
-            $database = env('DB_DATABASE');
+            // 2. Ambil kredensial database dari config (aman saat config:cache aktif)
+            $host = config('database.connections.mysql.host', '127.0.0.1');
+            $username = config('database.connections.mysql.username', 'root');
+            $password = config('database.connections.mysql.password', '');
+            $database = config('database.connections.mysql.database', '');
 
             // 3. Susun perintah mysqldump (Sesuaikan path mysqldump jika di Windows/XAMPP)
-            // Jika menggunakan XAMPP di Windows, biasanya: "C:\xampp\mysql\bin\mysqldump"
             $mysqldumpPath = 'mysqldump';
 
             $command = sprintf(
@@ -87,6 +85,11 @@ class BackupController extends Controller
 
     public function restore(Request $request)
     {
+        // Proteksi role administrator
+        if (!auth()->user()?->hasRole('administrator')) {
+            abort(403, 'Akses Ditolak. Hanya Administrator yang diizinkan.');
+        }
+
         // 1. Validasi file (harus berekstensi .sql atau tipe text)
         $request->validate([
             'file_sql' => 'required|file|max:51200', // Maksimal 50MB

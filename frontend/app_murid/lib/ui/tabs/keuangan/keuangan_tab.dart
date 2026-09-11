@@ -4,6 +4,7 @@ import '../tagihan/tagihan_tab.dart';
 export '../tagihan/tagihan_tab.dart';
 export '../tabungan/tabungan_screen.dart';
 export '../koperasi/koperasi_screen.dart';
+export 'kas_ruangan_screen.dart';
 
 /// Legacy alias for [TagihanTab] for backward compatibility
 class KeuanganTab extends StatelessWidget {

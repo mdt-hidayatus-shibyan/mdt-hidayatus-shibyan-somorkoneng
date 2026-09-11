@@ -423,7 +423,9 @@ class _AkademikTabState extends State<AkademikTab>
                 Expanded(
                   child: _buildMiniStat(
                     'Total Nilai',
-                    '${ujian.totalNilai}',
+                    ujian.totalNilai == ujian.totalNilai.roundToDouble()
+                        ? '${ujian.totalNilai.toInt()}'
+                        : '${ujian.totalNilai}',
                     isDark ? Colors.white70 : Colors.black87,
                     isDark,
                   ),
@@ -499,6 +501,20 @@ class _AkademikTabState extends State<AkademikTab>
                               color: isDark ? Colors.white54 : Colors.black54,
                             ),
                           ),
+                          if (n.catatan.isNotEmpty && n.catatan != '-')
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                n.catatan,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontStyle: FontStyle.italic,
+                                  color: isDark
+                                      ? Colors.white38
+                                      : Colors.black45,
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),

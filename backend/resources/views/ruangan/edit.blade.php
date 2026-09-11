@@ -1,4 +1,4 @@
-<!-- Modal Form -->
+<!-- Modal Form Edit Ruangan -->
 <form action="{{ route('ruangan.update', $ruangan->id) }}" method="POST"
     class="ajax-form relative z-10 flex flex-col max-h-[90vh]">
     @csrf @method('PUT')
@@ -7,7 +7,7 @@
     <div
         class="bg-zinc-50/80 dark:bg-black/40 border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-3.5 flex items-center justify-between transition-colors duration-300">
         <h3 class="text-base md:text-lg font-black text-zinc-900 dark:text-white tracking-tight">
-            Edit Ruangan
+            Edit Data Ruangan
         </h3>
         <!-- Touch Target 40px -->
         <button type="button" data-dismiss="modal" command="close" commandfor="dialog"
@@ -66,9 +66,37 @@
                     Nama Ruangan <span class="text-rose-500">*</span>
                 </label>
                 <input type="text" name="nama_ruangan" value="{{ $ruangan->nama_ruangan }}"
-                    placeholder="Contoh: 1-A TPQ / 1-B IBT"
-                    class="m3-input-glass w-full uppercase"
-                    oninput="this.value = this.value.toUpperCase()">
+                    placeholder="Contoh: 1-A TPQ / 1-B IBT" class="m3-input-glass w-full uppercase"
+                    oninput="this.value = this.value.toUpperCase()" required>
+            </div>
+
+            <!-- Gedung -->
+            <div class="space-y-1.5">
+                <label
+                    class="block text-[11px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">
+                    Lokasi Gedung (Opsional)
+                </label>
+                <div class="relative group">
+                    <select name="gedung_id" class="m3-select2 w-full">
+                        <option value="">-- Tanpa Gedung --</option>
+                        @foreach ($gedungs as $gd)
+                            <option value="{{ $gd->id }}"
+                                {{ $ruangan->gedung_id == $gd->id ? 'selected' : '' }}>
+                                {{ $gd->nama_gedung }} ({{ $gd->kode_gedung }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <!-- Nama Kamar / Asrama -->
+            <div class="space-y-1.5">
+                <label
+                    class="block text-[11px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">
+                    Nama Kamar / Asrama (Opsional)
+                </label>
+                <input type="text" name="nama_kamar" value="{{ $ruangan->nama_kamar }}"
+                    placeholder="Contoh: Asrama A-01 / Kobong 2" class="m3-input-glass w-full">
             </div>
 
             <!-- Wali Ruangan -->
@@ -99,7 +127,7 @@
                     Kapasitas
                 </label>
                 <input type="number" name="kapasitas" value="{{ $ruangan->kapasitas }}" placeholder="Min 1"
-                    min="1" class="m3-input-glass w-full">
+                    min="1" class="m3-input-glass w-full" required>
             </div>
 
         </div>
@@ -128,4 +156,3 @@
         });
     });
 </script>
-

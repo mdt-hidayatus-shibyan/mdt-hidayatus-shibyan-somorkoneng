@@ -1,4 +1,4 @@
-﻿<!-- TABEL MUTASI STOK -->
+<!-- TABEL MUTASI STOK -->
 <div class="overflow-x-auto custom-scrollbar">
     <table class="m3-table w-full">
         <thead>
@@ -92,6 +92,6 @@
 
 @if ($mutasis->hasPages())
     <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/30">
-        {{ $mutasis->links() }}
+        {{ $mutasis->links('vendor.pagination.custom') }}
     </div>
 @endif

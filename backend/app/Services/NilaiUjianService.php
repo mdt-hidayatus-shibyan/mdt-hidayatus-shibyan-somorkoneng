@@ -147,30 +147,19 @@ class NilaiUjianService
             foreach ($dataNilai as $muridId => $jadwalData) {
                 foreach ($jadwalData as $jadwalId => $nilai) {
                     if ($nilai !== null && $nilai !== '') {
-                        $existing = NilaiUjian::where([
-                            'ujian_id'        => $ujianId,
-                            'ruangan_id'      => $ruanganId,
-                            'jadwal_ujian_id' => $jadwalId,
-                            'murid_id'        => $muridId,
-                        ])->first();
-
-                        if ($existing) {
-                            $existing->update([
-                                'nilai'        => $nilai,
-                                'is_published' => $isPublished,
-                                'diinput_oleh' => $userId
-                            ]);
-                        } else {
-                            NilaiUjian::create([
+                        NilaiUjian::updateOrCreate(
+                            [
                                 'ujian_id'        => $ujianId,
                                 'ruangan_id'      => $ruanganId,
                                 'jadwal_ujian_id' => $jadwalId,
                                 'murid_id'        => $muridId,
-                                'nilai'           => $nilai,
-                                'is_published'    => $isPublished,
-                                'diinput_oleh'    => $userId
-                            ]);
-                        }
+                            ],
+                            [
+                                'nilai'        => $nilai,
+                                'is_published' => $isPublished,
+                                'diinput_oleh' => $userId,
+                            ]
+                        );
                     }
                 }
             }

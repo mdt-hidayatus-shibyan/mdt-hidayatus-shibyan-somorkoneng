@@ -110,6 +110,6 @@
 
 @if ($produks->hasPages())
     <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/30">
-        {{ $produks->links() }}
+        {{ $produks->links('vendor.pagination.custom') }}
     </div>
 @endif

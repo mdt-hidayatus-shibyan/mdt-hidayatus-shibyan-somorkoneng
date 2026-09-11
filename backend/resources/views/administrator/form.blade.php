@@ -195,7 +195,11 @@
                                     </option>
                                     <option value="petugas-tabungan"
                                         {{ old('role', $currentRole ?? '') === 'petugas-tabungan' ? 'selected' : '' }}>
-                                        Petugas Tabungan (Semua Tingkat)
+                                        Petugas Tabungan
+                                    </option>
+                                    <option value="petugas-koperasi"
+                                        {{ old('role', $currentRole ?? '') === 'petugas-koperasi' ? 'selected' : '' }}>
+                                        Petugas Koperasi
                                     </option>
                                     <option value="staff"
                                         {{ old('role', $currentRole ?? '') === 'staff' ? 'selected' : '' }}>

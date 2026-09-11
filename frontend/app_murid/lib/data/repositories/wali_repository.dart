@@ -12,6 +12,7 @@ import '../models/presensi_model.dart';
 import '../models/tabungan_model.dart';
 import '../models/koperasi_model.dart';
 import '../models/kenaikan_model.dart';
+import '../models/kas_ruangan_model.dart';
 
 class WaliRepository {
   final Dio _dio = ApiClient.instance.dio;
@@ -141,6 +142,18 @@ class WaliRepository {
       final res = await _dio.get('${ApiEndpoints.koperasiAnak}/$anakId');
       if (res.statusCode == 200 && res.data['success'] == true) {
         return KoperasiAnakData.fromJson(res.data['data']);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  Future<KasRuanganAnakData?> getKasRuanganAnak(int anakId) async {
+    try {
+      final res = await _dio.get('${ApiEndpoints.kasRuanganAnak}/$anakId');
+      if (res.statusCode == 200 &&
+          res.data['success'] == true &&
+          res.data['data'] != null) {
+        return KasRuanganAnakData.fromJson(res.data['data']);
       }
     } catch (_) {}
     return null;

@@ -489,16 +489,32 @@ class MuridController extends Controller
 
     public function updateFoto(Request $request, $id)
     {
-        $request->validate(['foto' => 'required|image|max:2048']);
+        $request->validate([
+            'foto' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048'
+        ], [
+            'foto.required' => 'File foto wajib diunggah.',
+            'foto.image'    => 'File yang diunggah harus berupa gambar.',
+            'foto.mimes'    => 'Format gambar harus JPG, JPEG, PNG, atau WEBP.',
+            'foto.max'      => 'Ukuran foto maksimal 2MB.',
+        ]);
 
         $murid = \App\Models\Murid::findOrFail($id);
 
-        if ($murid->foto) {
+        if ($murid->foto && Storage::disk('public')->exists($murid->foto)) {
             Storage::disk('public')->delete($murid->foto);
         }
 
         $murid->foto = $request->file('foto')->store('uploads/murid', 'public');
         $murid->save();
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'status'   => 'success',
+                'message'  => 'Foto santri ' . $murid->nama_lengkap . ' berhasil diperbarui!',
+                'foto_url' => asset('storage/' . $murid->foto),
+                'murid_id' => $murid->id,
+            ]);
+        }
 
         return back()->with('success', 'Foto berhasil diperbarui!');
     }

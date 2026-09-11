@@ -17,7 +17,9 @@ use App\Http\Controllers\MasterData\KartuPelajarController;
 use App\Http\Controllers\MasterData\KampungController;
 use App\Http\Controllers\MasterData\TingkatController;
 use App\Http\Controllers\MasterData\LevelController;
+use App\Http\Controllers\MasterData\GedungController;
 use App\Http\Controllers\MasterData\RuanganController;
+use App\Http\Controllers\MasterData\SarprasController;
 use App\Http\Controllers\MasterData\MataPelajaranController;
 use App\Http\Controllers\MasterData\ReferensiPelanggaranController;
 
@@ -61,6 +63,13 @@ use App\Http\Controllers\Arsip\ArsipIjazahController;
 use App\Http\Controllers\Keuangan\TagihanMuridController;
 use App\Http\Controllers\Keuangan\PembayaranTagihanController;
 use App\Http\Controllers\Keuangan\PengaturanTagihanController;
+use App\Http\Controllers\Keuangan\AkunKeuanganController;
+use App\Http\Controllers\Keuangan\BankController;
+use App\Http\Controllers\Keuangan\KategoriKeuanganController;
+use App\Http\Controllers\Keuangan\TransaksiKeuanganController;
+use App\Http\Controllers\Keuangan\NasabahPinjamanController;
+use App\Http\Controllers\Keuangan\PinjamanController;
+use App\Http\Controllers\Keuangan\LaporanKeuanganMadrasahController;
 use App\Http\Controllers\KasRuangan\KasRuanganController;
 use App\Http\Controllers\KasRuangan\PengaturanKasRuanganController;
 use App\Http\Controllers\KasRuangan\SetoranKasRuanganController;
@@ -110,8 +119,8 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
-// Portal SPMB Online Publik
-Route::prefix('spmb')->name('spmb.')->group(function () {
+// Portal SPMB Online Publik (Protected with Rate Limiter)
+Route::prefix('spmb')->name('spmb.')->middleware('throttle:30,1')->group(function () {
     Route::get('/', [SpmbController::class, 'index'])->name('index');
     Route::get('/form', [SpmbController::class, 'form'])->name('form');
     Route::post('/check-kk', [SpmbController::class, 'checkKk'])->name('check-kk');
@@ -131,14 +140,20 @@ Route::get('/verifikasi-profil/{tipe}/{id}', PublicProfileController::class)
     ->name('profil.publik')
     ->middleware('signed');
 
-// Storage File Delivery Route
+// Storage File Delivery Route (Secured against Directory Traversal)
 Route::get('/storage/{path}', function ($path) {
-    $filePath = storage_path('app/public/' . $path);
-    if (!file_exists($filePath)) {
+    $basePath = realpath(storage_path('app/public'));
+    $targetPath = storage_path('app/public/' . $path);
+    $realPath = realpath($targetPath);
+
+    // Pastikan path valid, berada di dalam direktori storage/app/public, dan file benar-benar ada
+    if (!$realPath || !$basePath || !str_starts_with($realPath, $basePath) || !file_exists($realPath) || is_dir($realPath)) {
         abort(404);
     }
-    $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
-    return response()->file($filePath, [
+
+    $mimeType = mime_content_type($realPath) ?: 'application/octet-stream';
+    return response()->file($realPath, [
+        'Content-Type' => $mimeType,
         'Access-Control-Allow-Origin' => '*',
         'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
         'Access-Control-Allow-Headers' => '*',
@@ -232,15 +247,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/cetak', [KartuPelajarController::class, 'cetak'])->name('cetak');
     });
 
-    // -- Manajemen Akun Pengguna --
-    Route::prefix('pengguna')->name('pengguna.')->group(function () {
-        Route::post('/{id}/force-logout', [UserController::class, 'forceLogout'])->name('force-logout');
-        Route::get('/{id}/whatsapp', [UserController::class, 'hubungiWhatsApp'])->name('whatsapp');
-        Route::post('/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
-        Route::post('/{id}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
+    // -- Manajemen Akun Pengguna (Khusus Administrator) --
+    Route::middleware('role:administrator')->group(function () {
+        Route::prefix('pengguna')->name('pengguna.')->group(function () {
+            Route::post('/{id}/force-logout', [UserController::class, 'forceLogout'])->name('force-logout');
+            Route::get('/{id}/whatsapp', [UserController::class, 'hubungiWhatsApp'])->name('whatsapp');
+            Route::post('/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
+            Route::post('/{id}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
+        });
+        Route::resource('pengguna', UserController::class);
+        Route::get('/user', fn() => redirect()->route('pengguna.index'))->name('user.index');
     });
-    Route::resource('pengguna', UserController::class);
-    Route::get('/user', fn() => redirect()->route('pengguna.index'))->name('user.index');
 
 
     // ==========================================
@@ -255,11 +272,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/level/{id}/toggle-status', [LevelController::class, 'toggleStatus'])->name('level.toggle-status');
     Route::resource('level', LevelController::class)->except(['show']);
 
+    // -- Gedung --
+    Route::prefix('gedung')->name('gedung.')->group(function () {
+        Route::post('/{id}/toggle-status', [GedungController::class, 'toggleStatus'])->name('toggle-status');
+    });
+    Route::resource('gedung', GedungController::class);
+
     // -- Ruangan Kelas --
     Route::prefix('ruangan')->name('ruangan.')->group(function () {
         Route::post('/{id}/toggle-status', [RuanganController::class, 'toggleStatus'])->name('toggle-status');
     });
     Route::resource('ruangan', RuanganController::class)->except(['show']);
+
+    // -- Sarana & Prasarana --
+    Route::prefix('sarpras')->name('sarpras.')->group(function () {
+        Route::post('/{id}/toggle-status', [SarprasController::class, 'toggleStatus'])->name('toggle-status');
+        Route::get('/get-ruangan/{gedung_id?}', [SarprasController::class, 'getRuanganByGedung'])->name('get-ruangan');
+    });
+    Route::resource('sarpras', SarprasController::class);
 
     // -- Mata Pelajaran --
     Route::prefix('mata-pelajaran')->name('mata-pelajaran.')->group(function () {
@@ -558,13 +588,62 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{id}', [SetoranKasRuanganController::class, 'destroySetoran'])->name('destroy');
     });
 
+    // -- Perbendaharaan & Keuangan Madrasah --
+    Route::prefix('keuangan')->name('keuangan.')->group(function () {
+        // Master Akun Keuangan (Pos Kas)
+        Route::post('/akun/{id}/toggle-status', [AkunKeuanganController::class, 'toggleStatus'])->name('akun.toggle-status');
+        Route::resource('akun', AkunKeuanganController::class)->except(['show']);
+
+        // Master Rekening Bank
+        Route::post('/bank/{id}/toggle-status', [BankController::class, 'toggleStatus'])->name('bank.toggle-status');
+        Route::resource('bank', BankController::class)->except(['show']);
+
+        // Master Kategori & Subkategori
+        Route::post('/kategori/{id}/toggle-status', [KategoriKeuanganController::class, 'toggleStatus'])->name('kategori.toggle-status');
+        Route::resource('kategori', KategoriKeuanganController::class)->except(['show']);
+
+        // Transaksi Keuangan (Pemasukan, Pengeluaran, Mutasi)
+        Route::prefix('transaksi')->name('transaksi.')->group(function () {
+            Route::get('/cetak-kwitansi/{id}', [TransaksiKeuanganController::class, 'cetakKwitansi'])->name('cetak-kwitansi');
+            Route::post('/{id}/batal', [TransaksiKeuanganController::class, 'batalTransaksi'])->name('batal');
+        });
+        Route::resource('transaksi', TransaksiKeuanganController::class);
+
+        // Data Nasabah Peminjam
+        Route::get('/nasabah/ajax-lookup', [NasabahPinjamanController::class, 'ajaxLookup'])->name('nasabah.ajax-lookup');
+        Route::resource('nasabah', NasabahPinjamanController::class);
+
+        // Sistem Pinjaman & Agunan
+        Route::prefix('pinjaman')->name('pinjaman.')->group(function () {
+            Route::post('/{id}/approve', [PinjamanController::class, 'approve'])->name('approve');
+            Route::post('/{id}/tolak', [PinjamanController::class, 'tolak'])->name('tolak');
+            Route::post('/{id}/cairkan', [PinjamanController::class, 'cairkan'])->name('cairkan');
+            Route::post('/{id}/bayar-angsuran', [PinjamanController::class, 'bayarAngsuran'])->name('bayar-angsuran');
+            Route::post('/{id}/kembalikan-jaminan', [PinjamanController::class, 'kembalikanJaminan'])->name('kembalikan-jaminan');
+
+            // Cetak Dokumen Pinjaman
+            Route::get('/{id}/cetak-perjanjian', [PinjamanController::class, 'cetakSuratPerjanjian'])->name('cetak-perjanjian');
+            Route::get('/{id}/cetak-tanda-terima-jaminan', [PinjamanController::class, 'cetakTandaTerimaJaminan'])->name('cetak-tanda-terima-jaminan');
+            Route::get('/{id}/cetak-kartu-angsuran', [PinjamanController::class, 'cetakKartuAngsuran'])->name('cetak-kartu-angsuran');
+        });
+        Route::resource('pinjaman', PinjamanController::class);
+
+        // Laporan Keuangan Madrasah
+        Route::prefix('laporan')->name('laporan.')->group(function () {
+            Route::get('/', [LaporanKeuanganMadrasahController::class, 'index'])->name('index');
+            Route::get('/cetak-buku-kas', [LaporanKeuanganMadrasahController::class, 'cetakBukuKas'])->name('cetak-buku-kas');
+            Route::get('/cetak-pinjaman', [LaporanKeuanganMadrasahController::class, 'cetakLaporanPinjaman'])->name('cetak-pinjaman');
+        });
+    });
+
 
     // ==========================================
     // 9. TABUNGAN MADRASAH
     // ==========================================
     Route::prefix('tabungan')->name('tabungan.')->group(function () {
         // Dashboard Tabungan
-        Route::get('/', [TabunganMadrasahController::class, 'index'])->name('dashboard');
+        Route::get('/', [TabunganMadrasahController::class, 'index'])->name('index');
+        Route::get('/dashboard', [TabunganMadrasahController::class, 'index'])->name('dashboard');
 
         // Master Rekening & AJAX Lookup
         Route::get('/ajax/cari-murid', [TabunganMadrasahController::class, 'cariMuridByNism'])->name('ajax.cari-murid');
@@ -700,32 +779,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     // ==========================================
-    // 10. PENGATURAN SISTEM & RBAC
+    // 10. PENGATURAN SISTEM & RBAC (Khusus Administrator)
     // ==========================================
+    Route::middleware('role:administrator')->group(function () {
+        // -- Manajemen Menu Navigasi --
+        Route::post('/menu/update-order', [MenuController::class, 'updateOrder'])->name('menu.update-order');
+        Route::post('/menu/{id}/toggle-active', [MenuController::class, 'toggleActive'])->name('menu.toggle-active');
+        Route::resource('menu', MenuController::class);
 
-    // -- Manajemen Menu Navigasi --
-    Route::post('/menu/update-order', [MenuController::class, 'updateOrder'])->name('menu.update-order');
-    Route::post('/menu/{id}/toggle-active', [MenuController::class, 'toggleActive'])->name('menu.toggle-active');
-    Route::resource('menu', MenuController::class);
+        // -- Role & Permissions (RBAC) --
+        Route::post('roles/{id}/give-permissions', [RoleController::class, 'givePermissions'])->name('roles.give-permissions');
+        Route::resource('roles', RoleController::class);
+        Route::resource('permissions', PermissionController::class)->except(['show']);
 
-    // -- Role & Permissions (RBAC) --
-    Route::post('roles/{id}/give-permissions', [RoleController::class, 'givePermissions'])->name('roles.give-permissions');
-    Route::resource('roles', RoleController::class);
-    Route::resource('permissions', PermissionController::class)->except(['show']);
+        // -- Tahun Pelajaran --
+        Route::post('/tahun-pelajaran/{id}/toggle-status', [TahunPelajaranController::class, 'toggleStatus'])->name('tahun-pelajaran.toggle-status');
+        Route::resource('tahun-pelajaran', TahunPelajaranController::class);
 
-    // -- Tahun Pelajaran --
-    Route::post('/tahun-pelajaran/{id}/toggle-status', [TahunPelajaranController::class, 'toggleStatus'])->name('tahun-pelajaran.toggle-status');
-    Route::resource('tahun-pelajaran', TahunPelajaranController::class);
+        // -- Pengaturan Aplikasi --
+        Route::get('/pengaturan-aplikasi', [SettingController::class, 'index'])->name('pengaturan-aplikasi.index');
+        Route::post('/pengaturan-aplikasi', [SettingController::class, 'update'])->name('pengaturan-aplikasi.update');
 
-    // -- Pengaturan Aplikasi --
-    Route::get('/pengaturan-aplikasi', [SettingController::class, 'index'])->name('pengaturan-aplikasi.index');
-    Route::post('/pengaturan-aplikasi', [SettingController::class, 'update'])->name('pengaturan-aplikasi.update');
-
-    // -- Backup & Restore Database --
-    Route::prefix('backup')->name('backup.')->controller(BackupController::class)->group(function () {
-        Route::get('/', 'index')->name('database');
-        Route::post('/process', 'process')->name('process');
-        Route::post('/restore', 'restore')->name('restore');
+        // -- Backup & Restore Database --
+        Route::prefix('backup')->name('backup.')->controller(BackupController::class)->group(function () {
+            Route::get('/', 'index')->name('database');
+            Route::post('/process', 'process')->name('process');
+            Route::post('/restore', 'restore')->name('restore');
+        });
     });
 
 

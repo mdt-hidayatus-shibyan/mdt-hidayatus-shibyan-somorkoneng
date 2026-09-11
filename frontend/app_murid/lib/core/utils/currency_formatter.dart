@@ -16,4 +16,6 @@ class CurrencyFormatter {
     }
     return _formatter.format(number);
   }
+
+  static String formatRupiah(dynamic number) => format(number);
 }

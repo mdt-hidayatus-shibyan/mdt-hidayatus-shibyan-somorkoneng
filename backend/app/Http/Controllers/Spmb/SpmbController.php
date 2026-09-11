@@ -103,15 +103,30 @@ class SpmbController extends Controller
             'kampung_id.required'  => 'Pilihan dusun/kampung zonasi wajib dipilih.',
         ]);
 
-        $wali = WaliMurid::create([
-            'no_kk'                => $request->no_kk,
-            'kepala_keluarga'      => $request->kepala_keluarga,
-            'nama_kepala_keluarga' => strtoupper($request->nama_kepala_keluarga),
-            'no_hp'                => $request->no_hp,
-            'alamat_detail'        => $request->alamat_detail,
-            'kampung_id'           => $request->kampung_id,
-            'is_active'            => true,
-        ]);
+        $wali = DB::transaction(function () use ($request) {
+            $attempts = 0;
+            while ($attempts < 5) {
+                try {
+                    return WaliMurid::create([
+                        'no_registrasi'        => WaliMurid::generateNoRegistrasi(),
+                        'no_kk'                => $request->no_kk,
+                        'kepala_keluarga'      => $request->kepala_keluarga,
+                        'nama_kepala_keluarga' => strtoupper($request->nama_kepala_keluarga),
+                        'no_hp'                => $request->no_hp,
+                        'alamat_detail'        => $request->alamat_detail,
+                        'kampung_id'           => $request->kampung_id,
+                        'is_active'            => true,
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    if ($e->errorInfo[1] == 1062 && str_contains($e->getMessage(), 'no_registrasi')) {
+                        $attempts++;
+                        continue;
+                    }
+                    throw $e;
+                }
+            }
+            throw new \Exception("Gagal menghasilkan nomor registrasi unik. Silakan coba lagi.");
+        });
 
         return redirect()->route('spmb.daftar-murid', ['wali_murid_id' => $wali->id])
             ->with('success', 'Data profil keluarga berhasil disimpan! Sekarang silakan isi data calon murid yang akan didaftarkan.');
@@ -217,35 +232,51 @@ class SpmbController extends Controller
                 $fotoPath = $request->file('foto')->store('uploads/spmb', 'public');
             }
 
-            // Generate nomor pendaftaran unik
-            $nomorPendaftaran = PendaftaranSpmb::generateNomorPendaftaran($request->tahun_pelajaran_id);
+            // Simpan pendaftaran SPMB dengan retry loop jika terjadi benturan nomor pendaftaran simultan
+            $pendaftaran = null;
+            $attempts = 0;
+            while ($attempts < 5) {
+                try {
+                    $nomorPendaftaran = PendaftaranSpmb::generateNomorPendaftaran($request->tahun_pelajaran_id);
 
-            // Simpan pendaftaran SPMB
-            $pendaftaran = PendaftaranSpmb::create([
-                'nomor_pendaftaran'   => $nomorPendaftaran,
-                'tahun_pelajaran_id'  => $request->tahun_pelajaran_id,
-                'level_id'            => $request->level_id,
-                'wali_murid_id'       => $request->wali_murid_id,
-                'nama_lengkap'        => strtoupper($request->nama_lengkap),
-                'nama_panggilan'      => $request->nama_panggilan ? ucwords($request->nama_panggilan) : null,
-                'jenis_kelamin'       => $request->jenis_kelamin,
-                'nik'                 => $request->nik,
-                'nisn'                => $request->nisn,
-                'tempat_lahir'        => $request->tempat_lahir ? strtoupper($request->tempat_lahir) : null,
-                'tanggal_lahir'       => $request->tanggal_lahir,
-                'anak_ke'             => $request->anak_ke,
-                'hub_kel'             => $request->hub_kel,
-                'nik_ayah'            => $request->nik_ayah,
-                'nama_ayah'           => $request->nama_ayah ? strtoupper($request->nama_ayah) : null,
-                'status_ayah'         => $request->status_ayah ?? 'Hidup',
-                'nik_ibu'             => $request->nik_ibu,
-                'nama_ibu'            => $request->nama_ibu ? strtoupper($request->nama_ibu) : null,
-                'status_ibu'          => $request->status_ibu ?? 'Hidup',
-                'foto'                => $fotoPath,
-                'status_pendaftaran'  => 'Menunggu Verifikasi',
-                'nominal_biaya'       => $nominalBiaya,
-                'status_pembayaran'   => 'Belum Lunas',
-            ]);
+                    $pendaftaran = PendaftaranSpmb::create([
+                        'nomor_pendaftaran'   => $nomorPendaftaran,
+                        'tahun_pelajaran_id'  => $request->tahun_pelajaran_id,
+                        'level_id'            => $request->level_id,
+                        'wali_murid_id'       => $request->wali_murid_id,
+                        'nama_lengkap'        => strtoupper($request->nama_lengkap),
+                        'nama_panggilan'      => $request->nama_panggilan ? ucwords($request->nama_panggilan) : null,
+                        'jenis_kelamin'       => $request->jenis_kelamin,
+                        'nik'                 => $request->nik,
+                        'nisn'                => $request->nisn,
+                        'tempat_lahir'        => $request->tempat_lahir ? strtoupper($request->tempat_lahir) : null,
+                        'tanggal_lahir'       => $request->tanggal_lahir,
+                        'anak_ke'             => $request->anak_ke,
+                        'hub_kel'             => $request->hub_kel,
+                        'nik_ayah'            => $request->nik_ayah,
+                        'nama_ayah'           => $request->nama_ayah ? strtoupper($request->nama_ayah) : null,
+                        'status_ayah'         => $request->status_ayah ?? 'Hidup',
+                        'nik_ibu'             => $request->nik_ibu,
+                        'nama_ibu'            => $request->nama_ibu ? strtoupper($request->nama_ibu) : null,
+                        'status_ibu'          => $request->status_ibu ?? 'Hidup',
+                        'foto'                => $fotoPath,
+                        'status_pendaftaran'  => 'Menunggu Verifikasi',
+                        'nominal_biaya'       => $nominalBiaya,
+                        'status_pembayaran'   => 'Belum Lunas',
+                    ]);
+                    break;
+                } catch (\Illuminate\Database\QueryException $e) {
+                    if ($e->errorInfo[1] == 1062 && str_contains($e->getMessage(), 'nomor_pendaftaran')) {
+                        $attempts++;
+                        continue;
+                    }
+                    throw $e;
+                }
+            }
+
+            if (!$pendaftaran) {
+                throw new \Exception("Gagal menghasilkan nomor pendaftaran unik. Silakan ulangi pengisian formulir.");
+            }
 
             DB::commit();
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class WaliMurid extends Model
 {
@@ -22,14 +23,28 @@ class WaliMurid extends Model
         parent::boot();
 
         static::creating(function ($model) {
-            $latest = self::orderBy('id', 'desc')->first();
-
-            if ($latest && is_numeric($latest->no_registrasi)) {
-                $model->no_registrasi = (string) ($latest->no_registrasi + 1);
-            } else {
-                $model->no_registrasi = '50001';
+            if (empty($model->no_registrasi)) {
+                $model->no_registrasi = self::generateNoRegistrasi();
             }
         });
+    }
+
+    /**
+     * Generator nomor registrasi keluarga/wali murid unik & tahan benturan
+     */
+    public static function generateNoRegistrasi(): string
+    {
+        $maxNo = DB::table('wali_murids')
+            ->whereRaw("no_registrasi REGEXP '^[0-9]+$'")
+            ->max(DB::raw('CAST(no_registrasi AS UNSIGNED)'));
+
+        $nextNo = $maxNo ? ($maxNo + 1) : 50001;
+
+        while (self::where('no_registrasi', (string) $nextNo)->exists()) {
+            $nextNo++;
+        }
+
+        return (string) $nextNo;
     }
 
     // Relasi ke tabel Kampung

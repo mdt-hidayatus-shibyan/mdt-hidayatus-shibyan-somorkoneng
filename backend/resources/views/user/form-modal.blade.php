@@ -4,17 +4,17 @@
     $userRole = $isEdit ? $user->roles->first()->name ?? '' : 'staff';
 @endphp
 
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md transition-opacity duration-300 animate-in fade-in"
     id="userFormModal">
     <div
-        class="m3-glass-card !bg-white dark:!bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden transform transition-all animate-in zoom-in-95 duration-200">
+        class="m3-glass-card !bg-white/95 dark:!bg-zinc-900/95 backdrop-blur-2xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden transform transition-all animate-in zoom-in-95 duration-200">
 
         <!-- Modal Header -->
         <div
             class="px-6 py-5 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-800/30">
             <div class="flex items-center gap-3">
                 <div
-                    class="w-10 h-10 rounded-2xl bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark flex items-center justify-center font-black text-lg border border-primary/20">
+                    class="w-10 h-10 rounded-2xl bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark flex items-center justify-center font-black text-lg border border-primary/20 shadow-2xs">
                     <i class="bi {{ $isEdit ? 'bi-person-gear' : 'bi-person-plus-fill' }}"></i>
                 </div>
                 <div>
@@ -22,7 +22,7 @@
                         {{ $isEdit ? 'Edit Akun Pengguna' : 'Tambah Pengguna Baru' }}
                     </h3>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                        {{ $isEdit ? 'Perbarui informasi profil dan wewenang pengguna' : 'Daftarkan kredensial akun pengguna ke dalam sistem' }}
+                        {{ $isEdit ? 'Perbarui informasi profil dan wewenang pengguna sistem' : 'Daftarkan kredensial akun pengguna baru ke dalam sistem' }}
                     </p>
                 </div>
             </div>
@@ -112,12 +112,12 @@
                         @foreach ($roles as $r)
                             <option value="{{ $r->name }}"
                                 {{ old('role', $userRole) === $r->name ? 'selected' : '' }}>
-                                {{ strtoupper($r->name) }}
+                                {{ strtoupper(str_replace('-', ' ', $r->name)) }}
                             </option>
                         @endforeach
                     </select>
                 </div>
-                <p class="text-[11px] text-zinc-400 mt-1 font-medium">
+                <p class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">
                     Hak akses menu dan fitur akan ditentukan secara otomatis berdasarkan peran yang dipilih.
                 </p>
             </div>
@@ -144,14 +144,14 @@
                         @endforeach
                     </select>
                 </div>
-                <p class="text-[11px] text-zinc-400 mt-1 font-medium">
+                <p class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">
                     Khusus Staff/Admin Tingkat untuk memfilter data murid, rombel, dan nilai sesuai tingkatnya.
                 </p>
             </div>
 
             <!-- 5. Password Section -->
             <div
-                class="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
+                class="p-4 rounded-2xl md:rounded-3xl bg-zinc-50/80 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800/80 space-y-3">
                 <div class="flex items-center justify-between">
                     <span
                         class="text-xs font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
@@ -166,7 +166,7 @@
 
                 @if ($isEdit)
                     <p class="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium -mt-1">
-                        Kosongkan jika tidak ingin mengubah password.
+                        Kosongkan jika tidak ingin mengubah password akun ini.
                     </p>
                 @endif
 
@@ -192,27 +192,21 @@
                 </div>
             </div>
 
-            <!-- 6. Status Aktif Toggle -->
+            {{-- 6. Status Aktif Toggle Menggunakan Komponen Toggle --}}
             <div
-                class="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800">
+                class="flex items-center justify-between p-3.5 rounded-2xl md:rounded-3xl bg-zinc-50/80 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800/80">
                 <div>
                     <h4 class="text-xs font-black text-zinc-900 dark:text-white">Status Akun Aktif</h4>
                     <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Pengguna nonaktif tidak akan dapat login ke
                         dalam sistem</p>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" name="is_active" value="1"
-                        {{ old('is_active', $user->is_active ?? true) ? 'checked' : '' }} class="sr-only peer">
-                    <div
-                        class="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-emerald-500">
-                    </div>
-                </label>
+                <x-toggle name="is_active" value="1" :checked="old('is_active', $user->is_active ?? true)" />
             </div>
 
             <!-- Modal Footer -->
             <div class="pt-4 border-t border-zinc-200/80 dark:border-zinc-800 flex items-center justify-end gap-2.5">
                 <button type="button" onclick="closeUserModal()"
-                    class="h-10 px-5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-black transition-all">
+                    class="h-10 px-5 rounded-xl md:rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-black transition-all">
                     Batal
                 </button>
                 <button type="submit" id="btnSubmitUser"

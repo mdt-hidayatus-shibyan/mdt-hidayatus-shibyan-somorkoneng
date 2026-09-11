@@ -400,4 +400,15 @@ class RombonganBelajarController extends Controller
 
         return Response::stream($callback, 200, $headers);
     }
+
+    /**
+     * Menampilkan Modal Form Upload Foto Murid (AJAX Partial)
+     */
+    public function modalUpload($id, $murid_id)
+    {
+        $ruangan = Ruangan::findOrFail($id);
+        $murid = Murid::with('waliMurid.kampung')->findOrFail($murid_id);
+
+        return view('rombongan-belajar.modal-upload-foto', compact('ruangan', 'murid'));
+    }
 }

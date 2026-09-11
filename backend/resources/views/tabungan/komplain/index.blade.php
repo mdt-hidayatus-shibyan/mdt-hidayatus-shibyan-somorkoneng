@@ -315,7 +315,7 @@
 
         @if ($komplains->hasPages())
             <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800/80">
-                {{ $komplains->links() }}
+                {{ $komplains->links('vendor.pagination.custom') }}
             </div>
         @endif
 

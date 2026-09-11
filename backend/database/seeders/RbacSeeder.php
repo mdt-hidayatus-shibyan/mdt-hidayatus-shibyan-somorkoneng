@@ -28,6 +28,7 @@ class RbacSeeder extends Seeder
             'administrator'     => 'Administrator Utama (Super Admin)',
             'staff'             => 'Staff Administrasi / TU',
             'petugas-tabungan'  => 'Petugas Tabungan Madrasah',
+            'petugas-koperasi'  => 'Petugas Koperasi & Toko Madrasah',
             'bendahara'         => 'Bendahara / Keuangan Madrasah',
             'ustadz'            => 'Dewan Guru / Tenaga Pendidik',
             'petugas-cetak'     => 'Petugas Cetak Rapor & Dokumen',
@@ -150,38 +151,45 @@ class RbacSeeder extends Seeder
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                     [
+                        'name'        => 'Jadwal Ujian',
+                        'url'         => 'jadwal-ujian.index',
+                        'icon'        => 'bi-calendar2-week-fill',
+                        'orders'      => 2,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
                         'name'        => 'Persyaratan Ujian',
                         'url'         => 'persyaratan-ujian.index',
                         'icon'        => 'bi-card-checklist',
-                        'orders'      => 2,
+                        'orders'      => 3,
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                     [
                         'name'        => 'Presensi Ujian',
                         'url'         => 'presensi-ujian.index',
                         'icon'        => 'bi-person-check',
-                        'orders'      => 3,
+                        'orders'      => 4,
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                     [
                         'name'        => 'Nilai Ujian',
                         'url'         => 'nilai-ujian.index',
                         'icon'        => 'bi-award-fill',
-                        'orders'      => 4,
+                        'orders'      => 5,
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                     [
                         'name'        => 'Pembayaran Ujian',
                         'url'         => 'pembayaran-ujian.index',
                         'icon'        => 'bi-cash-stack',
-                        'orders'      => 5,
+                        'orders'      => 6,
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                     [
                         'name'        => 'Kenaikan Kelas',
                         'url'         => 'kenaikan-kelas.index',
                         'icon'        => 'bi-arrow-up-right-circle-fill',
-                        'orders'      => 6,
+                        'orders'      => 7,
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                 ],
@@ -239,17 +247,24 @@ class RbacSeeder extends Seeder
                 'permissions' => ['read'],
                 'sub_menus'   => [
                     [
+                        'name'        => 'Buku Kas Ruangan (Kelas)',
+                        'url'         => 'kas-ruangan.index',
+                        'icon'        => 'bi-book-half',
+                        'orders'      => 1,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
                         'name'        => 'Setoran Kas Ruangan',
                         'url'         => 'setoran-kas-ruangan.index',
                         'icon'        => 'bi-wallet-fill',
-                        'orders'      => 1,
+                        'orders'      => 2,
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                     [
                         'name'        => 'Pengaturan Kas Ruangan',
                         'url'         => 'pengaturan-kas-ruangan.index',
                         'icon'        => 'bi-sliders',
-                        'orders'      => 2,
+                        'orders'      => 3,
                         'permissions' => ['read', 'create', 'update'],
                     ],
                 ],
@@ -323,6 +338,145 @@ class RbacSeeder extends Seeder
                         'url'         => 'tabungan.pengaturan.index',
                         'icon'        => 'bi-gear-fill',
                         'orders'      => 9,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Komplain & Koreksi Setoran',
+                        'url'         => 'tabungan.komplain.index',
+                        'icon'        => 'bi-chat-left-dots-fill',
+                        'orders'      => 10,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                ],
+            ],
+            [
+                'name'        => 'Koperasi Madrasah',
+                'url'         => '#koperasi',
+                'category'    => 'KEUANGAN & TABUNGAN',
+                'icon'        => 'bi-shop',
+                'orders'      => 24,
+                'permissions' => ['read'],
+                'sub_menus'   => [
+                    [
+                        'name'        => 'Dashboard Koperasi',
+                        'url'         => 'koperasi.dashboard',
+                        'icon'        => 'bi-speedometer2',
+                        'orders'      => 1,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Kasir POS (Toko)',
+                        'url'         => 'koperasi.pos.index',
+                        'icon'        => 'bi-calculator-fill',
+                        'orders'      => 2,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Master Produk',
+                        'url'         => 'koperasi.produk.index',
+                        'icon'        => 'bi-box-seam-fill',
+                        'orders'      => 3,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Kategori Produk',
+                        'url'         => 'koperasi.kategori.index',
+                        'icon'        => 'bi-tags-fill',
+                        'orders'      => 4,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Paket Bundling',
+                        'url'         => 'koperasi.paket.index',
+                        'icon'        => 'bi-collection-fill',
+                        'orders'      => 5,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Mutasi & Stok',
+                        'url'         => 'koperasi.stok.index',
+                        'icon'        => 'bi-arrow-left-right',
+                        'orders'      => 6,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Pembelian (Kulakan)',
+                        'url'         => 'koperasi.pembelian.index',
+                        'icon'        => 'bi-bag-plus-fill',
+                        'orders'      => 7,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Riwayat Transaksi',
+                        'url'         => 'koperasi.transaksi.index',
+                        'icon'        => 'bi-receipt-cutoff',
+                        'orders'      => 8,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Laporan Penjualan',
+                        'url'         => 'koperasi.laporan.index',
+                        'icon'        => 'bi-file-earmark-bar-graph-fill',
+                        'orders'      => 9,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                ],
+            ],
+            [
+                'name'        => 'Keuangan Madrasah',
+                'url'         => '#keuangan-madrasah',
+                'category'    => 'KEUANGAN & TABUNGAN',
+                'icon'        => 'bi-cash-stack',
+                'orders'      => 25,
+                'permissions' => ['read'],
+                'sub_menus'   => [
+                    [
+                        'name'        => 'Buku Kas & Transaksi',
+                        'url'         => 'keuangan.transaksi.index',
+                        'icon'        => 'bi-journal-text',
+                        'orders'      => 1,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Pos Akun Keuangan',
+                        'url'         => 'keuangan.akun.index',
+                        'icon'        => 'bi-wallet-fill',
+                        'orders'      => 2,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Rekening Bank',
+                        'url'         => 'keuangan.bank.index',
+                        'icon'        => 'bi-bank',
+                        'orders'      => 3,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Kategori Keuangan',
+                        'url'         => 'keuangan.kategori.index',
+                        'icon'        => 'bi-tags-fill',
+                        'orders'      => 4,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Pinjaman & Agunan',
+                        'url'         => 'keuangan.pinjaman.index',
+                        'icon'        => 'bi-shield-lock-fill',
+                        'orders'      => 5,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Data Nasabah Peminjam',
+                        'url'         => 'keuangan.nasabah.index',
+                        'icon'        => 'bi-people-fill',
+                        'orders'      => 6,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Laporan Keuangan',
+                        'url'         => 'keuangan.laporan.index',
+                        'icon'        => 'bi-file-earmark-bar-graph-fill',
+                        'orders'      => 7,
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                 ],
@@ -467,31 +621,45 @@ class RbacSeeder extends Seeder
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                     [
+                        'name'        => 'Gedung Madrasah',
+                        'url'         => 'gedung.index',
+                        'icon'        => 'bi-buildings-fill',
+                        'orders'      => 7,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
                         'name'        => 'Ruangan Kelas',
                         'url'         => 'ruangan.index',
                         'icon'        => 'bi-door-open-fill',
-                        'orders'      => 7,
+                        'orders'      => 8,
+                        'permissions' => ['read', 'create', 'update', 'delete'],
+                    ],
+                    [
+                        'name'        => 'Sarana & Prasarana',
+                        'url'         => 'sarpras.index',
+                        'icon'        => 'bi-box-seam-fill',
+                        'orders'      => 9,
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                     [
                         'name'        => 'Mata Pelajaran',
                         'url'         => 'mata-pelajaran.index',
                         'icon'        => 'bi-book-half',
-                        'orders'      => 8,
+                        'orders'      => 10,
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                     [
                         'name'        => 'Referensi Pelanggaran',
                         'url'         => 'referensi-pelanggaran.index',
                         'icon'        => 'bi-exclamation-octagon-fill',
-                        'orders'      => 9,
+                        'orders'      => 11,
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                     [
                         'name'        => 'Data Kampung / Dusun',
                         'url'         => 'kampung.index',
                         'icon'        => 'bi-geo-alt-fill',
-                        'orders'      => 10,
+                        'orders'      => 12,
                         'permissions' => ['read', 'create', 'update', 'delete'],
                     ],
                 ],
@@ -650,7 +818,7 @@ class RbacSeeder extends Seeder
         // A. ADMINISTRATOR (Super Admin): Semua Permission
         $roles['administrator']->syncPermissions(Permission::all());
 
-        // B. STAFF (Admin Tingkat / TU): Master Data, Akademik, SPMB, Tagihan, Arsip, Layanan
+        // B. STAFF (Admin Tingkat / TU): Master Data, Akademik, SPMB, Tagihan, Kas Ruangan, Arsip, Layanan
         $staffPerms = Permission::where(function ($q) {
             $q->where('name', 'like', '%dashboard%')
                 ->orWhere('name', 'like', '%kalendar%')
@@ -663,10 +831,12 @@ class RbacSeeder extends Seeder
                 ->orWhere('name', 'like', '%presensi-ustadz%')
                 ->orWhere('name', 'like', '%pelanggaran-murid%')
                 ->orWhere('name', 'like', '%ujian%')
+                ->orWhere('name', 'like', '%jadwal-ujian%')
                 ->orWhere('name', 'like', '%bintang-pelajar%')
                 ->orWhere('name', 'like', '%rapor%')
                 ->orWhere('name', 'like', '%tagihan-murid%')
                 ->orWhere('name', 'like', '%pembayaran-tagihan%')
+                ->orWhere('name', 'like', '%kas-ruangan%')
                 ->orWhere('name', 'like', '%pengurus%')
                 ->orWhere('name', 'like', '%arsip%')
                 ->orWhere('name', 'like', '%laporan-kendala%')
@@ -675,10 +845,14 @@ class RbacSeeder extends Seeder
                 ->orWhere('name', 'like', '%wali-murid%')
                 ->orWhere('name', 'like', '%tingkat%')
                 ->orWhere('name', 'like', '%level%')
+                ->orWhere('name', 'like', '%gedung%')
                 ->orWhere('name', 'like', '%ruangan%')
+                ->orWhere('name', 'like', '%sarpras%')
                 ->orWhere('name', 'like', '%mata-pelajaran%')
                 ->orWhere('name', 'like', '%referensi-pelanggaran%')
                 ->orWhere('name', 'like', '%kampung%')
+                ->orWhere('name', 'like', '%koperasi%')
+                ->orWhere('name', 'like', '%keuangan%')
                 ->orWhere('name', 'like', '%tahun-pelajaran%')
                 ->orWhere('name', 'like', '%pengaturan-akademik%');
         })->get();
@@ -691,38 +865,52 @@ class RbacSeeder extends Seeder
         })->get();
         $roles['petugas-tabungan']->syncPermissions($tabunganPerms);
 
-        // D. BENDAHARA: Tagihan Syahriyah, Kas Ruangan, Tabungan, Pembayaran
+        // D. PETUGAS KOPERASI: Seluruh Modul Koperasi Madrasah
+        $koperasiPerms = Permission::where(function ($q) {
+            $q->where('name', 'like', '%koperasi%')
+                ->orWhere('name', 'like', '%dashboard%');
+        })->get();
+        $roles['petugas-koperasi']->syncPermissions($koperasiPerms);
+
+        // E. BENDAHARA: Tagihan Syahriyah, Kas Ruangan, Tabungan, Koperasi, Keuangan Madrasah, Pembayaran
         $bendaharaPerms = Permission::where(function ($q) {
             $q->where('name', 'like', '%dashboard%')
                 ->orWhere('name', 'like', '%tagihan%')
                 ->orWhere('name', 'like', '%pembayaran%')
                 ->orWhere('name', 'like', '%kas-ruangan%')
-                ->orWhere('name', 'like', '%tabungan%');
+                ->orWhere('name', 'like', '%tabungan%')
+                ->orWhere('name', 'like', '%koperasi%')
+                ->orWhere('name', 'like', '%keuangan%');
         })->get();
         $roles['bendahara']->syncPermissions($bendaharaPerms);
 
-        // E. USTADZ: Dashboard, Jadwal, Presensi Murid, Nilai Ujian, Pelanggaran, Kendala
+        // F. USTADZ: Dashboard, Jadwal, Presensi Murid, Nilai Ujian, Jadwal Ujian, Presensi Ujian, Pelanggaran, Kas Ruangan, Kendala
         $ustadzPerms = Permission::where(function ($q) {
             $q->where('name', 'like', '%dashboard%')
                 ->orWhere('name', 'like', '%jadwal-pelajaran%')
                 ->orWhere('name', 'like', '%presensi-murid%')
                 ->orWhere('name', 'like', '%nilai-ujian%')
+                ->orWhere('name', 'like', '%jadwal-ujian%')
+                ->orWhere('name', 'like', '%presensi-ujian%')
                 ->orWhere('name', 'like', '%pelanggaran-murid%')
+                ->orWhere('name', 'like', '%kas-ruangan%')
                 ->orWhere('name', 'like', '%laporan-kendala%');
         })->get();
         $roles['ustadz']->syncPermissions($ustadzPerms);
 
-        // F. PETUGAS CETAK: Cetak Rapor, Kartu Pelajar, Berita Acara, DHPU, SPMB Bukti
+        // G. PETUGAS CETAK: Cetak Rapor, Kartu Pelajar, Berita Acara, DHPU, SPMB Bukti, Jadwal Ujian
         $cetakPerms = Permission::where(function ($q) {
-            $q->where('name', 'like', '%rapor%')
+            $q->where('name', 'like', '%dashboard%')
+                ->orWhere('name', 'like', '%rapor%')
                 ->orWhere('name', 'like', '%petugas-cetak%')
                 ->orWhere('name', 'like', '%kartu-pelajar%')
                 ->orWhere('name', 'like', '%presensi-ujian%')
+                ->orWhere('name', 'like', '%jadwal-ujian%')
                 ->orWhere('name', 'like', '%spmb%');
         })->get();
         $roles['petugas-cetak']->syncPermissions($cetakPerms);
 
-        // G. WALI MURID: View-only dashboard, tabungan, tagihan
+        // H. WALI MURID: View-only dashboard, tabungan, tagihan
         $waliPerms = Permission::where(function ($q) {
             $q->where('name', 'read dashboard')
                 ->orWhere('name', 'read tabungan.dashboard')
@@ -730,7 +918,9 @@ class RbacSeeder extends Seeder
         })->get();
         $roles['wali-murid']->syncPermissions($waliPerms);
 
-        // 7. Buat / Sinkronkan User Utama Administrator & Petugas Tabungan jika belum ada
+        // 7. Buat / Sinkronkan User Akun Default untuk Setiap Role Standar
+
+        // 1. Administrator (Super Admin)
         $adminUser = User::firstOrCreate(
             ['username' => 'mikyal_adly'],
             [
@@ -757,6 +947,34 @@ class RbacSeeder extends Seeder
             ]
         );
 
+        // 2. Staff TU / Administrasi
+        $staffUser = User::firstOrCreate(
+            ['username' => 'staff_tu'],
+            [
+                'name'              => 'STAFF TATA USAHA MDT',
+                'email'             => 'tu@mdt-somorkoneng.sch.id',
+                'password'          => Hash::make('staff123'),
+                'is_active'         => true,
+                'email_verified_at' => now(),
+            ]
+        );
+        $staffUser->syncRoles(['staff']);
+
+        Administrator::firstOrCreate(
+            ['user_id' => $staffUser->id],
+            [
+                'nik'           => '3526110101910006',
+                'nama_lengkap'  => $staffUser->name,
+                'jenis_kelamin' => 'L',
+                'tempat_lahir'  => 'BANGKALAN',
+                'tanggal_lahir' => '1991-03-03',
+                'alamat'        => 'PONDOK PESANTREN HIDAYATUS SHIBYAN SOMORKONENG',
+                'no_hp'         => '6281234567892',
+                'is_active'     => true,
+            ]
+        );
+
+        // 3. Petugas Tabungan
         $petugasUser = User::firstOrCreate(
             ['username' => 'petugas_tabungan'],
             [
@@ -779,6 +997,87 @@ class RbacSeeder extends Seeder
                 'tanggal_lahir' => '1990-01-01',
                 'alamat'        => 'PONDOK PESANTREN HIDAYATUS SHIBYAN SOMORKONENG',
                 'no_hp'         => '6281234567890',
+                'is_active'     => true,
+            ]
+        );
+
+        // 4. Petugas Koperasi
+        $petugasKoperasiUser = User::firstOrCreate(
+            ['username' => 'petugas_koperasi'],
+            [
+                'name'              => 'PETUGAS KOPERASI MDT',
+                'email'             => 'koperasi@mdt-somorkoneng.sch.id',
+                'password'          => Hash::make('koperasi123'),
+                'is_active'         => true,
+                'email_verified_at' => now(),
+            ]
+        );
+        $petugasKoperasiUser->syncRoles(['petugas-koperasi']);
+
+        Administrator::firstOrCreate(
+            ['user_id' => $petugasKoperasiUser->id],
+            [
+                'nik'           => '3526110101920005',
+                'nama_lengkap'  => $petugasKoperasiUser->name,
+                'jenis_kelamin' => 'L',
+                'tempat_lahir'  => 'BANGKALAN',
+                'tanggal_lahir' => '1992-02-02',
+                'alamat'        => 'PONDOK PESANTREN HIDAYATUS SHIBYAN SOMORKONENG',
+                'no_hp'         => '6281234567891',
+                'is_active'     => true,
+            ]
+        );
+
+        // 5. Bendahara Madrasah
+        $bendaharaUser = User::firstOrCreate(
+            ['username' => 'bendahara_mdt'],
+            [
+                'name'              => 'BENDAHARA MDT',
+                'email'             => 'bendahara@mdt-somorkoneng.sch.id',
+                'password'          => Hash::make('bendahara123'),
+                'is_active'         => true,
+                'email_verified_at' => now(),
+            ]
+        );
+        $bendaharaUser->syncRoles(['bendahara']);
+
+        Administrator::firstOrCreate(
+            ['user_id' => $bendaharaUser->id],
+            [
+                'nik'           => '3526110101930007',
+                'nama_lengkap'  => $bendaharaUser->name,
+                'jenis_kelamin' => 'L',
+                'tempat_lahir'  => 'BANGKALAN',
+                'tanggal_lahir' => '1993-04-04',
+                'alamat'        => 'PONDOK PESANTREN HIDAYATUS SHIBYAN SOMORKONENG',
+                'no_hp'         => '6281234567893',
+                'is_active'     => true,
+            ]
+        );
+
+        // 6. Petugas Cetak Rapor
+        $cetakUser = User::firstOrCreate(
+            ['username' => 'petugas_cetak'],
+            [
+                'name'              => 'PETUGAS CETAK RAPOR MDT',
+                'email'             => 'cetak@mdt-somorkoneng.sch.id',
+                'password'          => Hash::make('cetak123'),
+                'is_active'         => true,
+                'email_verified_at' => now(),
+            ]
+        );
+        $cetakUser->syncRoles(['petugas-cetak']);
+
+        Administrator::firstOrCreate(
+            ['user_id' => $cetakUser->id],
+            [
+                'nik'           => '3526110101940008',
+                'nama_lengkap'  => $cetakUser->name,
+                'jenis_kelamin' => 'L',
+                'tempat_lahir'  => 'BANGKALAN',
+                'tanggal_lahir' => '1994-05-05',
+                'alamat'        => 'PONDOK PESANTREN HIDAYATUS SHIBYAN SOMORKONENG',
+                'no_hp'         => '6281234567894',
                 'is_active'     => true,
             ]
         );

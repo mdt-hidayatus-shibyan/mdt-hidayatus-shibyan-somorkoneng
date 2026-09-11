@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/models/kas_ruangan_model.dart';
 import '../data/models/koperasi_model.dart';
 import '../data/models/tabungan_model.dart';
 import '../data/models/tagihan_model.dart';
@@ -10,11 +11,13 @@ class KeuanganProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _isLoadingTabungan = false;
   bool _isLoadingKoperasi = false;
+  bool _isLoadingKasRuangan = false;
   String? _errorMessage;
 
   final Map<int, RekapTagihanAnakModel> _rekapTagihanMap = {};
   final Map<int, TabunganAnakData> _tabunganDataMap = {};
   final Map<int, KoperasiAnakData> _koperasiDataMap = {};
+  final Map<int, KasRuanganAnakData> _kasRuanganDataMap = {};
 
   int? _loadedAnakId;
   String? _selectedTabunganBulan;
@@ -22,6 +25,7 @@ class KeuanganProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isLoadingTabungan => _isLoadingTabungan;
   bool get isLoadingKoperasi => _isLoadingKoperasi;
+  bool get isLoadingKasRuangan => _isLoadingKasRuangan;
   String? get errorMessage => _errorMessage;
 
   int? get loadedAnakId => _loadedAnakId;
@@ -37,11 +41,15 @@ class KeuanganProvider extends ChangeNotifier {
       _loadedAnakId != null ? _tabunganDataMap[_loadedAnakId] : null;
   KoperasiAnakData? get koperasiData =>
       _loadedAnakId != null ? _koperasiDataMap[_loadedAnakId] : null;
+  KasRuanganAnakData? get kasRuanganData =>
+      _loadedAnakId != null ? _kasRuanganDataMap[_loadedAnakId] : null;
 
   // Multi-child specific helpers
   TabunganAnakData? getTabunganFor(int anakId) => _tabunganDataMap[anakId];
   RekapTagihanAnakModel? getTagihanFor(int anakId) => _rekapTagihanMap[anakId];
   KoperasiAnakData? getKoperasiFor(int anakId) => _koperasiDataMap[anakId];
+  KasRuanganAnakData? getKasRuanganFor(int anakId) =>
+      _kasRuanganDataMap[anakId];
 
   int getTotalFamilySavings(List<int> anakIds) {
     int total = 0;
@@ -149,12 +157,37 @@ class KeuanganProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> fetchKasRuangan(int anakId, {bool force = false}) async {
+    if (!force && _kasRuanganDataMap.containsKey(anakId)) {
+      _loadedAnakId = anakId;
+      notifyListeners();
+      return;
+    }
+
+    _isLoadingKasRuangan = true;
+    _loadedAnakId = anakId;
+    notifyListeners();
+
+    try {
+      final res = await _repo.getKasRuanganAnak(anakId);
+      if (res != null) {
+        _kasRuanganDataMap[anakId] = res;
+      }
+    } catch (e) {
+      _errorMessage = 'Gagal memuat kas ruangan: $e';
+    } finally {
+      _isLoadingKasRuangan = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> fetchAllKeuangan(int anakId, {bool force = false}) async {
     _loadedAnakId = anakId;
     await Future.wait([
       fetchTagihan(anakId, force: force),
       fetchTabungan(anakId, force: force),
       fetchKoperasi(anakId, force: force),
+      fetchKasRuangan(anakId, force: force),
     ]);
   }
 

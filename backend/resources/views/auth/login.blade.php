@@ -77,7 +77,7 @@
             <!-- Checkbox M3 Style -->
             <label class="relative inline-flex items-center cursor-pointer group select-none min-h-[32px]">
                 <div class="relative flex items-center justify-center">
-                    <input type="checkbox" name="remember" id="checkbox-signin" class="peer sr-only" checked>
+                    <input type="checkbox" name="remember" id="checkbox-signin" class="peer sr-only">
                     <div
                         class="w-4 h-4 rounded-md border-2 border-zinc-300 dark:border-zinc-700 peer-checked:bg-primary dark:peer-checked:bg-primary-dark peer-checked:border-primary dark:peer-checked:border-primary-dark transition-all duration-200 bg-white dark:bg-zinc-950">
                     </div>

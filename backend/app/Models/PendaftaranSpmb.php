@@ -64,7 +64,7 @@ class PendaftaranSpmb extends Model
     }
 
     /**
-     * Helper generator nomor pendaftaran otomatis
+     * Helper generator nomor pendaftaran otomatis yang tahan benturan
      */
     public static function generateNomorPendaftaran($tahunId = null)
     {
@@ -79,16 +79,22 @@ class PendaftaranSpmb extends Model
         $prefix = 'SPMB-' . $tahunStr . '-';
 
         $latest = self::where('nomor_pendaftaran', 'LIKE', $prefix . '%')
-            ->orderBy('id', 'desc')
+            ->orderByRaw('CAST(SUBSTRING(nomor_pendaftaran, ' . (strlen($prefix) + 1) . ') AS UNSIGNED) DESC')
             ->first();
 
+        $lastNumber = 0;
         if ($latest) {
             $lastNumber = (int) substr($latest->nomor_pendaftaran, strlen($prefix));
-            $nextNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $nextNumber = '0001';
         }
 
-        return $prefix . $nextNumber;
+        $nextNumber = $lastNumber + 1;
+        $nomorPendaftaran = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        while (self::where('nomor_pendaftaran', $nomorPendaftaran)->exists()) {
+            $nextNumber++;
+            $nomorPendaftaran = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        }
+
+        return $nomorPendaftaran;
     }
 }

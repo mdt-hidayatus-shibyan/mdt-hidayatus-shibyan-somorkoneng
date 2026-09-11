@@ -18,7 +18,22 @@ class PembayaranTagihanService
             $murid = Murid::with('waliMurid')->findOrFail($muridId);
             $namaWali = $murid->nama_ayah;
 
-            $tagihans = TagihanMurid::with('pengaturanTagihan')->whereIn('id', $tagihanIds)->get();
+            // Kunci baris tagihan dengan lockForUpdate untuk mencegah race condition / double payment
+            $tagihans = TagihanMurid::with('pengaturanTagihan')
+                ->whereIn('id', $tagihanIds)
+                ->lockForUpdate()
+                ->get();
+
+            if ($tagihans->isEmpty()) {
+                throw new \Exception("Tagihan yang dipilih tidak ditemukan.");
+            }
+
+            // Pastikan tidak ada tagihan yang sudah lunas
+            $alreadyPaid = $tagihans->where('status_bayar', 'Lunas');
+            if ($alreadyPaid->isNotEmpty()) {
+                throw new \Exception("Satu atau lebih tagihan yang dipilih sudah lunas atau baru saja diproses oleh kasir lain.");
+            }
+
             $totalNominal = $tagihans->sum('nominal_tagihan');
 
             $hari = now()->format('d');
@@ -41,7 +56,7 @@ class PembayaranTagihanService
                 'catatan'           => 'Pembayaran Syahriyah/SPP a.n. Murid: ' . $murid->nama_lengkap . ' (' . $murid->nism . ')'
             ]);
 
-            TagihanMurid::whereIn('id', $tagihanIds)->update([
+            TagihanMurid::whereIn('id', $tagihans->pluck('id'))->update([
                 'status_bayar'          => 'Lunas',
                 'pembayaran_tagihan_id' => $pembayaran->id,
                 'updated_at'            => now(),
@@ -59,12 +74,18 @@ class PembayaranTagihanService
         return DB::transaction(function () use ($tagihanIds) {
             $tagihans = TagihanMurid::with(['murid.waliMurid', 'pengaturanTagihan'])
                 ->whereIn('id', $tagihanIds)
+                ->where('status_bayar', '!=', 'Lunas')
+                ->lockForUpdate()
                 ->get()
                 ->groupBy('murid_id');
 
+            if ($tagihans->isEmpty()) {
+                throw new \Exception("Semua tagihan yang dipilih sudah lunas atau sedang diproses.");
+            }
+
             $bulan = now()->format('m');
             $tahun = now()->format('Y');
-            $totalCount = count($tagihanIds);
+            $totalProcessed = 0;
 
             foreach ($tagihans as $muridId => $tagihanGroup) {
                 $murid = $tagihanGroup->first()->murid;
@@ -87,14 +108,17 @@ class PembayaranTagihanService
                     'catatan'           => 'Pembayaran Massal (Leger) a.n. Murid: ' . $murid->nama_lengkap,
                 ]);
 
-                TagihanMurid::whereIn('id', $tagihanGroup->pluck('id'))->update([
+                $groupTagihanIds = $tagihanGroup->pluck('id');
+                TagihanMurid::whereIn('id', $groupTagihanIds)->update([
                     'status_bayar'          => 'Lunas',
                     'pembayaran_tagihan_id' => $pembayaran->id,
                     'updated_at'            => now(),
                 ]);
+
+                $totalProcessed += count($groupTagihanIds);
             }
 
-            return $totalCount;
+            return $totalProcessed;
         });
     }
 }

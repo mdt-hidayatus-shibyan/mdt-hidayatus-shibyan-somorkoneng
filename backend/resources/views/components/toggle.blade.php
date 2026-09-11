@@ -25,8 +25,7 @@
             @if ($url) data-url="{{ $url }}" @endif
             @if ($name) data-name="{{ $name }}" @endif
             data-text-active="{{ $activeText }}" data-text-inactive="{{ $inactiveText }}"
-            {{ $checked ? 'checked' : '' }} {{ $disabled ? 'disabled' : '' }}
-            {{ $attributes->whereStartsWith(['wire:', 'x-', '@']) }}>
+            {{ $checked ? 'checked' : '' }} {{ $disabled ? 'disabled' : '' }} {{ $attributes }}>
 
         <!-- Track & Thumb (M3 Expressive OLED Optimized) -->
         <div

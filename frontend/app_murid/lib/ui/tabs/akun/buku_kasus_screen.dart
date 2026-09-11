@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/haptic_helper.dart';
 import '../../../data/models/pelanggaran_model.dart';
 import '../../../providers/akademik_provider.dart';
@@ -72,10 +71,6 @@ class _BukuKasusScreenState extends State<BukuKasusScreen> {
                   // Hero Status & Accumulation Card
                   _buildHeroStatusCard(rekap, isDark),
                   const SizedBox(height: 16),
-
-                  // Hadith & Moral Upbringing Card
-                  _buildNasihatCard(isDark),
-                  const SizedBox(height: 20),
 
                   // Category Filter Chips
                   _buildCategoryFilterSection(rekap, isDark),
@@ -302,79 +297,6 @@ class _BukuKasusScreenState extends State<BukuKasusScreen> {
               fontSize: 14,
               fontWeight: FontWeight.w900,
               color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // === 2. ISLAMIC ADVICE & NASIHAT CARD ===
-  Widget _buildNasihatCard(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [
-                  const Color(0xFF064E3B).withValues(alpha: 0.4),
-                  const Color(0xFF022C22).withValues(alpha: 0.2),
-                ]
-              : [
-                  const Color(0xFFDCFCE7).withValues(alpha: 0.8),
-                  const Color(0xFFF0FDF4).withValues(alpha: 0.5),
-                ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: (isDark ? AppColors.primaryDark : AppColors.primaryLight)
-              .withValues(alpha: 0.25),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: (isDark ? AppColors.primaryDark : AppColors.primaryLight)
-                  .withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.format_quote_rounded,
-              size: 18,
-              color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'أَكْمَلُ الْمُؤْمِنِينَ إِيمَانًا أَحْسَنُهُمْ خُلُقًا',
-                  style: AppTypography.arabic(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: isDark
-                        ? const Color(0xFFA7F3D0)
-                        : const Color(0xFF065F46),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '"Orang mukmin yang paling sempurna imannya adalah yang paling baik akhlaknya." (HR. Tirmidzi)',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                  ),
-                ),
-              ],
             ),
           ),
         ],

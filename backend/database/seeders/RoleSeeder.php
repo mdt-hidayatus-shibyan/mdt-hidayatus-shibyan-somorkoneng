@@ -18,11 +18,16 @@ class RoleSeeder extends Seeder
         $roles = [
             'administrator',
             'staff',
+            'petugas-tabungan',
+            'petugas-koperasi',
+            'bendahara',
             'ustadz',
+            'petugas-cetak',
+            'wali-murid',
         ];
 
         foreach ($roles as $role) {
-            Role::create(['name' => $role]);
+            Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
 
         $administrator = User::create([

@@ -1,4 +1,4 @@
-﻿<!-- TABEL DATA PAKET -->
+<!-- TABEL DATA PAKET -->
 <div class="overflow-x-auto custom-scrollbar">
     <table class="m3-table w-full">
         <thead>
@@ -46,8 +46,7 @@
                             @foreach ($p->items as $item)
                                 <div class="flex items-center gap-1.5 text-[11px]">
                                     <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0"></span>
-                                    <span
-                                        class="font-bold text-zinc-800 dark:text-zinc-200">{{ $item->jumlah }}x</span>
+                                    <span class="font-bold text-zinc-800 dark:text-zinc-200">{{ $item->jumlah }}x</span>
                                     <span
                                         class="text-zinc-600 dark:text-zinc-400 truncate max-w-xs">{{ $item->produk?->nama_produk ?? '-' }}</span>
                                 </div>
@@ -97,6 +96,6 @@
 
 @if ($pakets->hasPages())
     <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/30">
-        {{ $pakets->links() }}
+        {{ $pakets->links('vendor.pagination.custom') }}
     </div>
 @endif

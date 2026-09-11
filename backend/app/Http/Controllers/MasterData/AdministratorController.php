@@ -57,7 +57,7 @@ class AdministratorController extends Controller
             $data['is_active'] = $request->boolean('is_active', false);
 
             // Jika role administrator atau petugas-tabungan, hilangkan/set tingkat_id ke null
-            if ($selectedRole === 'administrator' || $selectedRole === 'petugas-tabungan') {
+            if ($selectedRole === 'administrator' || $selectedRole === 'petugas-tabungan' || $selectedRole === 'petugas-tabungan') {
                 $data['tingkat_id'] = null;
             } else {
                 $data['tingkat_id'] = $request->tingkat_id;

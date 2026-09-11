@@ -25,7 +25,9 @@ class RuanganRequest extends FormRequest
         return [
             'tahun_pelajaran_id' => 'required|exists:tahun_pelajarans,id',
             'level_id'           => 'required|exists:levels,id',
+            'gedung_id'          => 'nullable|exists:gedungs,id',
             'ustadz_id'          => 'nullable|exists:ustadzs,id',
+            'nama_kamar'         => 'nullable|string|max:100',
             'kapasitas'          => 'required|integer|min:1|max:100',
             'nama_ruangan'       => [
                 'required',

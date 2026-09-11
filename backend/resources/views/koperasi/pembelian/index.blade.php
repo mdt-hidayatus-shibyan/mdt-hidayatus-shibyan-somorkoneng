@@ -4,8 +4,10 @@
     <!-- Header Page & Actions -->
     <div class="mb-6 md:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-20">
         <div>
-            <h2 class="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 shrink-0">
+            <h2
+                class="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2.5">
+                <div
+                    class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 shrink-0">
                     <i class="bi bi-bag-plus-fill text-lg"></i>
                 </div>
                 <span>Pembelian & Kulakan Barang</span>
@@ -35,7 +37,8 @@
         <!-- Belanja Bulan Ini -->
         <div class="m3-glass-card p-5 flex items-center justify-between">
             <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Belanja Bulan Ini</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Belanja
+                    Bulan Ini</span>
                 <h3 class="text-xl font-black text-zinc-900 dark:text-white mt-1">
                     Rp {{ number_format($totalBelanjaBulanIni, 0, ',', '.') }}
                 </h3>
@@ -43,7 +46,8 @@
                     <i class="bi bi-calendar-check"></i> Periode {{ date('F Y') }}
                 </p>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl shrink-0 border border-emerald-500/20">
+            <div
+                class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl shrink-0 border border-emerald-500/20">
                 <i class="bi bi-cart-check-fill"></i>
             </div>
         </div>
@@ -51,7 +55,8 @@
         <!-- Hutang ke Supplier -->
         <div class="m3-glass-card p-5 flex items-center justify-between">
             <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Hutang Supplier (Tempo)</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Hutang
+                    Supplier (Tempo)</span>
                 <h3 class="text-xl font-black text-amber-600 dark:text-amber-400 mt-1">
                     Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}
                 </h3>
@@ -59,7 +64,8 @@
                     {{ $countHutangSupplier }} Faktur Belum Lunas
                 </p>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shrink-0 border border-amber-500/20">
+            <div
+                class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shrink-0 border border-amber-500/20">
                 <i class="bi bi-hourglass-split"></i>
             </div>
         </div>
@@ -67,7 +73,8 @@
         <!-- Total Faktur Kulakan -->
         <div class="m3-glass-card p-5 flex items-center justify-between">
             <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Total Transaksi Kulakan</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Total
+                    Transaksi Kulakan</span>
                 <h3 class="text-xl font-black text-zinc-900 dark:text-white mt-1">
                     {{ $totalTrxKulakan }} Faktur
                 </h3>
@@ -75,7 +82,8 @@
                     Total: Rp {{ number_format($totalNominalFiltered, 0, ',', '.') }}
                 </p>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl shrink-0 border border-blue-500/20">
+            <div
+                class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl shrink-0 border border-blue-500/20">
                 <i class="bi bi-receipt"></i>
             </div>
         </div>
@@ -85,9 +93,11 @@
     <div class="m3-glass-card overflow-hidden flex flex-col relative z-10 shadow-sm dark:shadow-none">
 
         <!-- Toolbar Filter -->
-        <div class="p-4 sm:p-5 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/60 dark:bg-zinc-950/40 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div
+            class="p-4 sm:p-5 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/60 dark:bg-zinc-950/40 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
+                <div
+                    class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
                     <i class="bi bi-filter-circle-fill text-base"></i>
                 </div>
                 <div>
@@ -100,14 +110,18 @@
                 </div>
             </div>
 
-            <form action="{{ route('koperasi.pembelian.index') }}" method="GET" class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+            <form action="{{ route('koperasi.pembelian.index') }}" method="GET"
+                class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
                 <!-- Filter Status Pembayaran -->
                 <div class="w-full sm:w-40">
                     <select name="status_pembayaran" onchange="this.form.submit()"
                         class="m3-input-glass w-full min-h-[40px] px-3.5 text-xs font-bold appearance-none cursor-pointer">
                         <option value="">Semua Status Bayar</option>
-                        <option value="Lunas" {{ request('status_pembayaran') == 'Lunas' ? 'selected' : '' }}>Lunas</option>
-                        <option value="Belum_Lunas" {{ request('status_pembayaran') == 'Belum_Lunas' ? 'selected' : '' }}>Belum Lunas (Tempo)</option>
+                        <option value="Lunas" {{ request('status_pembayaran') == 'Lunas' ? 'selected' : '' }}>Lunas
+                        </option>
+                        <option value="Belum_Lunas"
+                            {{ request('status_pembayaran') == 'Belum_Lunas' ? 'selected' : '' }}>Belum Lunas (Tempo)
+                        </option>
                     </select>
                 </div>
 
@@ -116,9 +130,14 @@
                     <select name="metode_pembayaran" onchange="this.form.submit()"
                         class="m3-input-glass w-full min-h-[40px] px-3.5 text-xs font-bold appearance-none cursor-pointer">
                         <option value="">Semua Metode</option>
-                        <option value="Tunai_Kas" {{ request('metode_pembayaran') == 'Tunai_Kas' ? 'selected' : '' }}>Tunai Kas</option>
-                        <option value="Transfer_Bank" {{ request('metode_pembayaran') == 'Transfer_Bank' ? 'selected' : '' }}>Transfer Bank</option>
-                        <option value="Hutang_Tempo" {{ request('metode_pembayaran') == 'Hutang_Tempo' ? 'selected' : '' }}>Hutang (Tempo)</option>
+                        <option value="Tunai_Kas" {{ request('metode_pembayaran') == 'Tunai_Kas' ? 'selected' : '' }}>
+                            Tunai Kas</option>
+                        <option value="Transfer_Bank"
+                            {{ request('metode_pembayaran') == 'Transfer_Bank' ? 'selected' : '' }}>Transfer Bank
+                        </option>
+                        <option value="Hutang_Tempo"
+                            {{ request('metode_pembayaran') == 'Hutang_Tempo' ? 'selected' : '' }}>Hutang (Tempo)
+                        </option>
                     </select>
                 </div>
 
@@ -128,7 +147,8 @@
                         class="m3-input-glass w-full min-h-[40px] px-3.5 text-xs font-bold appearance-none cursor-pointer">
                         <option value="">Semua Status</option>
                         <option value="Selesai" {{ request('status') == 'Selesai' ? 'selected' : '' }}>Selesai</option>
-                        <option value="Dibatalkan" {{ request('status') == 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                        <option value="Dibatalkan" {{ request('status') == 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan
+                        </option>
                     </select>
                 </div>
 
@@ -167,14 +187,15 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-200/60 dark:divide-zinc-800/60 font-medium text-xs">
                     @forelse ($pembelians as $p)
-                        <tr class="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors {{ $p->status === 'Dibatalkan' ? 'opacity-60 bg-rose-500/5' : '' }}">
+                        <tr
+                            class="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors {{ $p->status === 'Dibatalkan' ? 'opacity-60 bg-rose-500/5' : '' }}">
                             <td class="font-mono font-bold text-zinc-900 dark:text-white">
                                 <a href="{{ route('koperasi.pembelian.show', $p->id) }}"
                                     class="text-primary hover:underline inline-flex items-center gap-1.5">
                                     <i class="bi bi-receipt-cutoff text-xs"></i>
                                     <span>{{ $p->nomor_faktur }}</span>
                                 </a>
-                                @if($p->foto_faktur)
+                                @if ($p->foto_faktur)
                                     <span class="inline-block ml-1 text-zinc-400" title="Ada Lampiran Nota Fisik">
                                         <i class="bi bi-paperclip"></i>
                                     </span>
@@ -187,7 +208,7 @@
                                 <div class="font-bold text-zinc-900 dark:text-white">
                                     {{ $p->supplier }}
                                 </div>
-                                @if($p->nomor_faktur_supplier)
+                                @if ($p->nomor_faktur_supplier)
                                     <span class="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
                                         Ref: #{{ $p->nomor_faktur_supplier }}
                                     </span>
@@ -201,37 +222,45 @@
                             </td>
                             <td>
                                 @if ($p->metode_pembayaran === 'Tunai_Kas')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                                         <i class="bi bi-cash"></i> Tunai Kas
                                     </span>
                                 @elseif ($p->metode_pembayaran === 'Transfer_Bank')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
                                         <i class="bi bi-bank"></i> Transfer Bank
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
                                         <i class="bi bi-clock-history"></i> Hutang Tempo
                                     </span>
                                 @endif
                             </td>
                             <td class="text-center">
                                 @if ($p->status_pembayaran === 'Lunas')
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                                         Lunas
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20" title="Sisa: Rp {{ number_format($p->sisa_hutang, 0, ',', '.') }}">
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"
+                                        title="Sisa: Rp {{ number_format($p->sisa_hutang, 0, ',', '.') }}">
                                         Tempo (Rp {{ number_format($p->sisa_hutang, 0, ',', '.') }})
                                     </span>
                                 @endif
                             </td>
                             <td class="text-center">
                                 @if ($p->status === 'Selesai')
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                                         Selesai
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                                         Dibatalkan
                                     </span>
                                 @endif
@@ -273,7 +302,7 @@
 
         @if ($pembelians->hasPages())
             <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-950/30">
-                {{ $pembelians->links() }}
+                {{ $pembelians->links('vendor.pagination.custom') }}
             </div>
         @endif
 

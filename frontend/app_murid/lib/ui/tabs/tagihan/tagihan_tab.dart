@@ -107,7 +107,6 @@ class _TagihanTabState extends State<TagihanTab>
                     child: ModernHeader(
                       title: 'Tagihan & Pembayaran',
                       subtitle: 'Monitoring SPP Syahriyah & Tagihan Non-SPP',
-                      icon: Icons.receipt_long_rounded,
                     ),
                   ),
                 ],
@@ -192,8 +191,8 @@ class _TagihanTabState extends State<TagihanTab>
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildSummaryColumn(
-                  'Total Target',
-                  CurrencyFormatter.format(rekap.totalTagihan),
+                  'Total Target SPP',
+                  CurrencyFormatter.format(rekap.totalSpp),
                   isDark ? Colors.white70 : Colors.black87,
                   isDark,
                 ),
@@ -204,7 +203,7 @@ class _TagihanTabState extends State<TagihanTab>
                 ),
                 _buildSummaryColumn(
                   'Total Terbayar',
-                  CurrencyFormatter.format(rekap.totalLunas),
+                  CurrencyFormatter.format(rekap.totalSppLunas),
                   const Color(0xFF10B981),
                   isDark,
                 ),
@@ -215,8 +214,8 @@ class _TagihanTabState extends State<TagihanTab>
                 ),
                 _buildSummaryColumn(
                   'Tunggakan',
-                  CurrencyFormatter.format(rekap.totalTunggakan),
-                  rekap.totalTunggakan > 0
+                  CurrencyFormatter.format(rekap.totalSppTunggakan),
+                  rekap.totalSppTunggakan > 0
                       ? AppColors.roseDanger
                       : const Color(0xFF10B981),
                   isDark,
@@ -362,6 +361,7 @@ class _TagihanTabState extends State<TagihanTab>
     }
 
     final nonSppList = keuangan.nonSppList;
+    final rekap = keuangan.rekapTagihan;
 
     if (nonSppList.isEmpty) {
       return const EmptyStateWidget(
@@ -377,6 +377,49 @@ class _TagihanTabState extends State<TagihanTab>
       ),
       padding: EdgeInsets.fromLTRB(16, 8, 16, widget.isFullScreen ? 24 : 100),
       children: [
+        if (rekap != null) ...[
+          GlassCard(
+            padding: const EdgeInsets.all(16),
+            borderRadius: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildSummaryColumn(
+                  'Total Target Non-SPP',
+                  CurrencyFormatter.format(rekap.totalNonSpp),
+                  isDark ? Colors.white70 : Colors.black87,
+                  isDark,
+                ),
+                Container(
+                  height: 32,
+                  width: 1,
+                  color: isDark ? Colors.white12 : Colors.black12,
+                ),
+                _buildSummaryColumn(
+                  'Total Terbayar',
+                  CurrencyFormatter.format(rekap.totalNonSppLunas),
+                  const Color(0xFF10B981),
+                  isDark,
+                ),
+                Container(
+                  height: 32,
+                  width: 1,
+                  color: isDark ? Colors.white12 : Colors.black12,
+                ),
+                _buildSummaryColumn(
+                  'Tunggakan',
+                  CurrencyFormatter.format(rekap.totalNonSppTunggakan),
+                  rekap.totalNonSppTunggakan > 0
+                      ? AppColors.roseDanger
+                      : const Color(0xFF10B981),
+                  isDark,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+
         Text(
           'TAGIHAN NON-SPP (UJIAN, KITAB, SERAGAM, DLL)',
           style: TextStyle(

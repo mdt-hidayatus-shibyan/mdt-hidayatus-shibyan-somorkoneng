@@ -34,8 +34,8 @@ class AuthenticatedSessionController extends Controller
                 'is_logout' => false,
             ]);
 
-            // Default fallback (Administrator dan role lainnya)
-            return redirect()->intended(route('dashboard', absolute: false));
+            // Arahkan ke route sesuai role (misal: petugas-tabungan -> tabungan.index)
+            return redirect()->intended($request->redirectRoute());
         }
 
         // Fallback jika objek $user gagal dimuat

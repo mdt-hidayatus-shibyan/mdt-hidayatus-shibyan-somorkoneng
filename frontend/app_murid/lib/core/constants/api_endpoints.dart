@@ -19,6 +19,7 @@ class ApiEndpoints {
   static const String tabunganAnak = '/wali/tabungan'; // + /{id}
   static const String tabunganKomplain = '/wali/tabungan/komplain';
   static const String koperasiAnak = '/wali/koperasi'; // + /{id}
+  static const String kasRuanganAnak = '/wali/kas-ruangan'; // + /{id}
 
   // Umum / Bantuan
   static const String pengumuman = '/wali/pengumuman';

@@ -200,39 +200,51 @@ class AuthController extends Controller
         }
 
         $isPinValid = false;
+        $isPinChanged = (bool) $wali->is_pin_changed;
 
-        // 1. Default PIN '112233' selalu diizinkan (dan otomatis auto-sync hash Bcrypt jika belum tersinkronisasi)
-        if ($inputPin === '112233') {
-            $isPinValid = true;
-            if (empty($wali->pin) || (!str_starts_with($wali->pin, '$2y$') && !str_starts_with($wali->pin, '$2a$') && !str_starts_with($wali->pin, '$2b$'))) {
-                $wali->pin = Hash::make('112233');
-                $wali->save();
+        if (!$isPinChanged) {
+            // Pengguna belum pernah mengubah PIN -> izinkan PIN default 112233
+            if ($inputPin === '112233') {
+                $isPinValid = true;
+                if (empty($wali->pin) || (!str_starts_with($wali->pin, '$2y$') && !str_starts_with($wali->pin, '$2a$') && !str_starts_with($wali->pin, '$2b$'))) {
+                    $wali->pin = Hash::make('112233');
+                    $wali->save();
+                }
+            } elseif (!empty($wali->pin)) {
+                // Atau cek jika pin sudah terisi hash lain
+                if (str_starts_with($wali->pin, '$2y$') || str_starts_with($wali->pin, '$2a$') || str_starts_with($wali->pin, '$2b$')) {
+                    $isPinValid = Hash::check($inputPin, $wali->pin);
+                } else {
+                    $isPinValid = ($wali->pin === $inputPin);
+                }
             }
-        }
-
-        // 2. Verifikasi PIN kustom (jika bukan default atau pengguna telah mengubah PIN kustom)
-        if (!$isPinValid && !empty($wali->pin)) {
-            if (str_starts_with($wali->pin, '$2y$') || str_starts_with($wali->pin, '$2a$') || str_starts_with($wali->pin, '$2b$')) {
-                try {
-                    if (Hash::check($inputPin, $wali->pin)) {
+        } else {
+            // Pengguna SUDAH mengubah PIN -> WAJIB cocok dengan PIN kustom yang tersimpan
+            if (!empty($wali->pin)) {
+                if (str_starts_with($wali->pin, '$2y$') || str_starts_with($wali->pin, '$2a$') || str_starts_with($wali->pin, '$2b$')) {
+                    try {
+                        $isPinValid = Hash::check($inputPin, $wali->pin);
+                    } catch (\Throwable $e) {
+                        $isPinValid = false;
+                    }
+                } else {
+                    if ($wali->pin === $inputPin) {
+                        $wali->pin = Hash::make($inputPin);
+                        $wali->save();
                         $isPinValid = true;
                     }
-                } catch (\Throwable $e) {
-                    $isPinValid = false;
-                }
-            } else {
-                if ($wali->pin === $inputPin) {
-                    $wali->pin = Hash::make($inputPin);
-                    $wali->save();
-                    $isPinValid = true;
                 }
             }
         }
 
         if (!$isPinValid) {
+            $errorMessage = $isPinChanged
+                ? 'PIN keamanan yang Anda masukkan salah.'
+                : 'PIN keamanan yang Anda masukkan salah. (PIN default: 112233)';
+
             return response()->json([
                 'success' => false,
-                'message' => 'PIN keamanan yang Anda masukkan salah. (PIN default: 112233)',
+                'message' => $errorMessage,
                 'step'    => 'pin_required'
             ], 401);
         }
@@ -241,11 +253,23 @@ class AuthController extends Controller
         $user = \App\Models\User::firstOrCreate(
             ['username' => 'wali_' . $wali->no_registrasi],
             [
-                'name'     => $wali->nama_kepala_keluarga,
-                'email'    => 'wali_' . $wali->no_registrasi . '@mdthidayatusshibyan.sch.id',
-                'password' => Hash::make('wali_' . $wali->no_registrasi),
+                'name'      => $wali->nama_kepala_keluarga,
+                'email'     => 'wali_' . $wali->no_registrasi . '@mdthidayatusshibyan.sch.id',
+                'password'  => Hash::make('wali_' . $wali->no_registrasi),
+                'is_active' => true,
             ]
         );
+
+        // Pastikan role 'wali-murid' telah ditetapkan ke akun user
+        if (!$user->hasRole('wali-murid')) {
+            $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'wali-murid', 'guard_name' => 'web']);
+            $user->assignRole($role);
+        }
+
+        // Sinkronisasi nama jika kepala keluarga telah diubah di master data
+        if ($user->name !== $wali->nama_kepala_keluarga) {
+            $user->update(['name' => $wali->nama_kepala_keluarga]);
+        }
 
         $token = $user->createToken('WaliAppToken')->plainTextToken;
 
@@ -253,7 +277,7 @@ class AuthController extends Controller
             'success'        => true,
             'message'        => 'Login Berhasil',
             'token'          => $token,
-            'role'           => 'wali',
+            'role'           => $user->roles->first()->name ?? 'wali-murid',
             'is_first_login' => !(bool) $wali->is_pin_changed,
             'wali'           => [
                 'id'                   => $wali->id,

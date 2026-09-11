@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/haptic_helper.dart';
 import '../../../providers/akademik_provider.dart';
 import '../../../providers/dashboard_provider.dart';
@@ -14,6 +13,7 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/glass_card.dart';
 import '../akun/biodata_anak_screen.dart';
 import '../akun/buku_kasus_screen.dart';
+import '../keuangan/kas_ruangan_screen.dart';
 import '../koperasi/koperasi_screen.dart';
 import '../tabungan/tabungan_screen.dart';
 import 'semua_jadwal_screen.dart';
@@ -162,6 +162,12 @@ class HomeTab extends StatelessWidget {
 
                 // Multi-Child Switcher
                 const ChildSwitcherBar(),
+
+                // Jadwal Hari Ini / Jadwal Ujian
+                _buildJadwalHariIniSection(context, dashboard, isDark),
+
+                // Pengumuman Madrasah (Wali Murid)
+                _buildPengumumanSection(context, dashboard, isDark),
 
                 if (selectedAnak != null) ...[
                   // Kartu Profil Murid Terpilih
@@ -331,230 +337,6 @@ class HomeTab extends StatelessWidget {
                     ),
                   ),
 
-                  // Ringkasan Keuangan Murid Card
-                  Builder(
-                    builder: (ctx) {
-                      final keuangan = ctx.watch<KeuanganProvider>();
-                      final tabungan = keuangan
-                          .getTabunganFor(selectedAnak.id)
-                          ?.rekening;
-                      final hasMultipleChildren =
-                          dashboard.anakList.length >= 2;
-                      final totalTabunganKeluarga = hasMultipleChildren
-                          ? keuangan.getTotalFamilySavings(
-                              dashboard.anakList.map((a) => a.id).toList(),
-                            )
-                          : 0;
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
-                        child: GlassCard(
-                          padding: const EdgeInsets.all(18),
-                          borderRadius: 24,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.account_balance_wallet_rounded,
-                                        size: 18,
-                                        color: isDark
-                                            ? AppColors.amberAccent
-                                            : const Color(0xFFD97706),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Ringkasan Keuangan',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w900,
-                                          color: isDark
-                                              ? Colors.white
-                                              : Colors.black87,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  InkWell(
-                                    onTap: () => onNavigateTab?.call(1),
-                                    child: Text(
-                                      'Lihat Semua >',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w800,
-                                        color: isDark
-                                            ? AppColors.primaryDark
-                                            : AppColors.primaryLight,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 14),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildFinanceMiniCard(
-                                      title: 'Total Tagihan',
-                                      amount: CurrencyFormatter.format(
-                                        data.totalTagihan,
-                                      ),
-                                      color: isDark
-                                          ? Colors.white70
-                                          : Colors.black87,
-                                      isDark: isDark,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: _buildFinanceMiniCard(
-                                      title: 'Lunas',
-                                      amount: CurrencyFormatter.format(
-                                        data.totalLunas,
-                                      ),
-                                      color: const Color(0xFF10B981),
-                                      isDark: isDark,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: _buildFinanceMiniCard(
-                                      title: 'Tunggakan',
-                                      amount: CurrencyFormatter.format(
-                                        data.totalTunggakan,
-                                      ),
-                                      color: data.totalTunggakan > 0
-                                          ? AppColors.roseDanger
-                                          : const Color(0xFF10B981),
-                                      isDark: isDark,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (tabungan != null || hasMultipleChildren) ...[
-                                const SizedBox(height: 12),
-                                const Divider(height: 1),
-                                const SizedBox(height: 10),
-                                InkWell(
-                                  onTap: () {
-                                    HapticHelper.light();
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => const TabunganScreen(),
-                                      ),
-                                    );
-                                  },
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons
-                                                .account_balance_wallet_rounded,
-                                            size: 16,
-                                            color: isDark
-                                                ? AppColors.primaryDark
-                                                : AppColors.primaryLight,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            hasMultipleChildren
-                                                ? 'Tabungan ${selectedAnak.namaLengkap.split(" ").first}:'
-                                                : 'Saldo Tabungan:',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                              color: isDark
-                                                  ? Colors.white70
-                                                  : Colors.black87,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            tabungan != null
-                                                ? CurrencyFormatter.format(
-                                                    tabungan.saldo,
-                                                  )
-                                                : 'Belum Buka',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w900,
-                                              color: tabungan != null
-                                                  ? (isDark
-                                                        ? AppColors.primaryDark
-                                                        : AppColors
-                                                              .primaryLight)
-                                                  : (isDark
-                                                        ? Colors.white38
-                                                        : Colors.black38),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Icon(
-                                            Icons.chevron_right_rounded,
-                                            size: 16,
-                                            color: isDark
-                                                ? Colors.white38
-                                                : Colors.black38,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (hasMultipleChildren) ...[
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        'Total Tabungan Keluarga (${dashboard.anakList.length} Murid):',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w500,
-                                          color: isDark
-                                              ? Colors.white54
-                                              : Colors.black54,
-                                        ),
-                                      ),
-                                      Text(
-                                        CurrencyFormatter.format(
-                                          totalTabunganKeluarga,
-                                        ),
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w800,
-                                          color: isDark
-                                              ? AppColors.primaryDark
-                                              : AppColors.primaryLight,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ],
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  // Menu Pintasan / Quick Actions
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -584,7 +366,7 @@ class HomeTab extends StatelessWidget {
                                 isDark: isDark,
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: _buildQuickActionBtn(
                                 label: 'Tabungan',
@@ -601,7 +383,24 @@ class HomeTab extends StatelessWidget {
                                 isDark: isDark,
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildQuickActionBtn(
+                                label: 'Kas Ruangan',
+                                icon: Icons.meeting_room_rounded,
+                                color: const Color(0xFF6366F1),
+                                onTap: () {
+                                  HapticHelper.light();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const KasRuanganScreen(),
+                                    ),
+                                  );
+                                },
+                                isDark: isDark,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: _buildQuickActionBtn(
                                 label: 'Koperasi',
@@ -618,32 +417,8 @@ class HomeTab extends StatelessWidget {
                                 isDark: isDark,
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        // Row 2: Akademik, Presensi & Kedisiplinan
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildQuickActionBtn(
-                                label: 'Presensi',
-                                icon: Icons.event_available_rounded,
-                                color: AppColors.skyBlueAccent,
-                                onTap: () => onNavigateTab?.call(2),
-                                isDark: isDark,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _buildQuickActionBtn(
-                                label: 'Rapor Nilai',
-                                icon: Icons.auto_stories_rounded,
-                                color: AppColors.violetAccent,
-                                onTap: () => onNavigateTab?.call(3),
-                                isDark: isDark,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
+
+                            const SizedBox(width: 8),
                             Consumer<AkademikProvider>(
                               builder: (ctx, akademik, _) {
                                 final rekap = akademik.rekapPelanggaran;
@@ -686,12 +461,6 @@ class HomeTab extends StatelessWidget {
                     ),
                   ),
                 ],
-
-                // Jadwal Hari Ini / Jadwal Ujian
-                _buildJadwalHariIniSection(context, dashboard, isDark),
-
-                // Pengumuman Madrasah (Wali Murid)
-                _buildPengumumanSection(context, dashboard, isDark),
               ],
             ),
           ),
@@ -731,48 +500,6 @@ class HomeTab extends StatelessWidget {
           fontWeight: FontWeight.w800,
           color: text,
         ),
-      ),
-    );
-  }
-
-  Widget _buildFinanceMiniCard({
-    required String title,
-    required String amount,
-    required Color color,
-    required bool isDark,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.04)
-            : Colors.black.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: isDark ? Colors.white54 : Colors.black54,
-            ),
-          ),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              amount,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                color: color,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
